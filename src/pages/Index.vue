@@ -23,7 +23,7 @@ export default {
   },
   methods: {
     fetchDocs () {
-      this.$axios.get('http://localhost:8000/documents/').then(response => {
+      this.$axios.get(process.env.HOST + '/documents/').then(response => {
         this.documents = response.data.results
       })
     }
