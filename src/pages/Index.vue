@@ -23,7 +23,8 @@ export default {
   },
   methods: {
     fetchDocs () {
-      this.$axios.get(process.env.HOST + '/documents/').then(response => {
+      this.$axios.get(this.$hostname + '/documents/').then(response => {
+        console.log('use host', this.$hostname)
         this.documents = response.data.results
       })
     }
