@@ -5,7 +5,9 @@
         <q-btn color="primary" label="Get Data" class="justify-center" @click="fetchDocs()"/>
       </div>
       <div v-for="(doc,i) in documents" :key="i" class="col-12 q-px-md q-py-md">
+        <div class="select-box" v-selection.fix="{getSelection:getSelection}">
         {{doc.text}}
+        </div>
       </div>
     </div>
   </q-page>
@@ -27,6 +29,9 @@ export default {
         console.log('use host', this.$hostname)
         this.documents = response.data.results
       })
+    },
+    getSelection (obj) {
+      console.log(obj)
     }
   }
 }
