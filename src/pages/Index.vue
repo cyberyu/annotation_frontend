@@ -20,8 +20,8 @@
                 {{token}}
               </span>
               <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
-                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label">
-                  <q-icon name="clear" @click="removeAnnotation(i, label)"/> {{label}} <br>
+                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label]}`">
+                  <q-icon name="highlight_off" @click="removeAnnotation(i, label)"/> {{label}} <br>
                 </span>
               </span>
             </div>
