@@ -21,6 +21,7 @@ const vueSelection = {
       }
       if (selection.rangeCount > 0) {
         var range = selection.getRangeAt(0)
+        // console.log('...', range)
         var region = document.createRange()
         region.selectNode(el)
         if (CheckIntersection(range, region)) {
