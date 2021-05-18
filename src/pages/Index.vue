@@ -10,7 +10,7 @@
         <div class="row justify-center col-12">
           <q-btn color="primary" label="Get Data" class="justify-center" @click="fetchDocs()"/>
         </div>
-          <div v-if="tokens" class="select-box">
+          <div v-if="tokens" class="select-box" @keyup="key" tabindex="0">
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`"
                   class="column inline">
               <span class="q-px-xs" :class="getTokenClass(i)"
@@ -116,6 +116,9 @@ export default {
         }
       }
       this.getDetailedAnnotations()
+    },
+    key (e) {
+      console.log('key pressed: ', e.key)
     },
     sortAnnotations () {
       // sort annotations by word index position
