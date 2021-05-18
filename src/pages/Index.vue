@@ -21,7 +21,7 @@
               </span>
               <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
                 <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label]}`">
-                  <q-icon name="highlight_off" @click="removeAnnotation(i, label)"/> {{label}} <br>
+                  <q-icon name="highlight_off" @click="removeAnnotation(i, label)" v-on:mousedown="selectStart(i)"/> {{label}} <br>
                 </span>
               </span>
             </div>
@@ -43,7 +43,7 @@ export default {
       end: null,
       labels: {
         'label A': 'red',
-        'label B': 'blue',
+        'label B with long name': 'blue',
         'label C': 'green'
       },
       annotations: [
@@ -96,8 +96,10 @@ export default {
         if (this.annotations[k][0] === this.start) {
           if (!this.annotations[k][2].includes(label)) {
             this.annotations[k][2].push(label)
-            return 0
+          } else {
+            alert('already there')
           }
+          return 0
         }
       }
       const annotation = [this.start, this.end, [label]]
