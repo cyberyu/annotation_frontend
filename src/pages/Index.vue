@@ -30,7 +30,7 @@
               </q-card>
               <span v-if="!(selected[0]===i && mousePressed==false) && detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
                 <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
-                  <q-icon name="highlight_off" @click="removeAnnotation(i, label)" /> {{labels[label].name}} <br>
+                  <q-icon name="check_circle" @click="removeAnnotation(i, label)" /> {{labels[label].name}} <br>
                 </span>
               </span>
             </div>
@@ -46,7 +46,6 @@ export default {
   data () {
     return {
       documents: [],
-      currentA: [],
       document: null,
       tokens: null,
       start: null,
