@@ -195,11 +195,14 @@ export default {
   /*text-decoration-style: wavy;*/
   border-bottom: blue solid 2px;
 }
+.B {
+  margin-left: 8px;
+}
 .label {
   position: relative;
 }
 .selected {
-  border-bottom: #0d950d solid 1px;
+  border-bottom: red solid 2px;
 }
 
 ::selection {
