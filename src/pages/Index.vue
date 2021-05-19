@@ -2,26 +2,35 @@
   <q-page class="flex flex-center">
     <div class="row">
       <div class=" col-2">
-        <div v-for="(label,i) in Object.keys(labels)" :key="i" class="col-12" @click="annotate(label)">
-          {{label}}
+        <div v-for="(label,i) in labels" :key="i" class="col-12" @click="annotate(label)">
+          {{label.name}}
         </div>
       </div>
       <div class="col-10">
         <div class="row justify-center col-12">
           <q-btn color="primary" label="Get Data" class="justify-center" @click="fetchDocs()"/>
         </div>
-          <div v-if="tokens" class="select-box" @keyup="key" tabindex="0">
-            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`"
-                  class="column inline">
+          <div v-if="tokens" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
+            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
               <span class="q-px-xs" :class="getTokenClass(i)"
                     v-on:mousedown="selectStart(i);mousePressed=true"
                     v-on:mouseup="selectEnd(i);mousePressed=false"
                     v-on:mouseover="mousePressed && select(i)">
                 {{token}}
               </span>
-              <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
-                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label]}`">
-                  <q-icon name="highlight_off" @click="removeAnnotation(i, label)" v-on:mousedown="selectStart(i)"/> {{label}} <br>
+              <q-card v-if="selected[0]===i" class="label-window q-pa-sm" bordered>
+                <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
+                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)" @click="removeAnnotation(i, label.id)">
+                    <q-icon name="check_circle"></q-icon> {{label.name}}
+                  </div>
+                  <div v-else @click="annotate(label)">
+                    <q-icon name="radio_button_unchecked"></q-icon> {{label.name}}
+                  </div>
+                </div>
+              </q-card>
+              <span v-if="!(selected[0]===i && mousePressed==false) && detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
+                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
+                  <q-icon name="highlight_off" @click="removeAnnotation(i, label)" /> {{labels[label].name}} <br>
                 </span>
               </span>
             </div>
@@ -37,18 +46,19 @@ export default {
   data () {
     return {
       documents: [],
+      currentA: [],
       document: null,
       tokens: null,
       start: null,
       end: null,
       labels: {
-        'label A': 'red',
-        'label B with long name': 'blue',
-        'label C': 'green'
+        2: { name: 'label A', color: 'red', id: 2 },
+        5: { name: 'label B', color: 'blue', id: 5 },
+        3: { name: 'label C', color: 'green', id: 3 }
       },
       annotations: [
-        [11, 15, ['label A']],
-        [26, 26, ['label B', 'label C']]
+        [11, 15, [2]],
+        [26, 26, [5, 3]]
       ],
       detailedAnnotations: [],
       // each element is in the format of [ type, [labels]] where type is B or I
@@ -97,15 +107,15 @@ export default {
     annotate (label) {
       for (let k = 0; k < this.annotations.length; k++) {
         if (this.annotations[k][0] === this.start) {
-          if (!this.annotations[k][2].includes(label)) {
-            this.annotations[k][2].push(label)
+          if (!this.annotations[k][2].includes(label.id)) {
+            this.annotations[k][2].push(label.id)
           } else {
             alert('already there')
           }
           return 0
         }
       }
-      const annotation = [this.start, this.end, [label]]
+      const annotation = [this.start, this.end, [label.id]]
       this.annotations.push(annotation)
       this.getDetailedAnnotations()
     },
@@ -172,8 +182,9 @@ export default {
 </script>
 <style>
 .B, .I {
-  text-decoration: underline red;
-  text-decoration-style: wavy;
+  /*text-decoration: underline red;*/
+  /*text-decoration-style: wavy;*/
+  border-bottom: blue solid 2px;
 }
 .label {
   position: relative;
@@ -191,5 +202,10 @@ export default {
 
 ::selection {
     background: none;
+}
+.label-window {
+  position: absolute;
+  margin-top: 26px;
+  z-index: 10;
 }
 </style>
