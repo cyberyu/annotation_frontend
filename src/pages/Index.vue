@@ -1,40 +1,46 @@
 <template>
   <q-page class="flex flex-center">
     <div class="row">
-      <div class=" col-2">
-        <div v-for="(label,i) in labels" :key="i" class="col-12" @click="annotate(label)">
-          {{label.name}}
-        </div>
-      </div>
+      <!--      <div class=" col-2">-->
+      <!--        <div v-for="(label,i) in labels" :key="i" class="col-12" @click="annotate(label)">-->
+      <!--          {{label.name}}-->
+      <!--        </div>-->
+      <!--      </div>-->
+      <div class="col-1"></div>
       <div class="col-10">
-        <div class="row justify-center col-12">
-          <q-btn color="primary" label="Get Data" class="justify-center" @click="fetchDocs()"/>
-        </div>
-          <div v-if="tokens" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
-            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
+        <div v-if="tokens" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
+          <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
               <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
                     v-on:mousedown="selectStart(i);mousePressed=true"
                     v-on:mouseup="selectEnd(i);mousePressed=false"
                     v-on:mouseover="mousePressed && select(i)">
-                {{token}}
+                {{ token }}
               </span>
-              <q-card v-if="selected[0]===i" class="label-window q-pa-sm" bordered>
-                <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
-                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)" @click="removeAnnotation(i, label.id)">
-                    <q-icon name="check_circle"></q-icon> {{label.name}}
-                  </div>
-                  <div v-else @click="annotate(label)">
-                    <q-icon name="radio_button_unchecked"></q-icon> {{label.name}}
-                  </div>
+            <q-card v-if="selected[0]===i" class="label-window q-pa-sm" bordered>
+              <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
+                <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
+                     @click="removeAnnotation(i, label.id)">
+                  <q-icon name="check_circle"></q-icon>
+                  {{ label.name }}
                 </div>
-              </q-card>
-              <span v-if="!(selected[0]===i && mousePressed==false) && detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
-                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
-                  <q-icon name="check_circle" @click="removeAnnotation(i, label)" /> {{labels[label].name}} <br>
+                <div v-else @click="annotate(label)">
+                  <q-icon name="radio_button_unchecked"></q-icon>
+                  {{ label.name }}
+                </div>
+              </div>
+            </q-card>
+            <span
+              v-if="!(selected[0]===i && mousePressed==false) && detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
+                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label"
+                      :style="`color:${labels[label].color}`">
+                  <q-icon name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
                 </span>
               </span>
-            </div>
           </div>
+        </div>
+        <div class="row justify-center col-12 q-mt-md">
+          <q-btn color="primary" label="Submit Annotations and Next" class="justify-center" @click="fetchDocs()"/>
+        </div>
       </div>
     </div>
   </q-page>
