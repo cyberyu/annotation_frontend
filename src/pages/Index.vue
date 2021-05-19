@@ -10,12 +10,12 @@
       <div class="col-10">
         <div v-if="tokens" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
           <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
-              <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
-                    v-on:mousedown="selectStart(i);mousePressed=true"
-                    v-on:mouseup="selectEnd(i);mousePressed=false"
-                    v-on:mouseover="mousePressed && select(i)">
-                {{ token }}
-              </span>
+            <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
+                  v-on:mousedown="selectStart(i);mousePressed=true"
+                  v-on:mouseup="selectEnd(i);mousePressed=false"
+                  v-on:mouseover="mousePressed && select(i)">
+              {{ token }}
+            </span>
             <q-card v-if="selected[0]===i" class="label-window q-pa-sm" bordered>
               <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                 <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
@@ -29,13 +29,11 @@
                 </div>
               </div>
             </q-card>
-            <span
-              v-if="!(selected[0]===i && mousePressed==false) && detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
-                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label"
-                      :style="`color:${labels[label].color}`">
-                  <q-icon name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
-                </span>
+            <span v-if="!(selected[0]===i && mousePressed==false) && detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
+              <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
+                <q-icon name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
               </span>
+            </span>
           </div>
         </div>
         <div class="row justify-center col-12 q-mt-md">
@@ -196,10 +194,11 @@ export default {
   border-bottom: blue solid 2px;
 }
 .B {
-  margin-left: 8px;
+  margin-left: 3px;
 }
 .label {
   position: relative;
+  margin-left: 3px;
 }
 .selected {
   border-bottom: red solid 2px;
