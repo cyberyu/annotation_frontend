@@ -12,7 +12,7 @@
         </div>
           <div v-if="tokens" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
-              <span class="q-px-xs" :class="getTokenClass(i)"
+              <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
                     v-on:mousedown="selectStart(i);mousePressed=true"
                     v-on:mouseup="selectEnd(i);mousePressed=false"
                     v-on:mouseover="mousePressed && select(i)">
@@ -180,6 +180,10 @@ export default {
 }
 </script>
 <style>
+.token {
+  font-size: 1.2em;
+  font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+}
 .B, .I {
   /*text-decoration: underline red;*/
   /*text-decoration-style: wavy;*/
@@ -189,22 +193,15 @@ export default {
   position: relative;
 }
 .selected {
-  border-top: #0d950d solid 1px;
   border-bottom: #0d950d solid 1px;
 }
-/*.selected:first-of-type {*/
-/*  border-left: #0d950d solid 1px;*/
-/*}*/
-/*.selected:last-child {*/
-/*  border-right: #0d950d solid 1px;*/
-/*}*/
 
 ::selection {
     background: none;
 }
 .label-window {
   position: absolute;
-  margin-top: 26px;
+  margin-top: 2.5em;
   z-index: 10;
 }
 </style>
