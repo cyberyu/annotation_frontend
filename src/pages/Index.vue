@@ -83,7 +83,10 @@ export default {
       }
     },
     select (i) {
-      this.selected.includes(i) ? this.selected.pop() : this.selected.push(i)
+      const min = Math.min(i, this.start)
+      const max = Math.max(i, this.start)
+      this.selected = [...Array(max - min + 1).keys()].map(k => k + min)
+      // this.selected.includes(i) ? this.selected.pop() : this.selected.push(i)
     },
     getTokenClass (i) {
       let cls
@@ -176,6 +179,7 @@ export default {
   position: relative;
 }
 .selected {
+  border-top: #0d950d solid 1px;
   border-bottom: #0d950d solid 1px;
 }
 /*.selected:first-of-type {*/
