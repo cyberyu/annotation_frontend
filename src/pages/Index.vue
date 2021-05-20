@@ -16,7 +16,7 @@
                   v-on:mouseover="mousePressed && select(i)">
               {{ token }}
             </span>
-            <q-card v-if="selected[0]===i" class="label-window q-pa-sm" bordered>
+            <q-card v-if="selected[0]===i" class="label-window q-pa-md" bordered>
               <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                 <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
                      @click="removeAnnotation(i, label.id)">
@@ -56,12 +56,12 @@ export default {
       end: null,
       labels: {
         2: { name: 'label A', color: 'red', id: 2 },
-        5: { name: 'label B', color: 'blue', id: 5 },
-        3: { name: 'label C', color: 'green', id: 3 }
+        3: { name: 'label B', color: 'green', id: 3 },
+        5: { name: 'label C', color: 'blue', id: 5 }
       },
       annotations: [
         [11, 15, [2]],
-        [26, 26, [5, 3]]
+        [27, 27, [5, 3]]
       ],
       detailedAnnotations: [],
       // each element is in the format of [ type, [labels]] where type is B or I
@@ -188,18 +188,22 @@ export default {
   font-size: 1.2em;
   font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 }
+
 .B, .I {
   /*text-decoration: underline red;*/
   /*text-decoration-style: wavy;*/
   border-bottom: blue solid 2px;
 }
+
 .B {
   margin-left: 3px;
 }
+
 .label {
   position: relative;
   margin-left: 3px;
 }
+
 .selected {
   border-bottom: red solid 2px;
 }
@@ -207,9 +211,11 @@ export default {
 ::selection {
     background: none;
 }
+
 .label-window {
   position: absolute;
-  margin-top: 2.5em;
+  margin-top: 1.8em;
+  font-size: 1.3em;
   z-index: 10;
 }
 </style>
