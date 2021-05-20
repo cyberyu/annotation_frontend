@@ -16,7 +16,7 @@
                   v-on:mouseover="mousePressed && select(i)">
               {{ token }}
             </span>
-            <q-card v-if="selected[0]===i" class="label-window q-pa-md" bordered>
+            <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered>
               <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                 <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
                      @click="removeAnnotation(i, label.id)">
