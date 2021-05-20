@@ -70,6 +70,7 @@ export default {
     }
   },
   mounted () {
+    this.fetchDocs()
   },
   methods: {
     selectStart (i) {
