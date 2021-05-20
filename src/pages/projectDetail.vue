@@ -17,7 +17,7 @@ export default {
   name: 'projectDetail',
   data () {
     return {
-      project: null
+      project: {}
     }
   },
   mounted () {
