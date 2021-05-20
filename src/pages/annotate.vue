@@ -37,7 +37,8 @@
           </div>
         </div>
         <div class="row justify-center col-12 q-mt-md">
-          <q-btn color="primary" label="Submit Annotations and Next" class="justify-center" @click="fetchDocs()"/>
+          <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center" @click="fetchDocs(prevURL)"/>
+          <q-btn color="primary" label="Submit and Next" :disable="!nextURL" class="justify-center q-ml-md" @click="fetchDocs(nextURL)"/>
         </div>
       </div>
     </div>
@@ -66,7 +67,9 @@ export default {
       detailedAnnotations: [],
       // each element is in the format of [ type, [labels]] where type is B or I
       selected: [],
-      mousePressed: false
+      mousePressed: false,
+      nextURL: null,
+      prevURL: null
     }
   },
   mounted () {
@@ -162,10 +165,15 @@ export default {
     compressAnnotations () {
       // convert detailed annotations into compressed (index-based) format
     },
-    fetchDocs () {
-      this.$axios.get(this.$hostname + '/documents/').then(response => {
+    fetchDocs (url) {
+      if (!url) {
+        url = this.$hostname + '/documents/'
+      }
+      this.$axios.get(url).then(response => {
         console.log('use host', this.$hostname)
         this.documents = response.data.results
+        this.nextURL = response.data.next
+        this.prevURL = response.data.previous
         this.document = this.documents[0]
         this.tokens = this.document.text.split(' ')
         this.getDetailedAnnotations()
