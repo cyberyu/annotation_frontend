@@ -1,5 +1,10 @@
 <template>
   <q-page class="flex flex-center">
+    <q-breadcrumbs>
+      <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
+      <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
+      <q-breadcrumbs-el label="Annotate" icon="navigation" />
+    </q-breadcrumbs>
     <div class="row">
       <!--      <div class=" col-2">-->
       <!--        <div v-for="(label,i) in labels" :key="i" class="col-12" @click="annotate(label)">-->
@@ -60,6 +65,7 @@
 <script>
 export default {
   name: 'Annotate',
+  props: ['project'],
   data () {
     return {
       documents: [],

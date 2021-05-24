@@ -2,7 +2,7 @@
   <q-page class="flex flex-center">
     <div class="row col-12">
       <div v-for="(proj,i) in projects" :key="i" class="col-12 q-pa-sm">
-        <router-link :to="{path: 'project', query: {id: proj.id}}"> {{proj.name}} </router-link>
+        <router-link :to="{name: 'project', params: {id: proj.id}}"> {{proj.name}} </router-link>
       </div>
     </div>
   </q-page>
