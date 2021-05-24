@@ -1,11 +1,13 @@
 <template>
-  <q-page class="flex flex-center">
-    <q-breadcrumbs>
-      <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
-      <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
-      <q-breadcrumbs-el label="Annotate" icon="navigation" />
-    </q-breadcrumbs>
-    <div class="row">
+  <q-page class="flex">
+    <div class="row self-start">
+      <q-breadcrumbs class="justify-start">
+        <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
+        <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
+        <q-breadcrumbs-el label="Annotate" icon="navigation" />
+      </q-breadcrumbs>
+    </div>
+    <div class="row self-start">
       <!--      <div class=" col-2">-->
       <!--        <div v-for="(label,i) in labels" :key="i" class="col-12" @click="annotate(label)">-->
       <!--          {{label.name}}-->
@@ -47,7 +49,7 @@
         </div>
       </div>
       <div class="col-2 summary">
-        <q-scroll-area style="height: 100%">
+        <q-scroll-area style="height: 100%" v-if="tokens">
           <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">
             <div class="summary-label" :style="`color: ${lLabels[label[0]].color}`">{{label[0]}} ({{label[1].length}}):</div>
             <ul class="summary-word">
