@@ -49,7 +49,7 @@
       <div class="col-2 summary">
         <q-scroll-area style="height: 100%">
           <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">
-            <div class="summary-label" :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}:</div>
+            <div class="summary-label" :style="`color: ${lLabels[label[0]].color}`">{{label[0]}} ({{label[1].length}}):</div>
             <ul class="summary-word">
               <li v-for="(w, j) in label[1]" :key="j">
                 {{w}}
