@@ -6,8 +6,8 @@
       <!--          {{label.name}}-->
       <!--        </div>-->
       <!--      </div>-->
-      <div class="col-1"></div>
-      <div class="col-10">
+      <div class="col-2"></div>
+      <div class="col-8">
         <div v-if="tokens" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
           <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
             <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
@@ -41,13 +41,25 @@
           <q-btn color="primary" label="Submit and Next" :disable="!nextURL" class="justify-center q-ml-md" @click="fetchDocs(nextURL)"/>
         </div>
       </div>
+      <div class="col-2 summary">
+        <q-scroll-area style="height: 100%">
+          <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">
+            <div class="summary-label" :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}:</div>
+            <ul class="summary-word">
+              <li v-for="(w, j) in label[1]" :key="j">
+                {{w}}
+              </li>
+            </ul>
+          </div>
+        </q-scroll-area>
+      </div>
     </div>
   </q-page>
 </template>
 
 <script>
 export default {
-  name: 'PageIndex',
+  name: 'Annotate',
   data () {
     return {
       documents: [],
@@ -78,16 +90,16 @@ export default {
   methods: {
     selectStart (i) {
       // if the token is already annotated
-      for (let k = 0; k < this.annotations.length; k++) {
-        const start = this.annotations[k][0]
-        const end = this.annotations[k][1]
-        if (i <= end && i >= start) {
-          this.start = start
-          this.end = end
-          this.selected = [...Array(end - start + 1).keys()].map(i => i + start)
-          return 0
-        }
-      }
+      // for (let k = 0; k < this.annotations.length; k++) {
+      //   const start = this.annotations[k][0]
+      //   const end = this.annotations[k][1]
+      //   if (i <= end && i >= start) {
+      //     this.start = start
+      //     this.end = end
+      //     this.selected = [...Array(end - start + 1).keys()].map(i => i + start)
+      //     return 0
+      //   }
+      // }
       // if not annotated, then it will be the start
       this.start = i
       this.selected = [i]
@@ -189,6 +201,30 @@ export default {
     highlight (text, start, end) {
       this.text = `${text.substring(0, start)}<span style="background-color: red">${text.substring(start, end)}</span>${text.substring(end)}`
     }
+  },
+  computed: {
+    categorizedAnnotations () {
+      const results = {}
+      this.annotations.forEach(a => {
+        a[2].forEach(n => {
+          const label = this.labels[n].name
+          const word = this.tokens.slice(a[0], a[1] + 1).join(' ')
+          if (results[label]) {
+            results[label].push(word)
+          } else {
+            results[label] = [word]
+          }
+        })
+      })
+      return results
+    },
+    lLabels () {
+      const results = {}
+      Object.entries(this.labels).forEach(a => {
+        results[a[1].name] = a[1]
+      })
+      return results
+    }
   }
 }
 </script>
@@ -226,5 +262,17 @@ export default {
   margin-top: 1.8em;
   font-size: 1.3em;
   z-index: 10;
+}
+
+.summary {
+  border-left: #a6b4cd solid 1px;
+  padding-left: 1em;
+}
+.summary-label {
+  font-weight: bolder;
+}
+.summary-word {
+  padding-left: 2em;
+  margin-block-start: 0px;
 }
 </style>
