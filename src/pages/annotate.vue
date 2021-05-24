@@ -51,10 +51,10 @@
       <div class="col-2 summary">
         <q-scroll-area style="height: 100%" v-if="tokens">
           <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">
-            <div class="summary-label" :style="`color: ${lLabels[label[0]].color}`">{{label[0]}} ({{label[1].length}}):</div>
+            <div class="summary-label" ><span :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}</span> ({{label[1].length}})</div>
             <ul class="summary-word">
               <li v-for="(w, j) in label[1]" :key="j">
-                {{w.index}}: {{w.word}}
+                {{w.index}} - {{w.word}}
               </li>
             </ul>
           </div>
