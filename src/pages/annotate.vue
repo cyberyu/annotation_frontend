@@ -54,7 +54,7 @@
             <div class="summary-label" :style="`color: ${lLabels[label[0]].color}`">{{label[0]}} ({{label[1].length}}):</div>
             <ul class="summary-word">
               <li v-for="(w, j) in label[1]" :key="j">
-                {{w}}
+                {{w.index}}: {{w.word}}
               </li>
             </ul>
           </div>
@@ -217,10 +217,11 @@ export default {
         a[2].forEach(n => {
           const label = this.labels[n].name
           const word = this.tokens.slice(a[0], a[1] + 1).join(' ')
+          const annotation = { index: [a[0], a[1]], word: word }
           if (results[label]) {
-            results[label].push(word)
+            results[label].push(annotation)
           } else {
-            results[label] = [word]
+            results[label] = [annotation]
           }
         })
       })
