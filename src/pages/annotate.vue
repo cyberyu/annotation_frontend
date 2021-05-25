@@ -45,7 +45,7 @@
         </div>
         <div class="row justify-center col-12 q-mt-md">
           <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center" @click="fetchDocs(prevURL)"/>
-          <q-btn color="primary" label="Submit and Next" :disable="!nextURL" class="justify-center q-ml-md" @click="saveAnnotations(); fetchDocs(nextURL)"/>
+          <q-btn color="primary" label="Submit and Next" class="justify-center q-ml-md" @click="saveAnnotations(); nextURL? fetchDocs(nextURL): $router.push('/')"/>
         </div>
       </div>
       <div class="col-2 summary">
@@ -80,6 +80,7 @@ export default {
         3: { name: 'label B', color: 'green', id: 3 },
         5: { name: 'label C', color: 'blue', id: 5 }
       },
+      annotations: [],
       // annotations: [
       //   [11, 15, [2]],
       //   [27, 27, [5, 3]]
@@ -201,7 +202,7 @@ export default {
       }
 
       this.$axios({ method: method, url: url, data: data }).then(response => {
-        console.log(response.data)
+        // console.log(response.data)
       })
     },
     fetchDocs (url) {
