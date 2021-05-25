@@ -45,7 +45,7 @@
         </div>
         <div class="row justify-center col-12 q-mt-md">
           <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center" @click="fetchDocs(prevURL)"/>
-          <q-btn color="primary" label="Submit and Next" :disable="!nextURL" class="justify-center q-ml-md" @click="fetchDocs(nextURL)"/>
+          <q-btn color="primary" label="Submit and Next" :disable="!nextURL" class="justify-center q-ml-md" @click="saveAnnotations(); fetchDocs(nextURL)"/>
         </div>
       </div>
       <div class="col-2 summary">
@@ -80,10 +80,10 @@ export default {
         3: { name: 'label B', color: 'green', id: 3 },
         5: { name: 'label C', color: 'blue', id: 5 }
       },
-      annotations: [
-        [11, 15, [2]],
-        [27, 27, [5, 3]]
-      ],
+      // annotations: [
+      //   [11, 15, [2]],
+      //   [27, 27, [5, 3]]
+      // ],
       detailedAnnotations: [],
       // each element is in the format of [ type, [labels]] where type is B or I
       selected: [],
@@ -162,9 +162,6 @@ export default {
     key (e) {
       console.log('key pressed: ', e.key)
     },
-    sortAnnotations () {
-      // sort annotations by word index position
-    },
     getDetailedAnnotations () {
       // convert annotations into detailed token based format
       this.detailedAnnotations = new Array(this.tokens.length)
@@ -185,6 +182,28 @@ export default {
     compressAnnotations () {
       // convert detailed annotations into compressed (index-based) format
     },
+    saveAnnotations () {
+      const data = {
+        document: this.document.id,
+        annotations: this.annotations
+      }
+      let url
+      let method
+      if (this.document.annotations.id) {
+        method = 'patch'
+        url = this.$hostname + '/annotations/' + this.document.annotations.id + '/'
+      } else {
+        method = 'post'
+        url = this.$hostname + '/annotations/'
+      }
+      if (this.annotations.length === 0) {
+        return
+      }
+
+      this.$axios({ method: method, url: url, data: data }).then(response => {
+        console.log(response.data)
+      })
+    },
     fetchDocs (url) {
       if (!url) {
         url = this.$hostname + '/documents/'
@@ -195,6 +214,7 @@ export default {
         this.nextURL = response.data.next
         this.prevURL = response.data.previous
         this.document = this.documents[0]
+        this.annotations = this.document.annotations.id ? this.document.annotations.annotations : []
         this.tokens = this.document.text.split(' ')
         this.getDetailedAnnotations()
       })
