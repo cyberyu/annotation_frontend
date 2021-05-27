@@ -75,11 +75,12 @@ export default {
       tokens: null,
       start: null,
       end: null,
-      labels: {
-        2: { name: 'label A', color: 'red', id: 2 },
-        3: { name: 'label B', color: 'green', id: 3 },
-        5: { name: 'label C', color: 'blue', id: 5 }
-      },
+      labels: {},
+      // labels: {
+      //   2: { name: 'label A', color: 'red', id: 2 },
+      //   3: { name: 'label B', color: 'green', id: 3 },
+      //   5: { name: 'label C', color: 'blue', id: 5 }
+      // },
       annotations: [],
       // annotations: [
       //   [11, 15, [2]],
@@ -95,8 +96,17 @@ export default {
   },
   mounted () {
     this.fetchDocs()
+    this.fetchLabels()
   },
   methods: {
+    fetchLabels () {
+      const url = this.$hostname + '/labels/'
+      this.$axios.get(url).then(response => {
+        response.data.forEach(a => {
+          this.labels[a.id] = a
+        })
+      })
+    },
     selectStart (i) {
       // if the token is already annotated
       // for (let k = 0; k < this.annotations.length; k++) {
