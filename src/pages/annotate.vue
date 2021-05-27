@@ -218,6 +218,8 @@ export default {
     fetchDocs (url) {
       if (!url) {
         url = this.$hostname + '/documents/'
+      } else {
+        url = process.env.PROD ? url.replace('http://', 'https://') : url
       }
       this.$axios.get(url).then(response => {
         console.log('use host', this.$hostname)
