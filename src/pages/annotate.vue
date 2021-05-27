@@ -210,7 +210,8 @@ export default {
         url = this.$hostname + '/annotations/'
       }
       if (this.annotations.length === 0) {
-        return
+        // todo: tell if modified
+        console.log(0)
       }
 
       this.$axios({ method: method, url: url, data: data }).then(response => {
