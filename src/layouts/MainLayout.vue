@@ -80,6 +80,8 @@ export default {
       leftDrawerOpen: false,
       essentialLinks: linksData
     }
+  },
+  mounted () {
   }
 }
 </script>
