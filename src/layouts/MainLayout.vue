@@ -2,20 +2,21 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="leftDrawerOpen = !leftDrawerOpen" />
+        <q-btn flat dense round icon="home" aria-label="Menu" @click="$router.push('/')" />
 
-        <q-toolbar-title> Vanguard NLP Annotation </q-toolbar-title>
+        <q-toolbar-title> <router-link to="/" class="main-link">Vanguard NLP Annotation</router-link> </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+<!--        <div>Quasar v{{ $q.version }}</div>-->
+        <div> Welcome, <strong>username!</strong></div>
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered content-class="bg-grey-1" >
-      <q-list>
-        <q-item-label header class="text-grey-8" > Essential Links </q-item-label>
-        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
-      </q-list>
-    </q-drawer>
+<!--    <q-drawer v-model="leftDrawerOpen" show-if-above bordered content-class="bg-grey-1" >-->
+<!--      <q-list>-->
+<!--        <q-item-label header class="text-grey-8" > Essential Links </q-item-label>-->
+<!--        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />-->
+<!--      </q-list>-->
+<!--    </q-drawer>-->
 
     <q-page-container>
       <router-view />
@@ -24,7 +25,7 @@
 </template>
 
 <script>
-import EssentialLink from 'components/EssentialLink.vue'
+// import EssentialLink from 'components/EssentialLink.vue'
 
 const linksData = [
   {
@@ -73,12 +74,21 @@ const linksData = [
 
 export default {
   name: 'MainLayout',
-  components: { EssentialLink },
+  // components: { EssentialLink },
   data () {
     return {
       leftDrawerOpen: false,
       essentialLinks: linksData
     }
+  },
+  mounted () {
   }
 }
 </script>
+
+<style>
+.main-link {
+  text-decoration: none;
+  color: white;
+}
+</style>

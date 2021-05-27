@@ -4,7 +4,9 @@ const routes = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Index.vue') }
+      { name: 'projects', path: '', component: () => import('pages/projectList') },
+      { name: 'project', path: '/project/:id', component: () => import('pages/projectDetail') },
+      { name: 'annotate', path: '/annotate/:id', props: true, component: () => import('pages/annotate.vue') }
     ]
   },
 
