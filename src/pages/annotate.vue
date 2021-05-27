@@ -15,7 +15,7 @@
       <!--      </div>-->
       <div class="col-2"></div>
       <div class="col-8">
-        <div v-if="tokens" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
+        <div v-if="tokens && doneFetchLabels" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
           <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
             <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
                   v-on:mousedown="selectStart(i);mousePressed=true"
@@ -76,6 +76,7 @@ export default {
       start: null,
       end: null,
       labels: {},
+      doneFetchLabels: false,
       // labels: {
       //   2: { name: 'label A', color: 'red', id: 2 },
       //   3: { name: 'label B', color: 'green', id: 3 },
@@ -95,8 +96,8 @@ export default {
     }
   },
   mounted () {
-    this.fetchDocs()
     this.fetchLabels()
+    this.fetchDocs()
   },
   methods: {
     fetchLabels () {
@@ -105,6 +106,7 @@ export default {
         response.data.forEach(a => {
           this.labels[a.id] = a
         })
+        this.doneFetchLabels = true
       })
     },
     selectStart (i) {
@@ -219,7 +221,10 @@ export default {
       if (!url) {
         url = this.$hostname + '/documents/'
       } else {
-        url = process.env.PROD ? url.replace('http://', 'https://') : url
+        const n = url.split('/').length
+        url = this.$hostname + '/' + url.split('/').splice(n - 2, n).join('/')
+        console.log('hostname', this.$hostname)
+        console.log('next url', url)
       }
       this.$axios.get(url).then(response => {
         console.log('use host', this.$hostname)
