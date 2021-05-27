@@ -5,9 +5,10 @@
         <q-btn flat dense round icon="home" aria-label="Menu" @click="$router.push('/')" />
 
         <q-toolbar-title> <router-link to="/" class="main-link">Vanguard NLP Annotation</router-link> </q-toolbar-title>
-
-<!--        <div>Quasar v{{ $q.version }}</div>-->
-        <div> Welcome, <strong>username!</strong></div>
+        <q-btn-dropdown color="primary" label="Welcome, User">
+          <div class="q-px-md q-py-sm"><a :href="$hostname+'/admin/'" target="_blank">admin</a> </div>
+          <div class="q-px-md q-py-sm"> Profile</div>
+        </q-btn-dropdown>
       </q-toolbar>
     </q-header>
 
