@@ -53,8 +53,8 @@
           <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">
             <div class="summary-label" ><span :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}</span> ({{label[1].length}})</div>
             <ul class="summary-word">
-              <li v-for="(w, j) in label[1]" :key="j" @click="scrollTo(w.index)">
-                {{w.index}} - {{w.word}}
+              <li v-for="(w, j) in label[1]" :key="j">
+                <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>
               </li>
             </ul>
           </div>
@@ -101,9 +101,11 @@ export default {
     this.fetchDocs()
   },
   methods: {
-    scrollTo (indx) {
+    scrollTo (label) {
+      console.log(label)
+      const indx = label.index
       const id = `t-${indx[0]}`
-      this.highlighted = [indx[0]]
+      this.highlighted = Array(indx[1] - indx[0] + 1).fill(indx[0]).map((x, y) => x + y)
       document.getElementById(id).scrollIntoView()
     },
     fetchLabels () {
