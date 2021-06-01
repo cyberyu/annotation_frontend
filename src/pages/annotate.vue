@@ -245,6 +245,11 @@ export default {
         this.document = this.documents[0]
         this.annotations = this.document.annotations.id ? this.document.annotations.annotations : []
         this.tokens = this.document.text.split(' ')
+        // this.tokens = []
+        // this.document.text.split('\n').forEach(s => {
+        //   this.tokens.push(...s.split(' '))
+        //   this.tokens.push('\n')
+        // })
         this.getDetailedAnnotations()
       })
     },
