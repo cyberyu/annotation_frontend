@@ -53,7 +53,7 @@
           <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">
             <div class="summary-label" ><span :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}</span> ({{label[1].length}})</div>
             <ul class="summary-word">
-              <li v-for="(w, j) in label[1]" :key="j">
+              <li v-for="(w, j) in label[1]" :key="j" @click="scrollTo(w.index)">
                 {{w.index}} - {{w.word}}
               </li>
             </ul>
@@ -90,6 +90,7 @@ export default {
       detailedAnnotations: [],
       // each element is in the format of [ type, [labels]] where type is B or I
       selected: [],
+      highlighted: [],
       mousePressed: false,
       nextURL: null,
       prevURL: null
@@ -100,6 +101,11 @@ export default {
     this.fetchDocs()
   },
   methods: {
+    scrollTo (indx) {
+      const id = `t-${indx[0]}`
+      this.highlighted = [indx[0]]
+      document.getElementById(id).scrollIntoView()
+    },
     fetchLabels () {
       const url = this.$hostname + '/labels/'
       this.$axios.get(url).then(response => {
@@ -142,6 +148,8 @@ export default {
       let cls
       cls = this.detailedAnnotations[i] ? this.detailedAnnotations[i][0] : ''
       cls += this.selected.includes(i) ? ' selected' : ''
+      cls += this.highlighted.includes(i) ? ' highlight' : ''
+
       return cls
     },
     annotate (label) {
@@ -273,6 +281,11 @@ export default {
       })
       return results
     }
+  },
+  watch: {
+    selected () {
+      this.highlighted = []
+    }
   }
 }
 </script>
@@ -299,6 +312,10 @@ export default {
 
 .selected {
   border-bottom: red solid 2px;
+}
+
+.highlight {
+  background-color: red;
 }
 
 ::selection {
