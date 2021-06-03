@@ -14,7 +14,7 @@
       <!--        </div>-->
       <!--      </div>-->
       <div class="col-2">
-        <ul>
+        <ul class="fixed">
           <li v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`"> {{ label.name }} </li>
         </ul>
       </div>
@@ -47,20 +47,23 @@
             </span>
           </div>
         </div>
-        <div class="row justify-center col-12 q-mt-md">
+        <div class="row justify-center col-12 q-mt-md q-mb-lg">
           <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center" @click="fetchDocs(prevURL)"/>
-          <q-btn color="primary" label="Submit and Next" class="justify-center q-ml-md" @click="saveAnnotations(); nextURL? fetchDocs(nextURL): $router.push('/')"/>
+          <q-btn color="primary" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()"/>
+          <q-btn color="primary" label="Next" class="justify-center q-ml-md" @click="nextURL? fetchDocs(nextURL): $router.push('/')"/>
         </div>
       </div>
       <div class="col-2 summary">
         <q-scroll-area style="height: 100%" v-if="tokens">
-          <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">
-            <div class="summary-label" ><span :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}</span> ({{label[1].length}})</div>
-            <ul class="summary-word">
-              <li v-for="(w, j) in label[1]" :key="j">
-                <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>
-              </li>
-            </ul>
+          <div >
+            <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">
+              <div class="summary-label" ><span :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}</span> ({{label[1].length}})</div>
+              <ul class="summary-word">
+                <li v-for="(w, j) in label[1]" :key="j">
+                  <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </q-scroll-area>
       </div>
