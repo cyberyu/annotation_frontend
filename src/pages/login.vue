@@ -7,7 +7,7 @@
       <q-form v-if="mode==='login'" @submit="login" class="q-gutter-md">
         <q-input filled v-model="username" label="username" hint="Usually your Vanguard username"
                  lazy-rules :rules="[ val => val && val.length > 0 || 'Please type something']"/>
-        <q-input filled v-model="password" label="password" type="password"
+        <q-input filled v-model="password" label="password" type="password" :error-message="errorMsg" :error="error"
                  lazy-rules :rules="[ val => val && val.length > 0 || 'Please type something']"/>
 
         <div class="column items-center q-mt-xs">
@@ -48,7 +48,9 @@ export default {
       password1: null,
       password2: null,
       mode: 'login',
-      notLoggedIn: true
+      notLoggedIn: true,
+      error: false,
+      errorMsg: null
     }
   },
   mounted () {
@@ -60,7 +62,12 @@ export default {
         username: this.username,
         password: this.password
       }
-      this.$store.dispatch('auth/login', data)
+      this.$store.dispatch('auth/login', data).then(resp => {
+        console.log('...', resp.data.detail)
+      }).catch(err => {
+        this.error = true
+        this.errorMsg = err.response.data.detail
+      })
     },
     logout () {
       this.$store.dispatch('auth/logout')
@@ -80,6 +87,12 @@ export default {
       this.password1 = null
       this.password2 = null
       this.username = null
+    },
+    password () {
+      this.error = false
+    },
+    username () {
+      this.error = false
     }
   }
 }
