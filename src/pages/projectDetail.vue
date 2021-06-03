@@ -13,7 +13,7 @@
         {{ project.description }}
       </div>
       <div class="row justify-center col-12 q-mt-md">
-        <q-btn color="primary" @click="$router.push({ name: 'annotate', params: {project: project}})">
+        <q-btn color="primary" @click="$router.push({ name: 'annotate', params: {project: project}})" :disable="project.number_of_docs===0">
           Annotate It
         </q-btn>
       </div>

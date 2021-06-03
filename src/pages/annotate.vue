@@ -230,10 +230,10 @@ export default {
     },
     fetchDocs (url) {
       if (!url) {
-        url = this.$hostname + '/documents/'
+        url = '/documents/' + '?project=' + this.project.id
       } else {
         const n = url.split('/').length
-        url = this.$hostname + '/' + url.split('/').splice(n - 2, n).join('/')
+        url = '/' + url.split('/').splice(n - 2, n).join('/')
         console.log('hostname', this.$hostname)
         console.log('next url', url)
       }

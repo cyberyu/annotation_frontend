@@ -5,10 +5,10 @@
         <q-btn flat dense round icon="home" aria-label="Menu" @click="$router.push('/')" />
 
         <q-toolbar-title> <router-link to="/" class="main-link">Vanguard NLP Annotation</router-link> </q-toolbar-title>
-        <q-btn-dropdown color="primary" label="Welcome, User">
+        <q-btn-dropdown v-if="isLoggedIn" color="primary" :label="`Welcome ${user.username}`">
           <div class="q-px-md q-py-sm"><a :href="$hostname+'/admin/'" target="_blank">admin</a> </div>
-          <div class="q-px-md q-py-sm" @click="logout()">logout</div>
-          <div class="q-px-md q-py-sm"> Profile</div>
+          <div class="q-px-md q-py-sm" @click="logout()" style="color:blue">logout</div>
+<!--          <div class="q-px-md q-py-sm"> My profile</div>-->
         </q-btn-dropdown>
       </q-toolbar>
     </q-header>
@@ -50,6 +50,9 @@ export default {
   computed: {
     isLoggedIn () {
       return this.$store.getters['auth/authenticated']
+    },
+    user () {
+      return this.$store.getters['auth/user']
     }
   }
 }
