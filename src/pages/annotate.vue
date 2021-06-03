@@ -13,7 +13,11 @@
       <!--          {{label.name}}-->
       <!--        </div>-->
       <!--      </div>-->
-      <div class="col-2"></div>
+      <div class="col-2">
+        <ul>
+          <li v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`"> {{ label.name }} </li>
+        </ul>
+      </div>
       <div class="col-8">
         <div v-if="tokens && doneFetchLabels" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
           <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
