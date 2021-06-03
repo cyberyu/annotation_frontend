@@ -3,19 +3,15 @@ import { Cookies } from 'quasar'
 export function register ({ commit }, user) {
   return new Promise((resolve, reject) => {
     commit('authRequest')
-    this.$axios.post('/rest-auth/registration/', user)
+    this._vm.$axios.post('/rest-auth/registration/', user)
       .then(resp => {
-        // const token = resp.data.token
         const user = resp.data.user
-        // localStorage.setItem('token', token)
         localStorage.setItem('user', JSON.stringify(user))
-        // this.$axios.defaults.headers.common['Authorization'] = 'JWT ' + token
         commit('authSuccess', resp.data)
         resolve(resp)
       })
       .catch(err => {
         commit('authError', err)
-        // localStorage.removeItem('token')
         localStorage.removeItem('user')
         reject(err)
       })
@@ -32,7 +28,7 @@ export function setCSRFToken ({ commit }) {
         resolve(resp)
       }
     }).catch(err => {
-      commit('auth_error')
+      commit('authError')
       localStorage.removeItem('csrftoken')
       reject(err)
     })
@@ -61,12 +57,10 @@ export function login ({ commit, dispatch }, user) {
 
 export function logout ({ commit }) {
   return new Promise((resolve) => {
-    this.$axios.post('/rest-auth/logout/', {})
+    this._vm.$axios.post('/rest-auth/logout/', {})
     commit('logout')
-    // localStorage.removeItem('token')
     localStorage.removeItem('user')
     localStorage.removeItem('csrftoken')
-    // delete this.$axios.defaults.headers.common['Authorization']
     resolve()
   })
 }

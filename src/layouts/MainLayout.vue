@@ -44,7 +44,7 @@ export default {
   },
   methods: {
     logout () {
-      this.$axios.post(this.$hostname + '/account/logout/')
+      this.$store.dispatch('auth/logout')
     }
   },
   computed: {

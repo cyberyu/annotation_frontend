@@ -52,7 +52,7 @@ export default {
     }
   },
   mounted () {
-    this.$axios.get(this.$hostname + '/account/login-set-cookie/')
+    this.$store.dispatch('auth/setCSRFToken')
   },
   methods: {
     login () {
@@ -61,15 +61,9 @@ export default {
         password: this.password
       }
       this.$store.dispatch('auth/login', data)
-      // this.$axios.post(this.$hostname + '/account/login/', data).then(resp => {
-      //   if (resp.status === 200) {
-      //     this.notLoggedIn = false
-      //     localStorage.setItem('username', resp.data)
-      //   }
-      // })
     },
     logout () {
-      this.$axios.post(this.$hostname + '/account/logout/')
+      this.$store.dispatch('auth/logout')
     },
     register () {
       const data = {
@@ -77,7 +71,7 @@ export default {
         password1: this.password1,
         password2: this.password2
       }
-      this.$axios.post(this.$hostname + '/rest-auth/registration/', data)
+      this.$store.dispatch('auth/register', data)
     }
   },
   watch: {

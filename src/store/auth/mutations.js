@@ -8,6 +8,9 @@ export function authSuccess (state, data) {
   state.user = data
 }
 
+export function csrftoken (state) {
+}
+
 export function authError (state) {
   state.status = 'error'
 }
