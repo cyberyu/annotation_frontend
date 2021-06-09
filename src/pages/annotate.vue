@@ -27,25 +27,49 @@
             <q-tab-panels v-model="tab" animated>
               <q-tab-panel name="models">
                 <div v-for="(m,i) in project.vmodels" :key="i" class="q-pa-sm">
-                  <q-btn :label="m.name" class="bg-primary" text-color="white">
+                  <q-btn :loading="loading && currentModel===m.id && tab==='models'"
+                         :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
+                    <template v-slot:loading>
+                      <q-spinner-hourglass class="on-left" />
+                      Loading...
+                    </template>
                     <q-tooltip content-class="bg-indigo" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                   </q-btn>
+                </div>
+                <div v-if="project.vmodels.length===0">
+                  No model defined for this project yet
                 </div>
               </q-tab-panel>
 
               <q-tab-panel name="rules">
                 <div v-for="(m,i) in project.rules" :key="i" class="q-pa-sm">
-                  <q-btn :label="m.name" class="bg-primary" text-color="white">
+                  <q-btn :loading="loading && currentModel===m.id && tab==='rules'"
+                    :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
+                    <template v-slot:loading>
+                      <q-spinner-hourglass class="on-left" />
+                      Loading...
+                    </template>
                     <q-tooltip content-class="bg-indigo" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                   </q-btn>
+                </div>
+                <div v-if="project.rules.length===0">
+                  No rule defined for this project yet
                 </div>
               </q-tab-panel>
 
               <q-tab-panel name="dicts">
                 <div v-for="(m,i) in project.dicts" :key="i" class="q-pa-sm">
-                  <q-btn :label="m.name" class="bg-primary" text-color="white">
+                  <q-btn :loading="loading && currentModel===m.id && tab==='dicts'"
+                    :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
+                    <template v-slot:loading>
+                      <q-spinner-hourglass class="on-left" />
+                      Loading...
+                    </template>
                       <q-tooltip content-class="bg-indigo" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                   </q-btn>
+                </div>
+                <div v-if="project.dicts.length===0">
+                  No dictionary defined for this project yet
                 </div>
               </q-tab-panel>
             </q-tab-panels>
@@ -57,55 +81,66 @@
       <div class="col-6">
         <q-card>
           <q-card-actions class="bg-accent">
-            <q-btn v-for="(label,k) in labels" :key="k" outline color="white"> {{ label.name }} </q-btn>
+            <q-btn v-for="(label,k) in labels" :key="k" outline color="white"> {{ label.name }}</q-btn>
           </q-card-actions>
-        <div v-if="tokens && doneFetchLabels" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
-          <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
+          <div v-if="tokens && doneFetchLabels" class="select-box q-pa-sm" @keyup="key" tabindex="0"
+               @focusout="selected=[]">
+            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
             <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
                   v-on:mousedown="selectStart(i);mousePressed=true"
                   v-on:mouseup="selectEnd(i);mousePressed=false"
                   v-on:mouseover="mousePressed && select(i)">
               {{ token }}
             </span>
-            <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered>
-              <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
-                <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
-                     @click="removeAnnotation(i, label.id)">
-                  <q-icon name="check_circle"></q-icon>
-                  {{ label.name }}
+              <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered>
+                <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
+                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
+                       @click="removeAnnotation(i, label.id)">
+                    <q-icon name="check_circle"></q-icon>
+                    {{ label.name }}
+                  </div>
+                  <div v-else @click="annotate(label)">
+                    <q-icon name="radio_button_unchecked"></q-icon>
+                    {{ label.name }}
+                  </div>
                 </div>
-                <div v-else @click="annotate(label)">
-                  <q-icon name="radio_button_unchecked"></q-icon>
-                  {{ label.name }}
-                </div>
-              </div>
-            </q-card>
-            <span v-if="!(selected[0]===i && mousePressed==false) && detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
-              <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
+              </q-card>
+              <span
+                v-if="!(selected[0]===i && mousePressed==false) && detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
+              <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label"
+                    :style="`color:${labels[label].color}`">
                 <q-icon name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
               </span>
             </span>
+            </div>
           </div>
-        </div>
           <q-card-actions class="justify-center">
-            <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center" @click="fetchDocs(prevURL)" style="width: 100px"/>
+            <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
+                   @click="fetchDocs(prevURL)" style="width: 100px"/>
             <q-btn color="primary" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()"/>
-            <q-btn color="primary" label="Next" class="justify-center q-ml-md" @click="nextURL? fetchDocs(nextURL): $router.push('/')" style="width: 100px"/>
+            <q-btn color="primary" label="Next" class="justify-center q-ml-md"
+                   @click="nextURL? fetchDocs(nextURL): $router.push('/')" style="width: 100px"/>
           </q-card-actions>
         </q-card>
       </div>
+
       <div class="col-2 summary q-mb-none">
-        <q-list bordered class="rounded-borders bg-white" v-if="tokens">
-          <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
-                            expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`"
-                            :label="`${label[0]} (${label[1].length})`">
-            <div class="summary-word q-pb-sm">
-              <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
-                <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>
-              </li>
-            </div>
-          </q-expansion-item>
-        </q-list>
+        <q-card>
+          <q-card-actions class="bg-accent" :style="'color: white'">
+           ANNOTATIONS
+          </q-card-actions>
+          <q-list bordered class="rounded-borders bg-white" v-if="tokens">
+            <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
+                              expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`"
+                              :label="`${label[0]} (${label[1].length})`">
+              <div class="summary-word q-pb-sm">
+                <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
+                  <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>
+                </li>
+              </div>
+            </q-expansion-item>
+          </q-list>
+        </q-card>
 <!--        <q-scroll-area style="height: 100%" v-if="tokens">-->
 <!--          <div >-->
 <!--            <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">-->
@@ -153,7 +188,9 @@ export default {
       mousePressed: false,
       nextURL: null,
       prevURL: null,
-      tab: 'models'
+      tab: 'models',
+      loading: false,
+      currentModel: null
     }
   },
   mounted () {
@@ -161,6 +198,10 @@ export default {
     this.fetchDocs()
   },
   methods: {
+    executeModel (id) {
+      this.currentModel = id
+      this.loading = true
+    },
     scrollTo (label) {
       console.log(label)
       const indx = label.index
