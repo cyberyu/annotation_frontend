@@ -33,7 +33,7 @@
                       <q-spinner-hourglass class="on-left" />
                       Loading...
                     </template>
-                    <q-tooltip content-class="bg-indigo" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
+                    <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                   </q-btn>
                 </div>
                 <div v-if="project.vmodels.length===0">
@@ -49,7 +49,7 @@
                       <q-spinner-hourglass class="on-left" />
                       Loading...
                     </template>
-                    <q-tooltip content-class="bg-indigo" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
+                    <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                   </q-btn>
                 </div>
                 <div v-if="project.rules.length===0">
@@ -65,7 +65,7 @@
                       <q-spinner-hourglass class="on-left" />
                       Loading...
                     </template>
-                      <q-tooltip content-class="bg-indigo" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
+                      <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                   </q-btn>
                 </div>
                 <div v-if="project.dicts.length===0">
