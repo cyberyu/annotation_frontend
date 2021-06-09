@@ -22,7 +22,7 @@ export default {
   },
   methods: {
     fetchProjects () {
-      this.$axios.get('/projects/').then(response => {
+      this.$axios.get('/api/projects/').then(response => {
         this.projects = response.data.results
       })
     }

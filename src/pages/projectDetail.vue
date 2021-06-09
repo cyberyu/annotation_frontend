@@ -36,7 +36,7 @@ export default {
   },
   methods: {
     fetchProject (id) {
-      this.$axios.get(this.$hostname + `/projects/${id}/`).then(response => {
+      this.$axios.get(this.$hostname + `/api/projects/${id}/`).then(response => {
         this.project = response.data
       })
     }

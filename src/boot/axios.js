@@ -1,10 +1,6 @@
 import axios from 'axios'
 import Vue from 'vue'
 
-axios.defaults.xsrfHeaderName = 'X-CSRFToken'
-axios.defaults.xsrfCookieName = 'csrftoken'
-axios.defaults.withCredentials = true
-
 if (process.env.PROD === true) {
   Vue.prototype.$hostname = window.location.origin + window.location.pathname
 } else {
@@ -14,3 +10,7 @@ if (process.env.PROD === true) {
 Vue.prototype.$axios = axios.create({
   baseURL: Vue.prototype.$hostname
 })
+
+Vue.prototype.$axios.defaults.xsrfHeaderName = 'X-CSRFToken'
+Vue.prototype.$axios.defaults.xsrfCookieName = 'csrftoken'
+Vue.prototype.$axios.defaults.withCredentials = true

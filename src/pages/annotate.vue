@@ -116,7 +116,7 @@ export default {
       document.getElementById(id).scrollIntoView()
     },
     fetchLabels () {
-      const url = this.$hostname + '/labels/'
+      const url = this.$hostname + '/api/labels/'
       this.$axios.get(url).then(response => {
         response.data.forEach(a => {
           this.labels[a.id] = a
@@ -221,10 +221,10 @@ export default {
       let method
       if (this.document.annotations.id) {
         method = 'patch'
-        url = this.$hostname + '/annotations/' + this.document.annotations.id + '/'
+        url = this.$hostname + '/api/annotations/' + this.document.annotations.id + '/'
       } else {
         method = 'post'
-        url = this.$hostname + '/annotations/'
+        url = this.$hostname + '/api/annotations/'
       }
       if (this.annotations.length === 0) {
         // todo: tell if modified
@@ -237,7 +237,7 @@ export default {
     },
     fetchDocs (url) {
       if (!url) {
-        url = '/documents/' + '?project=' + this.project.id
+        url = '/api/documents/' + '?project=' + this.project.id
       } else {
         const n = url.split('/').length
         url = '/' + url.split('/').splice(n - 2, n).join('/')
