@@ -1,5 +1,5 @@
 <template>
-  <q-page class="flex">
+  <q-page class="flex" style="background-color: #f6f6f6">
     <div class="row self-start">
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
@@ -7,18 +7,58 @@
         <q-breadcrumbs-el label="Annotate" icon="navigation" />
       </q-breadcrumbs>
     </div>
-    <div class="row self-start">
+    <div class="row self-start q-pt-xl">
       <!--      <div class=" col-2">-->
       <!--        <div v-for="(label,i) in labels" :key="i" class="col-12" @click="annotate(label)">-->
       <!--          {{label.name}}-->
       <!--        </div>-->
       <!--      </div>-->
-      <div class="col-2">
-        <ul class="fixed">
-          <li v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`"> {{ label.name }} </li>
-        </ul>
+      <div class="col-3">
+        <div class="justify-end  q-pr-md row">
+          <q-card class="col-8 ">
+            <q-tabs v-model="tab" dense class="text-grey" active-color="primary" indicator-color="primary" align="justify" narrow-indicator>
+              <q-tab name="models" label="Models"/>
+              <q-tab name="rules" label="Rules"/>
+              <q-tab name="dicts" label="Dictionaries"/>
+            </q-tabs>
+
+            <q-separator/>
+
+            <q-tab-panels v-model="tab" animated>
+              <q-tab-panel name="models">
+                <div v-for="(m,i) in project.vmodels" :key="i" class="q-pa-sm">
+                  <q-btn :label="m.name" class="bg-primary" text-color="white">
+                    <q-tooltip content-class="bg-indigo" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
+                  </q-btn>
+                </div>
+              </q-tab-panel>
+
+              <q-tab-panel name="rules">
+                <div v-for="(m,i) in project.rules" :key="i" class="q-pa-sm">
+                  <q-btn :label="m.name" class="bg-primary" text-color="white">
+                    <q-tooltip content-class="bg-indigo" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
+                  </q-btn>
+                </div>
+              </q-tab-panel>
+
+              <q-tab-panel name="dicts">
+                <div v-for="(m,i) in project.dicts" :key="i" class="q-pa-sm">
+                  <q-btn :label="m.name" class="bg-primary" text-color="white">
+                      <q-tooltip content-class="bg-indigo" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
+                  </q-btn>
+                </div>
+              </q-tab-panel>
+            </q-tab-panels>
+          </q-card>
+        </div>
+
       </div>
-      <div class="col-8">
+
+      <div class="col-6">
+        <q-card>
+          <q-card-actions class="bg-accent">
+            <q-btn v-for="(label,k) in labels" :key="k" outline color="white"> {{ label.name }} </q-btn>
+          </q-card-actions>
         <div v-if="tokens && doneFetchLabels" class="select-box" @keyup="key" tabindex="0" @focusout="selected=[]">
           <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
             <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
@@ -47,25 +87,37 @@
             </span>
           </div>
         </div>
-        <div class="row justify-center col-12 q-mt-md q-mb-lg">
-          <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center" @click="fetchDocs(prevURL)"/>
-          <q-btn color="primary" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()"/>
-          <q-btn color="primary" label="Next" class="justify-center q-ml-md" @click="nextURL? fetchDocs(nextURL): $router.push('/')"/>
-        </div>
+          <q-card-actions class="justify-center">
+            <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center" @click="fetchDocs(prevURL)" style="width: 100px"/>
+            <q-btn color="primary" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()"/>
+            <q-btn color="primary" label="Next" class="justify-center q-ml-md" @click="nextURL? fetchDocs(nextURL): $router.push('/')" style="width: 100px"/>
+          </q-card-actions>
+        </q-card>
       </div>
-      <div class="col-2 summary">
-        <q-scroll-area style="height: 100%" v-if="tokens">
-          <div >
-            <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">
-              <div class="summary-label" ><span :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}</span> ({{label[1].length}})</div>
-              <ul class="summary-word">
-                <li v-for="(w, j) in label[1]" :key="j">
-                  <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>
-                </li>
-              </ul>
+      <div class="col-2 summary q-mb-none">
+        <q-list bordered class="rounded-borders bg-white" v-if="tokens">
+          <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
+                            expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`"
+                            :label="`${label[0]} (${label[1].length})`">
+            <div class="summary-word q-pb-sm">
+              <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
+                <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>
+              </li>
             </div>
-          </div>
-        </q-scroll-area>
+          </q-expansion-item>
+        </q-list>
+<!--        <q-scroll-area style="height: 100%" v-if="tokens">-->
+<!--          <div >-->
+<!--            <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">-->
+<!--              <div class="summary-label" ><span :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}</span> ({{label[1].length}})</div>-->
+<!--              <ul class="summary-word">-->
+<!--                <li v-for="(w, j) in label[1]" :key="j">-->
+<!--                  <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>-->
+<!--                </li>-->
+<!--              </ul>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </q-scroll-area>-->
       </div>
     </div>
   </q-page>
@@ -100,7 +152,8 @@ export default {
       highlighted: [],
       mousePressed: false,
       nextURL: null,
-      prevURL: null
+      prevURL: null,
+      tab: 'models'
     }
   },
   mounted () {
@@ -240,7 +293,7 @@ export default {
         url = '/api/documents/' + '?project=' + this.project.id
       } else {
         const n = url.split('/').length
-        url = '/' + url.split('/').splice(n - 2, n).join('/')
+        url = '/' + url.split('/').splice(n - 3, n).join('/')
         console.log('hostname', this.$hostname)
         console.log('next url', url)
       }
@@ -344,7 +397,7 @@ export default {
 }
 
 .summary {
-  border-left: #a6b4cd solid 1px;
+  /*border-left: #a6b4cd solid 1px;*/
   padding-left: 1em;
 }
 .summary-label {
