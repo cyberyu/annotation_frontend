@@ -1,5 +1,5 @@
 <template>
-  <q-page class="flex" style="background-color: #f6f6f6">
+  <q-page class="" style="background-color: #f6f6f6">
     <div class="row self-start">
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
@@ -7,7 +7,7 @@
         <q-breadcrumbs-el label="Annotate" icon="navigation" />
       </q-breadcrumbs>
     </div>
-    <div class="row self-start q-pt-xl">
+    <div class="row self-start q-pt-lg">
       <!--      <div class=" col-2">-->
       <!--        <div v-for="(label,i) in labels" :key="i" class="col-12" @click="annotate(label)">-->
       <!--          {{label.name}}-->
@@ -78,11 +78,11 @@
 
       </div>
 
-      <div class="col-6">
-        <q-card>
-          <q-card-actions class="bg-accent">
+      <div class="col-6 bg-white">
+          <q-card-actions class="bg-accent annotation-header">
             <q-btn v-for="(label,k) in labels" :key="k" outline color="white"> {{ label.name }}</q-btn>
           </q-card-actions>
+        <q-scroll-area style="height: calc(100vh - 350px); display: flex">
           <div v-if="tokens && doneFetchLabels" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]">
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
@@ -114,19 +114,19 @@
             </span>
             </div>
           </div>
+        </q-scroll-area>
           <q-card-actions class="justify-center">
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
                    @click="fetchDocs(prevURL)" style="width: 100px"/>
-            <q-btn color="primary" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()"/>
+            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()" style="width: 100px"/>
             <q-btn color="primary" label="Next" class="justify-center q-ml-md"
                    @click="nextURL? fetchDocs(nextURL): $router.push('/')" style="width: 100px"/>
           </q-card-actions>
-        </q-card>
       </div>
 
       <div class="col-2 summary q-mb-none">
         <q-card>
-          <q-card-actions class="bg-accent" :style="'color: white'">
+          <q-card-actions class="bg-accent annotation-header" :style="'color: white; font-weight: bold; font-size: 1.2em'">
            ANNOTATIONS
           </q-card-actions>
           <q-list bordered class="rounded-borders bg-white" v-if="tokens">
@@ -399,8 +399,9 @@ export default {
 </script>
 <style>
 .token {
-  font-size: 1.2em;
-  font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+  font-size: 1.3em;
+  /*font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;*/
+  font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .B, .I {
@@ -447,5 +448,8 @@ export default {
 .summary-word {
   padding-left: 2em;
   margin-block-start: 0px;
+}
+.annotation-header {
+  height: 52px;
 }
 </style>
