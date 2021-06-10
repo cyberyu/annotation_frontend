@@ -82,19 +82,19 @@
           <q-card-actions class="bg-accent annotation-header">
             <q-btn v-for="(label,k) in labels" :key="k" outline color="white"> {{ label.name }}</q-btn>
           </q-card-actions>
-        <q-scroll-area style="height: calc(100vh - 350px); display: flex">
+        <q-scroll-area style="height: calc(100vh - 350px); display: flex" class="col">
           <div v-if="tokens && doneFetchLabels" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]">
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
               <!-- each token display -->
-              <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
+              <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"
                     v-on:mouseup="selectEnd(i);mousePressed=false"
                     v-on:mouseover="mousePressed && select(i)">
                 {{ token }}
               </span>
               <!-- dropdown menu for labels -->
-              <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered>
+              <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered :style="`position:fixed; top: ${offsetTop}`">
                 <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                   <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
                        @click="removeAnnotation(i, label.id)">
@@ -110,7 +110,7 @@
               <!-- display token under label -->
               <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
                 <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
-                  <q-avatar color="primary" size="15px" text-color="white" v-if="detailedAnnotations[i][2]"> m </q-avatar>
+                  <q-avatar color="red" size="15px" text-color="white" v-if="detailedAnnotations[i][2]"> m </q-avatar>
                   <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
                 </span>
               </span>
@@ -138,7 +138,7 @@
               <div class="summary-word q-pb-sm">
                 <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
                   <span @click="scrollTo(w)">
-                    <q-avatar v-if="w.m" color="primary" size="12px" text-color="white"> m </q-avatar>
+                    <q-avatar v-if="w.m" color="red" size="12px" text-color="white"> m </q-avatar>
                     {{w.index}} - {{w.word}}
                   </span>
                 </li>
@@ -197,7 +197,8 @@ export default {
       loading: false,
       currentModel: null,
       modelQueue: [],
-      processedQ: []
+      processedQ: [],
+      offsetTop: null
     }
   },
   mounted () {
@@ -430,8 +431,14 @@ export default {
     }
   },
   watch: {
-    selected () {
+    selected (v) {
       this.highlighted = []
+      this.$nextTick(() => {
+        if (v.length > 0) {
+          this.offsetTop = document.getElementById('selected').offsetTop
+          console.log('top', this.offsetTop)
+        }
+      })
     }
   }
 }
@@ -471,10 +478,10 @@ export default {
 }
 
 .label-window {
-  /*position: absolute;*/
   position: fixed;
-  /*margin-top: 1.8em;*/
-  margin-top: -1.8em;
+  margin-top: 1.8em;
+  /*position: fixed;*/
+  /*margin-top: -1.8em;*/
   font-size: 1.3em;
   z-index: 10;
 }
