@@ -84,7 +84,7 @@
           </q-card-actions>
         <q-scroll-area style="height: calc(100vh - 350px); display: flex" class="col">
           <div v-if="tokens && doneFetchLabels" class="select-box q-pa-sm" @keyup="key" tabindex="0"
-               @focusout="selected=[]">
+               @focusout="selected=[]" >
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
               <!-- each token display -->
               <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)" :id="selected[0]===i? 'selected' : null"
@@ -94,7 +94,7 @@
                 {{ token }}
               </span>
               <!-- dropdown menu for labels -->
-              <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered :style="`position:fixed; top: ${offsetTop}`">
+              <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered :style="`top: ${offsetTop}px`">
                 <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                   <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
                        @click="removeAnnotation(i, label.id)">
@@ -443,7 +443,7 @@ export default {
       this.highlighted = []
       this.$nextTick(() => {
         if (v.length > 0) {
-          this.offsetTop = document.getElementById('selected').offsetTop
+          this.offsetTop = document.getElementById('selected').getBoundingClientRect().top
           console.log('top', this.offsetTop)
         }
       })
