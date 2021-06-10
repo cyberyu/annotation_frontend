@@ -110,7 +110,8 @@
               <!-- display token under label -->
               <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
                 <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
-                  <q-icon name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
+                  <q-avatar color="primary" size="15px" text-color="white" v-if="detailedAnnotations[i][2]"> m </q-avatar>
+                  <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
                 </span>
               </span>
             </div>
@@ -132,11 +133,14 @@
           </q-card-actions>
           <q-list bordered class="rounded-borders bg-white" v-if="tokens">
             <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
-                              expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`"
+                              expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`" header-class="header-label"
                               :label="`${label[0]} (${label[1].length})`">
               <div class="summary-word q-pb-sm">
                 <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
-                  <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>
+                  <span @click="scrollTo(w)">
+                    <q-avatar v-if="w.m" color="primary" size="12px" text-color="white"> m </q-avatar>
+                    {{w.index}} - {{w.word}}
+                  </span>
                 </li>
               </div>
             </q-expansion-item>
@@ -375,9 +379,10 @@ export default {
         const start = a[0]
         const end = a[1]
         const labels = a[2]
+        const m = a[3] ? a[3] : null
         for (let i = start; i <= end; i++) {
           if (i === start) {
-            this.detailedAnnotations[i] = ['B', labels] // B: beginning
+            this.detailedAnnotations[i] = ['B', labels, m] // B: beginning
           } else {
             this.detailedAnnotations[i] = ['I', labels]
           }
@@ -404,7 +409,7 @@ export default {
         a[2].forEach(n => {
           const label = this.labels[n].name
           const word = this.tokens.slice(a[0], a[1] + 1).join(' ')
-          const annotation = { index: [a[0], a[1]], word: word }
+          const annotation = { index: [a[0], a[1]], word: word, m: a[3] }
           if (results[label]) {
             results[label].push(annotation)
           } else {
@@ -487,5 +492,10 @@ export default {
 }
 .annotation-header {
   height: 52px;
+}
+.header-label {
+  font-weight: bold;
+  font-size: 1.2em;
+  text-transform: uppercase;
 }
 </style>
