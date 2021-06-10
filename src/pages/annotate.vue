@@ -27,7 +27,7 @@
             <q-tab-panels v-model="tab" animated>
               <q-tab-panel name="models">
                 <div v-for="(m,i) in project.vmodels" :key="i" class="q-pa-sm">
-                  <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0"
+                  <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
@@ -43,7 +43,7 @@
 
               <q-tab-panel name="rules">
                 <div v-for="(m,i) in project.rules" :key="i" class="q-pa-sm">
-                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0"
+                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
@@ -59,7 +59,7 @@
 
               <q-tab-panel name="dicts">
                 <div v-for="(m,i) in project.dicts" :key="i" class="q-pa-sm">
-                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0"
+                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
@@ -191,7 +191,8 @@ export default {
       tab: 'models',
       loading: false,
       currentModel: null,
-      modelQueue: []
+      modelQueue: [],
+      processedQ: []
     }
   },
   mounted () {
@@ -207,6 +208,7 @@ export default {
       const minfo = this.tab + id
       const indx = this.modelQueue.indexOf(minfo)
       this.modelQueue.splice(indx, 1)
+      this.processedQ.push(minfo)
     },
     executeModel (id) {
       this.add2Q(id)
