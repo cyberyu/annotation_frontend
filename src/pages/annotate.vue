@@ -110,7 +110,7 @@
               <!-- display token under label -->
               <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
                 <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
-                  <q-avatar color="red" size="15px" text-color="white" v-if="detailedAnnotations[i][2]"> m </q-avatar>
+                  <q-avatar color="red" size="15px" text-color="white" v-if="detailedAnnotations[i][2]" @click="removeAnnotation(i, label)"> m </q-avatar>
                   <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
                 </span>
               </span>
@@ -120,7 +120,11 @@
           <q-card-actions class="justify-center">
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
                    @click="fetchDocs(prevURL)" style="width: 100px"/>
-            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()" style="width: 100px"/>
+            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()" :loading="saving" style="width: 100px">
+                   <template v-slot:loading>
+                     Saving...
+                   </template>
+            </q-btn>
             <q-btn color="primary" label="Next" class="justify-center q-ml-md"
                    @click="nextURL? fetchDocs(nextURL): $router.push('/')" style="width: 100px"/>
           </q-card-actions>
@@ -195,6 +199,7 @@ export default {
       prevURL: null,
       tab: 'models',
       loading: false,
+      saving: false,
       currentModel: null,
       modelQueue: [],
       processedQ: [],
@@ -325,6 +330,7 @@ export default {
       // convert detailed annotations into compressed (index-based) format
     },
     saveAnnotations () {
+      this.saving = true
       const data = {
         document: this.document.id,
         annotations: this.annotations
@@ -344,6 +350,8 @@ export default {
       }
 
       this.$axios({ method: method, url: url, data: data }).then(response => {
+        this.saving = false
+        console.log('saving...')
         // console.log(response.data)
       })
     },
