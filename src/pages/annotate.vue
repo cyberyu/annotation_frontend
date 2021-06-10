@@ -27,7 +27,7 @@
             <q-tab-panels v-model="tab" animated>
               <q-tab-panel name="models">
                 <div v-for="(m,i) in project.vmodels" :key="i" class="q-pa-sm">
-                  <q-btn :loading="loading && currentModel===m.id && tab==='models'"
+                  <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
@@ -43,7 +43,7 @@
 
               <q-tab-panel name="rules">
                 <div v-for="(m,i) in project.rules" :key="i" class="q-pa-sm">
-                  <q-btn :loading="loading && currentModel===m.id && tab==='rules'"
+                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
@@ -59,7 +59,7 @@
 
               <q-tab-panel name="dicts">
                 <div v-for="(m,i) in project.dicts" :key="i" class="q-pa-sm">
-                  <q-btn :loading="loading && currentModel===m.id && tab==='dicts'"
+                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
@@ -190,7 +190,8 @@ export default {
       prevURL: null,
       tab: 'models',
       loading: false,
-      currentModel: null
+      currentModel: null,
+      modelQueue: []
     }
   },
   mounted () {
@@ -198,9 +199,29 @@ export default {
     this.fetchDocs()
   },
   methods: {
+    add2Q (id) {
+      const minfo = this.tab + id
+      this.modelQueue.push(minfo)
+    },
+    removeFromQ (id) {
+      const minfo = this.tab + id
+      const indx = this.modelQueue.indexOf(minfo)
+      this.modelQueue.splice(indx, 1)
+    },
     executeModel (id) {
-      this.currentModel = id
-      this.loading = true
+      this.add2Q(id)
+      const data = {
+        mtype: this.tab, // which type of model (rule, dict, model)
+        id: id,
+        document: this.document.text
+      }
+      this.$axios.post(this.$hostname + '/api/calculate/', data).then(response => {
+        console.log(response.data)
+
+        this.removeFromQ(id)
+        this.$forceUpdate()
+        // process return annotations
+      })
     },
     scrollTo (label) {
       console.log(label)
