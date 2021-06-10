@@ -86,12 +86,14 @@
           <div v-if="tokens && doneFetchLabels" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]">
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
-            <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
-                  v-on:mousedown="selectStart(i);mousePressed=true"
-                  v-on:mouseup="selectEnd(i);mousePressed=false"
-                  v-on:mouseover="mousePressed && select(i)">
-              {{ token }}
-            </span>
+              <!-- each token display -->
+              <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)"
+                    v-on:mousedown="selectStart(i);mousePressed=true"
+                    v-on:mouseup="selectEnd(i);mousePressed=false"
+                    v-on:mouseover="mousePressed && select(i)">
+                {{ token }}
+              </span>
+              <!-- dropdown menu for labels -->
               <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered>
                 <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                   <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
@@ -105,13 +107,12 @@
                   </div>
                 </div>
               </q-card>
-              <span
-                v-if="!(selected[0]===i && mousePressed==false) && detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
-              <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label"
-                    :style="`color:${labels[label].color}`">
-                <q-icon name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
+              <!-- display token under label -->
+              <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
+                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
+                  <q-icon name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
+                </span>
               </span>
-            </span>
             </div>
           </div>
         </q-scroll-area>
@@ -218,7 +219,13 @@ export default {
         document: this.document.text
       }
       this.$axios.post(this.$hostname + '/api/calculate/', data).then(response => {
-        console.log(response.data)
+        const results = response.data
+        results.forEach(ann => {
+          const annotation = [...ann.pos, [this.lLabels[ann.label].id], 'm']
+          console.log('backend', annotation)
+          this.annotations.push(annotation)
+        })
+        this.getDetailedAnnotations()
 
         this.removeFromQ(id)
         this.$forceUpdate()
@@ -309,23 +316,6 @@ export default {
     key (e) {
       console.log('key pressed: ', e.key)
     },
-    getDetailedAnnotations () {
-      // convert annotations into detailed token based format
-      this.detailedAnnotations = new Array(this.tokens.length)
-      this.annotations.map(a => {
-        const start = a[0]
-        const end = a[1]
-        const labels = a[2]
-        for (let i = start; i <= end; i++) {
-          if (i === start) {
-            this.detailedAnnotations[i] = ['B', labels]
-          } else {
-            this.detailedAnnotations[i] = ['I', labels]
-          }
-        }
-        return 0
-      })
-    },
     compressAnnotations () {
       // convert detailed annotations into compressed (index-based) format
     },
@@ -377,6 +367,24 @@ export default {
         this.getDetailedAnnotations()
       })
     },
+    getDetailedAnnotations () {
+      // convert annotations into detailed token based format
+      // [ ['B/I': [label.id, label.id]], ... ]
+      this.detailedAnnotations = new Array(this.tokens.length)
+      this.annotations.map(a => {
+        const start = a[0]
+        const end = a[1]
+        const labels = a[2]
+        for (let i = start; i <= end; i++) {
+          if (i === start) {
+            this.detailedAnnotations[i] = ['B', labels] // B: beginning
+          } else {
+            this.detailedAnnotations[i] = ['I', labels]
+          }
+        }
+        return 0
+      })
+    },
     getSelection (obj) {
       /**
        * get a selection in the format of {fixStr, allStr, start, end}
@@ -390,6 +398,7 @@ export default {
   },
   computed: {
     categorizedAnnotations () {
+      // { 'label': [ {word: 'xxx', index: [12, 15]}, ...]
       const results = {}
       this.annotations.forEach(a => {
         a[2].forEach(n => {
@@ -406,6 +415,8 @@ export default {
       return results
     },
     lLabels () {
+      // convert to format like
+      // { 'label name' : { ...properties}}
       const results = {}
       Object.entries(this.labels).forEach(a => {
         results[a[1].name] = a[1]
@@ -455,8 +466,10 @@ export default {
 }
 
 .label-window {
-  position: absolute;
-  margin-top: 1.8em;
+  /*position: absolute;*/
+  position: fixed;
+  /*margin-top: 1.8em;*/
+  margin-top: -1.8em;
   font-size: 1.3em;
   z-index: 10;
 }
