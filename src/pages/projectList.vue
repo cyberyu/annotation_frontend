@@ -4,6 +4,9 @@
       <div v-for="(proj,i) in projects" :key="i" class="col-12 q-pa-sm">
         <router-link :to="{name: 'project', params: {id: proj.id}}"> {{proj.name}} </router-link> ({{ proj.number_of_docs }})
       </div>
+      <div v-if="projects.length===0">
+        You have no assigned projects to curate yet.
+      </div>
     </div>
   </q-page>
 
