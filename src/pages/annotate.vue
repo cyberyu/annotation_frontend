@@ -208,7 +208,9 @@ export default {
   },
   mounted () {
     // this.fetchLabels()
-    this.labels = this.project.labels
+    this.project.labels.forEach(a => {
+      this.labels[a.id] = a
+    })
     this.fetchDocs()
   },
   methods: {
@@ -227,12 +229,12 @@ export default {
       const data = {
         mtype: this.tab, // which type of model (rule, dict, model)
         id: id,
-        document: this.document.text
+        document: this.document.id
       }
       this.$axios.post(this.$hostname + '/api/calculate/', data).then(response => {
         const results = response.data
         results.forEach(ann => {
-          const annotation = [...ann.pos, [this.lLabels[ann.label].id], 'm']
+          const annotation = [...ann.pos, [this.lLabels[ann.label].id], 'm'] // todo: returned label may not included in project labels
           console.log('backend', annotation)
           this.annotations.push(annotation)
         })
