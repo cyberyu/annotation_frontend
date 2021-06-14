@@ -83,7 +83,7 @@
             <q-btn v-for="(label,k) in labels" :key="k" outline color="white"> {{ label.name }}</q-btn>
           </q-card-actions>
         <q-scroll-area style="height: calc(100vh - 350px); display: flex" class="col">
-          <div v-if="tokens && doneFetchLabels" class="select-box q-pa-sm" @keyup="key" tabindex="0"
+          <div v-if="tokens" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
               <!-- each token display -->
@@ -207,7 +207,8 @@ export default {
     }
   },
   mounted () {
-    this.fetchLabels()
+    // this.fetchLabels()
+    this.labels = this.project.labels
     this.fetchDocs()
   },
   methods: {
@@ -249,15 +250,15 @@ export default {
       this.highlighted = Array(indx[1] - indx[0] + 1).fill(indx[0]).map((x, y) => x + y)
       document.getElementById(id).scrollIntoView()
     },
-    fetchLabels () {
-      const url = this.$hostname + '/api/labels/'
-      this.$axios.get(url).then(response => {
-        response.data.forEach(a => {
-          this.labels[a.id] = a
-        })
-        this.doneFetchLabels = true
-      })
-    },
+    // fetchLabels () {
+    //   const url = this.$hostname + '/api/labels/'
+    //   this.$axios.get(url).then(response => {
+    //     response.data.forEach(a => {
+    //       this.labels[a.id] = a
+    //     })
+    //     this.doneFetchLabels = true
+    //   })
+    // },
     selectStart (i) {
       // if the token is already annotated
       // for (let k = 0; k < this.annotations.length; k++) {
@@ -378,6 +379,7 @@ export default {
         //   this.tokens.push('\n')
         // })
         this.getDetailedAnnotations()
+        this.highlighted = []
       })
     },
     getDetailedAnnotations () {
