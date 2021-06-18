@@ -233,17 +233,16 @@ export default {
       }
       this.$axios.post(this.$hostname + '/api/calculate/', data).then(response => {
         const results = response.data
-        console.log('...', results)
         results.forEach(ann => {
           ann.m = 'm' // machine generated
-          const annotation = [...ann.pos, ann] // todo: returned label may not included in project labels
-          console.log('backend', annotation)
+          ann.id = this.lLabels[ann.name].id // todo: returned label may not included in project labels
+          const annotation = [...ann.tpos, [ann]]
           this.annotations.push(annotation)
         })
         this.getDetailedAnnotations()
 
         this.removeFromQ(id)
-        this.$forceUpdate()
+        // this.$forceUpdate()
         // process return annotations
       })
     },
@@ -402,19 +401,19 @@ export default {
       // convert annotations into detailed token based format
       // [ ['B/I': [label.id, label.id]], ... ]
       this.detailedAnnotations = new Array(this.tokens.length)
-      this.annotations.map(a => {
+      this.annotations.forEach(a => {
+        console.log(a)
         const start = a[0]
         const end = a[1]
         const labels = a[2]
-        const m = a[3] ? a[3] : null
         for (let i = start; i <= end; i++) {
           if (i === start) {
-            this.detailedAnnotations[i] = ['B', labels, m] // B: beginning
+            console.log(i)
+            this.detailedAnnotations[i] = ['B', labels] // B: beginning
           } else {
             this.detailedAnnotations[i] = ['I', labels]
           }
         }
-        return 0
       })
     },
     getSelection (obj) {
