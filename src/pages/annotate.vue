@@ -91,12 +91,12 @@
                     v-on:mousedown="selectStart(i);mousePressed=true"
                     v-on:mouseup="selectEnd(i);mousePressed=false"
                     v-on:mouseover="mousePressed && select(i)">
-                {{ token }}
+                {{ token[0] }}
               </span>
               <!-- dropdown menu for labels -->
               <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered :style="`top: ${offsetTop}px`">
                 <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
-                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].includes(label.id)"
+                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].map(a=>a.id).includes(label.id)"
                        @click="removeAnnotation(i, label.id)">
                     <q-icon name="check_circle"></q-icon>
                     {{ label.name }}
@@ -107,11 +107,11 @@
                   </div>
                 </div>
               </q-card>
-              <!-- display token under label -->
+              <!-- display label under token -->
               <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
-                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label].color}`">
+                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label.id].color}`">
                   <q-avatar color="red" size="15px" text-color="white" v-if="detailedAnnotations[i][2]" @click="removeAnnotation(i, label)"> m </q-avatar>
-                  <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ labels[label].name }} <br>
+                  <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ label.name }} <br>
                 </span>
               </span>
             </div>
@@ -143,7 +143,7 @@
                 <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
                   <span @click="scrollTo(w)">
                     <q-avatar v-if="w.m" color="red" size="12px" text-color="white"> m </q-avatar>
-                    {{w.index}} - {{w.word}}
+                    {{w.pos}} - {{w.text}}
                   </span>
                 </li>
               </div>
@@ -235,7 +235,8 @@ export default {
         const results = response.data
         console.log('...', results)
         results.forEach(ann => {
-          const annotation = [...ann.tpos, [this.lLabels[ann.label].id], 'm'] // todo: returned label may not included in project labels
+          ann.m = 'm' // machine generated
+          const annotation = [...ann.pos, ann] // todo: returned label may not included in project labels
           console.log('backend', annotation)
           this.annotations.push(annotation)
         })
@@ -248,7 +249,7 @@ export default {
     },
     scrollTo (label) {
       console.log(label)
-      const indx = label.index
+      const indx = label.tpos
       const id = `t-${indx[0]}`
       this.highlighted = Array(indx[1] - indx[0] + 1).fill(indx[0]).map((x, y) => x + y)
       document.getElementById(id).scrollIntoView()
@@ -300,17 +301,27 @@ export default {
       return cls
     },
     annotate (label) {
+      const startChar = this.tokens[this.start][2]
+      const endChar = this.tokens[this.end][2] + this.tokens[this.end][0].length
+      const labelObj = {
+        id: label.id,
+        name: label.name,
+        pos: [startChar, endChar],
+        tpos: [this.start, this.end],
+        text: this.document.text.substring(startChar, endChar)
+      }
       for (let k = 0; k < this.annotations.length; k++) {
         if (this.annotations[k][0] === this.start) {
-          if (!this.annotations[k][2].includes(label.id)) {
-            this.annotations[k][2].push(label.id)
+          if (!this.annotations[k][2].map(ann => ann.id).includes(label.id)) {
+            this.annotations[k][2].push(labelObj)
           } else {
             alert('already there')
           }
           return 0
         }
       }
-      const annotation = [this.start, this.end, [label.id]]
+      console.log('label', labelObj)
+      const annotation = [this.start, this.end, [labelObj]]
       this.annotations.push(annotation)
       this.getDetailedAnnotations()
     },
@@ -375,7 +386,8 @@ export default {
         this.prevURL = response.data.previous
         this.document = this.documents[0]
         this.annotations = this.document.annotations.id ? this.document.annotations.annotations : []
-        this.tokens = this.document.text.split(' ')
+        this.tokens = this.document.tokens
+        // this.tokens = this.document.text.split(' ')
         // this.tokens = []
         // this.document.text.split('\n').forEach(s => {
         //   this.tokens.push(...s.split(' '))
@@ -421,14 +433,12 @@ export default {
       // { 'label': [ {word: 'xxx', index: [12, 15]}, ...]
       const results = {}
       this.annotations.forEach(a => {
-        a[2].forEach(n => {
-          const label = this.labels[n].name
-          const word = this.tokens.slice(a[0], a[1] + 1).join(' ')
-          const annotation = { index: [a[0], a[1]], word: word, m: a[3] }
-          if (results[label]) {
-            results[label].push(annotation)
+        a[2].forEach(ann => {
+          const name = ann.name
+          if (results[name]) {
+            results[name].push(ann)
           } else {
-            results[label] = [annotation]
+            results[name] = [ann]
           }
         })
       })
