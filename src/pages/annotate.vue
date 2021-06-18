@@ -85,7 +85,7 @@
         <q-scroll-area style="height: calc(100vh - 350px); display: flex" class="col">
           <div v-if="tokens" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
-            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" class="column inline">
+            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
               <!-- each token display -->
               <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"
