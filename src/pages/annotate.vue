@@ -108,12 +108,13 @@
                 </div>
               </q-card>
               <!-- display label under token -->
-              <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
+              <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'" style="position: absolute;background-color: white" :style="`margin-top: ${2.5}em`">
                 <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label.id].color}`">
                   <q-avatar color="red" size="15px" text-color="white" v-if="label.m" @click="removeAnnotation(i, label)"> m </q-avatar>
                   <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ label.name }} <br>
                 </span>
               </span>
+              <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'" :style="`height: ${detailedAnnotations[i][1].length*1.3}em` "> </span>
             </div>
           </div>
         </q-scroll-area>
@@ -431,6 +432,10 @@ export default {
     },
     highlight (text, start, end) {
       this.text = `${text.substring(0, start)}<span style="background-color: red">${text.substring(start, end)}</span>${text.substring(end)}`
+    },
+    getTokenOffsetTop (i) {
+      const id = 't-' + i
+      return document.getElementById(id).getBoundingClientRect().top
     }
   },
   computed: {
