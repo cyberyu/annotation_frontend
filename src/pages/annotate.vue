@@ -110,7 +110,7 @@
               <!-- display label under token -->
               <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'">
                 <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label.id].color}`">
-                  <q-avatar color="red" size="15px" text-color="white" v-if="detailedAnnotations[i][2]" @click="removeAnnotation(i, label)"> m </q-avatar>
+                  <q-avatar color="red" size="15px" text-color="white" v-if="label.m" @click="removeAnnotation(i, label)"> m </q-avatar>
                   <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ label.name }} <br>
                 </span>
               </span>
