@@ -233,8 +233,9 @@ export default {
       }
       this.$axios.post(this.$hostname + '/api/calculate/', data).then(response => {
         const results = response.data
+        console.log('...', results)
         results.forEach(ann => {
-          const annotation = [...ann.pos, [this.lLabels[ann.label].id], 'm'] // todo: returned label may not included in project labels
+          const annotation = [...ann.tpos, [this.lLabels[ann.label].id], 'm'] // todo: returned label may not included in project labels
           console.log('backend', annotation)
           this.annotations.push(annotation)
         })
@@ -382,6 +383,7 @@ export default {
         // })
         this.getDetailedAnnotations()
         this.highlighted = []
+        this.processedQ = []
       })
     },
     getDetailedAnnotations () {
