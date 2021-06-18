@@ -33,8 +33,8 @@
                       <q-spinner-hourglass class="on-left" />
                       Loading...
                     </template>
-                    <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                   </q-btn>
+                  <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
                 <div v-if="project.vmodels.length===0">
                   No model defined for this project yet
@@ -49,8 +49,8 @@
                       <q-spinner-hourglass class="on-left" />
                       Loading...
                     </template>
-                    <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                   </q-btn>
+                  <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
                 <div v-if="project.rules.length===0">
                   No rule defined for this project yet
@@ -65,8 +65,8 @@
                       <q-spinner-hourglass class="on-left" />
                       Loading...
                     </template>
-                      <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                   </q-btn>
+                  <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
                 <div v-if="project.dicts.length===0">
                   No dictionary defined for this project yet
