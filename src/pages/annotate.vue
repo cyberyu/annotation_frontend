@@ -327,7 +327,7 @@ export default {
           return 0
         }
       }
-      console.log('label', labelObj)
+      // console.log('label', labelObj)
       const annotation = [this.start, this.end, [labelObj]]
       this.annotations.push(annotation)
       this.getDetailedAnnotations()
@@ -383,11 +383,11 @@ export default {
       } else {
         const n = url.split('/').length
         url = '/' + url.split('/').splice(n - 3, n).join('/')
-        console.log('hostname', this.$hostname)
-        console.log('next url', url)
+        // console.log('hostname', this.$hostname)
+        // console.log('next url', url)
       }
       this.$axios.get(url).then(response => {
-        console.log('use host', this.$hostname)
+        // console.log('use host', this.$hostname)
         this.documents = response.data.results
         this.nextURL = response.data.next
         this.prevURL = response.data.previous
@@ -410,13 +410,11 @@ export default {
       // [ ['B/I': [label.id, label.id]], ... ]
       this.detailedAnnotations = new Array(this.tokens.length)
       this.annotations.forEach(a => {
-        console.log(a)
         const start = a[0]
         const end = a[1]
         const labels = a[2]
         for (let i = start; i <= end; i++) {
           if (i === start) {
-            console.log(i)
             this.detailedAnnotations[i] = ['B', labels] // B: beginning
           } else {
             this.detailedAnnotations[i] = ['I', labels]
