@@ -87,7 +87,7 @@
                @focusout="selected=[]" >
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
               <!-- each token display -->
-              <span class="q-px-xs q-pt-xs token" :class="getTokenClass(i)" :id="selected[0]===i? 'selected' : null"
+              <span class="q-pt-xs token" :class="getTokenClass(i)" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"
                     v-on:mouseup="selectEnd(i);mousePressed=false"
                     v-on:mouseover="mousePressed && select(i)">
@@ -296,6 +296,14 @@ export default {
       cls = this.detailedAnnotations[i] ? this.detailedAnnotations[i][0] : ''
       cls += this.selected.includes(i) ? ' selected' : ''
       cls += this.highlighted.includes(i) ? ' highlight' : ''
+
+      const punct = '.,!""\''
+      const t = this.tokens[i][0]
+      if (punct.includes(t)) {
+        cls += ''
+      } else {
+        cls += ' q-pl-sm'
+      }
 
       return cls
     },
