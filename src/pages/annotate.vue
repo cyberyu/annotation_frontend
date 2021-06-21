@@ -89,7 +89,7 @@
           <q-card-actions class="bg-accent annotation-header">
             <q-btn v-for="(label,k) in labels" :key="k" outline color="white"> {{ label.name }}</q-btn>
           </q-card-actions>
-        <q-scroll-area style="height: calc(100vh - 350px); display: flex" class="col">
+        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col">
           <div v-if="tokens" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
@@ -139,11 +139,11 @@
       </div>
 
       <div class="col-2 summary q-mb-none">
-        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col">
         <q-card>
           <q-card-actions class="bg-accent annotation-header" :style="'color: white; font-weight: bold; font-size: 1.2em'">
            ANNOTATIONS
           </q-card-actions>
+          <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
           <q-list bordered class="rounded-borders bg-white" v-if="tokens">
             <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
                               expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`" header-class="header-label"
@@ -158,8 +158,8 @@
               </div>
             </q-expansion-item>
           </q-list>
+          </q-scroll-area>
         </q-card>
-        </q-scroll-area>
 <!--        <q-scroll-area style="height: 100%" v-if="tokens">-->
 <!--          <div >-->
 <!--            <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">-->
@@ -267,7 +267,7 @@ export default {
       const indx = label.tpos
       const id = `t-${indx[0]}`
       this.highlighted = Array(indx[1] - indx[0] + 1).fill(indx[0]).map((x, y) => x + y)
-      document.getElementById(id).scrollIntoView()
+      document.getElementById(id).scrollIntoView({ block: 'center' })
     },
     // fetchLabels () {
     //   const url = this.$hostname + '/api/labels/'
@@ -431,6 +431,9 @@ export default {
       // [ ['B/I': [label.id, label.id]], ... ]
       this.detailedAnnotations = new Array(this.tokens.length)
       this.annotations.forEach(a => {
+        if (!a.name) {
+          a.name = this.labels[a.id].name
+        }
         const start = a.tpos[0]
         const end = a.tpos[1]
         const startChar = a.pos[0]

@@ -35,7 +35,10 @@
 
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat @click="$router.push({ name: 'annotate', params: {project: project}})" :disable="project.number_of_docs===0">
+          <q-btn flat @click="$router.push({ name: 'annotate', params: { project: project, review: true }})" :disable="project.number_of_docs===0">
+            Review
+          </q-btn>
+          <q-btn flat @click="$router.push({ name: 'annotate', params: { project: project, review: false }})" :disable="project.number_of_docs===0">
             Annotate It
           </q-btn>
         </q-card-actions>
