@@ -9,7 +9,7 @@
 
     <div class="flex row fit justify-center flex-center">
       <q-card style="max-width: 450px">
-        <q-card-section >
+        <q-card-section>
           <div class="text-h6">{{project.name}}</div>
           <div class="text-capitalize text-grey">
             {{ project.description }}
@@ -24,9 +24,15 @@
             </div>
           </q-linear-progress>
 
-          <q-btn outline v-for="(label,i) in project.labels" :key="i" :style="`color: ${label.color}`" size="sm" class="q-mr-xs q-mt-sm">
+          <q-btn outline v-for="(label,i) in project.labels" :key="i" :style="`color: ${label.color}`" size="sm" class="q-mr-xs q-my-sm">
             {{ label.name }}
           </q-btn>
+
+          <div v-if="project.curators">curators: {{ project.curators.length }}</div>
+          <div v-if="project.vmodels">models: {{ project.vmodels.length }}</div>
+          <div v-if="project.rules">rules: {{ project.rules.length }}</div>
+          <div v-if="project.dicts">dictionaries: {{ project.dicts.length }}</div>
+
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat @click="$router.push({ name: 'annotate', params: {project: project}})" :disable="project.number_of_docs===0">

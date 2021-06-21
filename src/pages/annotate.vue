@@ -307,8 +307,8 @@ export default {
       cls += this.selected.includes(i) ? ' selected' : ''
       cls += this.highlighted.includes(i) ? ' highlight' : ''
 
-      const punct = '.,!""\''
-      const t = this.tokens[i][0]
+      const punct = '.,!"\''
+      const t = this.tokens[i][0][0]
       if (punct.includes(t)) {
         cls += ''
       } else {
@@ -338,17 +338,17 @@ export default {
         }
       }
       // console.log('label', labelObj)
-      const annotation = [this.start, this.end, [labelObj]]
+      const annotation = labelObj
       this.annotations.push(annotation)
       this.getDetailedAnnotations()
     },
     removeAnnotation (i, label) {
       for (let k = 0; k < this.annotations.length; k++) {
-        if (this.annotations[k][0] === i) {
-          const idx = this.annotations[k][2].indexOf(label)
+        if (this.annotations[k].tpos[0] === i) {
+          const idx = this.annotations[k].indexOf(label)
           console.log('find label', idx)
-          this.annotations[k][2].splice(idx, 1)
-          if (this.annotations[k][2].length === 0) {
+          this.annotations[k].splice(idx, 1)
+          if (this.annotations[k].length === 0) {
             this.annotations.splice(k, 1)
           }
         }
@@ -429,17 +429,18 @@ export default {
       // [ ['B/I': [label.id, label.id]], ... ]
       this.detailedAnnotations = new Array(this.tokens.length)
       this.annotations.forEach(a => {
-        const start = a[0]
-        const end = a[1]
-        const labels = a[2]
+        const start = a.tpos[0]
+        const end = a.tpos[1]
+        const label = [a] // todo: if review mode or machine, could have multiple values
         for (let i = start; i <= end; i++) {
           if (i === start) {
-            this.detailedAnnotations[i] = ['B', labels] // B: beginning
+            this.detailedAnnotations[i] = ['B', label] // B: beginning
           } else {
-            this.detailedAnnotations[i] = ['I', labels]
+            this.detailedAnnotations[i] = ['I', label]
           }
         }
       })
+      console.log(this.detailedAnnotations)
     },
     getSelection (obj) {
       /**
@@ -470,7 +471,7 @@ export default {
       // { 'label': [ {word: 'xxx', index: [12, 15]}, ...]
       const results = {}
       this.annotations.forEach(a => {
-        a[2].forEach(ann => {
+        [a].forEach(ann => {
           const name = ann.name
           if (results[name]) {
             results[name].push(ann)
