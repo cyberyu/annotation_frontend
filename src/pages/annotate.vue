@@ -116,7 +116,7 @@
               </q-card>
               <!-- display label under token -->
               <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'" style="position: absolute;background-color: white" :style="`margin-top: ${2.5}em`">
-                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${labels[label.id].color}`">
+                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${getColor(label)}`">
                   <q-avatar color="red" size="15px" text-color="white" v-if="label.m" @click="removeAnnotation(i, label)"> m </q-avatar>
                   <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ label.name }} <br>
                 </span>
@@ -224,6 +224,10 @@ export default {
     this.fetchDocs()
   },
   methods: {
+    getColor (label) {
+      // console.log(this.labels, label, label.id)
+      return this.labels[label.id].color
+    },
     add2Q (id) {
       const minfo = this.tab + id
       this.modelQueue.push(minfo)
@@ -246,7 +250,7 @@ export default {
         results.forEach(ann => {
           ann.m = 'm' // machine generated
           ann.id = this.lLabels[ann.name].id // todo: returned label may not included in project labels
-          const annotation = [...ann.tpos, [ann]]
+          const annotation = ann
           this.annotations.push(annotation)
         })
         this.getDetailedAnnotations()
@@ -468,7 +472,7 @@ export default {
       const results = {}
       this.annotations.forEach(a => {
         [a].forEach(ann => {
-          const name = ann.name
+          const name = ann.name || this.labels[ann.id].name
           if (results[name]) {
             results[name].push(ann)
           } else {
