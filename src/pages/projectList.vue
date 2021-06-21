@@ -1,12 +1,21 @@
 <template>
   <q-page class="flex flex-center">
     <div class="row col-12">
-      <div v-for="(proj,i) in projects" :key="i" class="col-12 q-pa-sm">
-        <router-link :to="{name: 'project', params: {id: proj.id}}"> {{proj.name}} </router-link> ({{ proj.number_of_docs }})
-      </div>
-      <div v-if="projects.length===0">
+      <q-card v-for="(proj,i) in projects" :key="i" class="col-12 q-ma-md">
+        <q-card-section class="text-h6 bg-primary text-white">
+          <div> {{proj.name}} </div>
+        </q-card-section>
+        <q-card-section>
+          Total documents: {{ proj.num_of_docs }}
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat @click="$router.push({name: 'project', params: {id: proj.id}})"> View Detail </q-btn>
+        </q-card-actions>
+      </q-card>
+
+      <q-card v-if="projects.length===0" class="text-h5">
         You have no assigned projects to curate yet.
-      </div>
+      </q-card>
     </div>
   </q-page>
 

@@ -16,6 +16,13 @@
       <div class="col-3">
         <div class="justify-end  q-pr-md row">
           <q-card class="col-8 ">
+            <q-linear-progress size="25px" :value="progressStats.pct" color="accent">
+              <div class="absolute-full flex flex-center">
+                <q-badge color="white" text-color="accent"
+                         :label="progressStats.label" />
+              </div>
+            </q-linear-progress>
+
             <q-tabs v-model="tab" dense class="text-grey" active-color="primary" indicator-color="primary" align="justify" narrow-indicator>
               <q-tab name="models" label="Models"/>
               <q-tab name="rules" label="Rules"/>
@@ -204,7 +211,9 @@ export default {
       currentModel: null,
       modelQueue: [],
       processedQ: [],
-      offsetTop: null
+      offsetTop: null,
+      isAnnotated: null,
+      numAnnotated: 0
     }
   },
   mounted () {
@@ -375,8 +384,16 @@ export default {
       this.$axios({ method: method, url: url, data: data }).then(response => {
         this.saving = false
         console.log('saving...')
+        if (!this.isAnnotated && data.annotations.length >= 1) {
+          this.incrProgress(1)
+        } else if (this.isAnnotated && data.annotations.length === 0) {
+          this.incrProgress(-1)
+        }
         // console.log(response.data)
       })
+    },
+    incrProgress (n) {
+      this.numAnnotated += n
     },
     fetchDocs (url) {
       if (!url) {
@@ -394,6 +411,7 @@ export default {
         this.prevURL = response.data.previous
         this.document = this.documents[0]
         this.annotations = this.document.annotations.id ? this.document.annotations.annotations : []
+        this.isAnnotated = this.document.annotations.id
         this.tokens = this.document.tokens
         // this.tokens = this.document.text.split(' ')
         // this.tokens = []
@@ -439,6 +457,15 @@ export default {
     }
   },
   computed: {
+    progressStats () {
+      const totalAnnotated = (this.project.num_of_annotated_docs + this.numAnnotated)
+      const pct = totalAnnotated / this.project.num_of_docs
+      const label = (pct * 100).toFixed(2) + '%' + ` (${totalAnnotated}/${this.project.num_of_docs})`
+      return {
+        pct: pct,
+        label: label
+      }
+    },
     categorizedAnnotations () {
       // { 'label': [ {word: 'xxx', index: [12, 15]}, ...]
       const results = {}
