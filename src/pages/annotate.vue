@@ -139,6 +139,7 @@
       </div>
 
       <div class="col-2 summary q-mb-none">
+        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col">
         <q-card>
           <q-card-actions class="bg-accent annotation-header" :style="'color: white; font-weight: bold; font-size: 1.2em'">
            ANNOTATIONS
@@ -158,6 +159,7 @@
             </q-expansion-item>
           </q-list>
         </q-card>
+        </q-scroll-area>
 <!--        <q-scroll-area style="height: 100%" v-if="tokens">-->
 <!--          <div >-->
 <!--            <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">-->
@@ -431,12 +433,19 @@ export default {
       this.annotations.forEach(a => {
         const start = a.tpos[0]
         const end = a.tpos[1]
+        const startChar = a.pos[0]
+        const endChar = a.pos[1]
         const label = [a] // todo: if review mode or machine, could have multiple values
-        for (let i = start; i <= end; i++) {
-          if (i === start) {
+        for (let i = 0; i < this.tokens.length; i++) {
+          if (this.tokens[i][2] === startChar) {
             this.detailedAnnotations[i] = ['B', label] // B: beginning
-          } else {
+            a.tpos[0] = i
+            if (start === end) {
+              a.tpos[1] = i
+            }
+          } else if (this.tokens[i][2] > startChar && this.tokens[i][2] < endChar) {
             this.detailedAnnotations[i] = ['I', label]
+            a.tpos[1] = i
           }
         }
       })
