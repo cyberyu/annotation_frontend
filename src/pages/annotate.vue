@@ -327,32 +327,28 @@ export default {
         tpos: [this.start, this.end],
         text: this.document.text.substring(startChar, endChar)
       }
+
       for (let k = 0; k < this.annotations.length; k++) {
-        if (this.annotations[k][0] === this.start) {
-          if (!this.annotations[k][2].map(ann => ann.id).includes(label.id)) {
-            this.annotations[k][2].push(labelObj)
-          } else {
+        const ann = this.annotations[k]
+        if (ann.tpos[0] === labelObj.tpos[0] && ann.tpos[1] === labelObj.tpos[1]) {
+          if (ann.id === label.id) {
             alert('already there')
-          }
-          return 0
-        }
-      }
-      // console.log('label', labelObj)
-      const annotation = labelObj
-      this.annotations.push(annotation)
-      this.getDetailedAnnotations()
-    },
-    removeAnnotation (i, label) {
-      for (let k = 0; k < this.annotations.length; k++) {
-        if (this.annotations[k].tpos[0] === i) {
-          const idx = this.annotations[k].indexOf(label)
-          console.log('find label', idx)
-          this.annotations[k].splice(idx, 1)
-          if (this.annotations[k].length === 0) {
+            return 0
+          } else {
+            // const idx = this.annotations.indexOf(labelObj)
             this.annotations.splice(k, 1)
           }
         }
       }
+      // console.log('label', labelObj)
+      this.annotations.push(labelObj)
+      this.getDetailedAnnotations()
+    },
+    removeAnnotation (i, label) {
+      const idx = this.annotations.indexOf(label)
+      console.log('find label', idx)
+      this.annotations.splice(idx, 1)
+
       this.getDetailedAnnotations()
     },
     key (e) {
@@ -440,7 +436,7 @@ export default {
           }
         }
       })
-      console.log(this.detailedAnnotations)
+      // console.log(this.detailedAnnotations)
     },
     getSelection (obj) {
       /**
