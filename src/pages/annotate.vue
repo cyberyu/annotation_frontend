@@ -90,7 +90,7 @@
             <q-btn v-for="(label,k) in labels" :key="k" outline color="white"> {{ label.name }}</q-btn>
           </q-card-actions>
         <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col">
-          <div v-if="tokens" class="select-box q-pa-sm" @keyup="key" tabindex="0"
+          <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
               <!-- each token display -->
@@ -103,7 +103,7 @@
               <!-- dropdown menu for labels -->
               <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered :style="`top: ${offsetTop}px`">
                 <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
-                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i][1].map(a=>a.id).includes(label.id)"
+                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i].map(a=>a[1].id).includes(label.id)"
                        @click="removeAnnotation(i, label.id)">
                     <q-icon name="check_circle"></q-icon>
                     {{ label.name }}
@@ -115,13 +115,22 @@
                 </div>
               </q-card>
               <!-- display label under token -->
-              <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'" style="position: absolute;background-color: white" :style="`margin-top: ${2.5}em`">
-                <span v-for="(label,j) in detailedAnnotations[i][1]" :key="`label${j}`" class="label" :style="`color:${getColor(label)}`">
-                  <q-avatar color="red" size="15px" text-color="white" v-if="label.m" @click="removeAnnotation(i, label)"> m </q-avatar>
-                  <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ label.name }} <br>
+              <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: absolute;" :style="`margin-top: ${2.0}em`">
+                <div v-for="(label,k) in detailedAnnotations[i]" :key="k">
+                  <div v-if="label[0]==='B'" :style="`width:${getWidth(i,k)}px;height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>
+                </div>
+              </span>
+              <span v-if="detailedAnnotations[i]" style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.1}em`">
+                <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
+                  <span v-if="label[0]==='B'" :style="`margin-left:${j*2}px`">
+                    <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
+                      m
+                    </q-avatar>
+                    <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ label[1].name }} <br>
+                  </span>
                 </span>
               </span>
-              <span v-if="detailedAnnotations[i] && detailedAnnotations[i][0]==='B'" :style="`height: ${detailedAnnotations[i][1].length*1.3}em` "> </span>
+              <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].length*1.3}em` "> </span>
             </div>
           </div>
         </q-scroll-area>
@@ -240,6 +249,15 @@ export default {
       this.modelQueue.splice(indx, 1)
       this.processedQ.push(minfo)
     },
+    existInAnnotations (annotation) {
+      return this.annotations.some(a => {
+        if (a.pos[0] === annotation.pos[0] && a.pos[1] === annotation.pos[1] && a.name === annotation.name) {
+          return true
+        } else {
+          return false
+        }
+      })
+    },
     executeModel (id) {
       this.add2Q(id)
       const data = {
@@ -253,7 +271,9 @@ export default {
           ann.m = 'm' // machine generated
           ann.id = this.lLabels[ann.name].id // todo: returned label may not included in project labels
           const annotation = ann
-          this.annotations.push(annotation)
+          if (!this.existInAnnotations(annotation)) {
+            this.annotations.push(annotation)
+          }
         })
         this.getDetailedAnnotations()
 
@@ -309,7 +329,7 @@ export default {
     },
     getTokenClass (i) {
       let cls
-      cls = this.detailedAnnotations[i] ? this.detailedAnnotations[i][0] : ''
+      cls = this.detailedAnnotations[i] ? this.detailedAnnotations[i][0][0] : ''
       cls += this.selected.includes(i) ? ' selected' : ''
       cls += this.highlighted.includes(i) ? ' highlight' : ''
 
@@ -318,25 +338,38 @@ export default {
       if (punct.includes(t)) {
         cls += ''
       } else {
-        cls += ' q-pl-sm'
+        cls += ' q-ml-sm'
       }
 
       return cls
     },
+    getWidth (i, k) {
+      let w = 0
+      const tpos = this.detailedAnnotations[i][k][1].tpos
+      // console.log(this.detailedAnnotations[i][k][1].text)
+      for (let j = tpos[0]; j < tpos[1] + 1; j++) {
+        const e = document.getElementById('t-' + i)
+        if (e) {
+          w += e.offsetWidth
+          // console.log(e, w)
+        }
+      }
+      return w
+    },
     annotate (label) {
       const startChar = this.tokens[this.start][2]
-      const endChar = this.tokens[this.end][2] + this.tokens[this.end][0].length
+      const endChar = this.tokens[this.end][2] + (this.tokens[this.end][0].length - 1)
       const labelObj = {
         id: label.id,
         name: label.name,
         pos: [startChar, endChar],
         tpos: [this.start, this.end],
-        text: this.document.text.substring(startChar, endChar)
+        text: this.document.text.substring(startChar, endChar + 1)
       }
 
       for (let k = 0; k < this.annotations.length; k++) {
         const ann = this.annotations[k]
-        if (ann.tpos[0] === labelObj.tpos[0] && ann.tpos[1] === labelObj.tpos[1]) {
+        if (ann.pos[0] === labelObj.pos[0] && ann.pos[1] === labelObj.pos[1]) {
           if (ann.id === label.id) {
             alert('already there')
             return 0
@@ -352,7 +385,7 @@ export default {
     },
     removeAnnotation (i, label) {
       const idx = this.annotations.indexOf(label)
-      console.log('find label', idx)
+      console.log('find label', idx, label)
       this.annotations.splice(idx, 1)
 
       this.getDetailedAnnotations()
@@ -438,17 +471,26 @@ export default {
         const end = a.tpos[1]
         const startChar = a.pos[0]
         const endChar = a.pos[1]
-        const label = [a] // todo: if review mode or machine, could have multiple values
+        // const label = [a] // todo: if review mode or machine, could have multiple values
+        let label
         for (let i = 0; i < this.tokens.length; i++) {
           if (this.tokens[i][2] === startChar) {
-            this.detailedAnnotations[i] = ['B', label] // B: beginning
             a.tpos[0] = i
             if (start === end) {
               a.tpos[1] = i
             }
+            label = ['B', a] // B: beginning
+            if (!this.detailedAnnotations[i]) {
+              this.detailedAnnotations[i] = []
+            }
+            this.detailedAnnotations[i].push(label)
           } else if (this.tokens[i][2] > startChar && this.tokens[i][2] < endChar) {
-            this.detailedAnnotations[i] = ['I', label]
             a.tpos[1] = i
+            label = ['I', a]
+            if (!this.detailedAnnotations[i]) {
+              this.detailedAnnotations[i] = []
+            }
+            this.detailedAnnotations[i].push(label)
           }
         }
       })
@@ -527,11 +569,11 @@ export default {
 .B, .I {
   /*text-decoration: underline red;*/
   /*text-decoration-style: wavy;*/
-  border-bottom: blue solid 2px;
+  /*border-bottom: blue solid 2px;*/
 }
 
 .B {
-  margin-left: 3px;
+  /*margin-left: 3px;*/
 }
 
 .label {
@@ -540,7 +582,8 @@ export default {
 }
 
 .selected {
-  border-bottom: red solid 2px;
+  /*border-bottom: red solid 2px;*/
+  background-color: lightgray;
 }
 
 .highlight {
