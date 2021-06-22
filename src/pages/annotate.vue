@@ -164,9 +164,9 @@
                               :label="`${label[0]} (${label[1].length})`">
               <div class="summary-word q-pb-sm">
                 <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
-                  <span @click="scrollTo(w)">
-                    <q-avatar v-if="w.m" color="red" size="12px" text-color="white"> m </q-avatar>
-                    {{w.pos}} - {{w.text}}
+                  <span>
+                    <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
+                    <span @click="scrollTo(w)">{{w.pos}} - {{w.text}}</span>
                   </span>
                 </li>
               </div>
@@ -356,7 +356,7 @@ export default {
       if (punct.includes(t)) {
         cls += ''
       } else {
-        cls += ' q-ml-sm'
+        cls += ' q-pl-sm'
       }
 
       return cls
