@@ -81,9 +81,10 @@
       </div>
 
       <div class="col-6 bg-white">
-          <q-card-actions class="bg-accent annotation-header">
-            <q-btn v-for="(label,k) in labels" :key="k" outline color="white"> {{ label.name }}</q-btn>
+          <q-card-actions class="bg-white annotation-header">
+            <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-ml-0 q-mr-xs"> {{ label.name }}</q-btn>
           </q-card-actions>
+        <q-separator />
         <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col">
           <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
@@ -134,6 +135,7 @@
             </div>
           </div>
         </q-scroll-area>
+        <q-separator />
           <q-card-actions class="justify-center">
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
                    @click="fetchDocs(prevURL)" style="width: 100px"/>
@@ -462,7 +464,7 @@ export default {
     },
     fetchDocs (url) {
       if (!url) {
-        url = '/api/documents/' + '?project=' + this.project.id
+        url = `/api/documents/?project=${this.project.id}&review=${this.review}`
       } else {
         const n = url.split('/').length
         url = '/' + url.split('/').splice(n - 3, n).join('/')
@@ -664,7 +666,7 @@ export default {
   margin-block-start: 0px;
 }
 .annotation-header {
-  height: 52px;
+  /*height: 52px;*/
 }
 .header-label {
   font-weight: bold;
