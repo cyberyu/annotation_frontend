@@ -99,12 +99,17 @@
                     v-on:mouseup="selectEnd(i);mousePressed=false"
                     v-on:mouseover="mousePressed && select(i)">
                 {{ token[0] }}
+                <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0">
+                  <div v-for="(label,k) in detailedAnnotations[i]" :key="k">
+                    <div :style="`height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>
+                  </div>
+                </span>
               </span>
               <!-- dropdown menu for labels -->
               <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered :style="`top: ${offsetTop}px`">
                 <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                   <div v-if="detailedAnnotations[i] && detailedAnnotations[i].map(a=>a[1].id).includes(label.id)"
-                       @click="removeAnnotation(i, label.id)">
+                       @click="removeAnnotation(i, findAnnotation(i, label.id))">
                     <q-icon name="check_circle"></q-icon>
                     {{ label.name }}
                   </div>
@@ -115,11 +120,11 @@
                 </div>
               </q-card>
               <!-- display label under token -->
-              <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: absolute;" :style="`margin-top: ${2.0}em`">
-                <div v-for="(label,k) in detailedAnnotations[i]" :key="k">
-                  <div v-if="label[0]==='B'" :style="`width:${getWidth(i,k)}px;height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>
-                </div>
-              </span>
+<!--              <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: absolute;" :style="`margin-top: ${2.0}em`">-->
+<!--                <div v-for="(label,k) in detailedAnnotations[i]" :key="k">-->
+<!--                  <div v-if="label[0]==='B'" :style="`width:${getWidth(i,k)}px;height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>-->
+<!--                </div>-->
+<!--              </span>-->
               <span v-if="detailedAnnotations[i]" style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.1}em`">
                 <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
                   <span v-if="label[0]==='B'" :style="`margin-left:${j*2}px`">
@@ -233,6 +238,9 @@ export default {
       this.labels[a.id] = a
     })
     this.fetchDocs()
+    setTimeout(() => {
+      this.$forceUpdate()
+    })
   },
   methods: {
     getColor (label) {
@@ -257,6 +265,16 @@ export default {
           return false
         }
       })
+    },
+    findAnnotation (i, lid) {
+      let ann
+      this.detailedAnnotations[i].forEach(a => {
+        console.log('find', a[1])
+        if (a[1].id === lid) {
+          ann = a[1]
+        }
+      })
+      return ann
     },
     executeModel (id) {
       this.add2Q(id)
@@ -348,7 +366,7 @@ export default {
       const tpos = this.detailedAnnotations[i][k][1].tpos
       // console.log(this.detailedAnnotations[i][k][1].text)
       for (let j = tpos[0]; j < tpos[1] + 1; j++) {
-        const e = document.getElementById('t-' + i)
+        const e = document.getElementById('t-' + j)
         if (e) {
           w += e.offsetWidth
           // console.log(e, w)
