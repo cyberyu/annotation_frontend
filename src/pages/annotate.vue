@@ -159,7 +159,7 @@
             <q-btn icon="visibility" class="float-right" flat @click="showConflict=!showConflict"></q-btn>
           </q-card-actions>
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
-            <q-list bordered class="rounded-borders bg-white" v-if="tokens && !showConflict">
+            <q-list bordered class="bg-white" v-if="tokens && !showConflict">
               <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
                                 expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`" header-class="header-label"
                                 :label="`${label[0]} (${label[1].length})`">
@@ -173,7 +173,7 @@
                 </div>
               </q-expansion-item>
             </q-list>
-            <q-list bordered class="rounded-borders bg-white" v-if="tokens && showConflict">
+            <q-list bordered class="bg-white" v-if="tokens && showConflict">
               <span v-if="Object.keys(conflicts).length===0" class="text-subtitle2 q-pa-sm"> Cool, there is no conflict</span>
               <div v-for="(label, i) in Object.entries(conflicts)" :key="i"
                                 :label="`${label[0]} (${label[1].length})`">
@@ -433,8 +433,16 @@ export default {
     },
     saveAnnotations () {
       if (this.conflicts) {
-        alert('You must resolve all conflicts before saving. ')
-        return
+        const msg = 'You must resolve all conflicts before saving.'
+        this.$q.notify({
+          message: msg,
+          color: 'secondary',
+          position: 'center',
+          actions: [
+            { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } }
+          ]
+        })
+        return -1
       }
       this.saving = true
       const data = {
