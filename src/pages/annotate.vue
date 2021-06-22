@@ -8,11 +8,6 @@
       </q-breadcrumbs>
     </div>
     <div class="row self-start q-pt-lg">
-      <!--      <div class=" col-2">-->
-      <!--        <div v-for="(label,i) in labels" :key="i" class="col-12" @click="annotate(label)">-->
-      <!--          {{label.name}}-->
-      <!--        </div>-->
-      <!--      </div>-->
       <div class="col-3">
         <div class="justify-end  q-pr-md row">
           <q-card class="col-8 ">
@@ -190,18 +185,6 @@
             </q-list>
           </q-scroll-area>
         </q-card>
-<!--        <q-scroll-area style="height: 100%" v-if="tokens">-->
-<!--          <div >-->
-<!--            <div v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i" class="summary-block">-->
-<!--              <div class="summary-label" ><span :style="`color: ${lLabels[label[0]].color}`">{{label[0]}}</span> ({{label[1].length}})</div>-->
-<!--              <ul class="summary-word">-->
-<!--                <li v-for="(w, j) in label[1]" :key="j">-->
-<!--                  <span @click="scrollTo(w)">{{w.index}} - {{w.word}}</span>-->
-<!--                </li>-->
-<!--              </ul>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </q-scroll-area>-->
       </div>
     </div>
   </q-page>
@@ -210,7 +193,7 @@
 <script>
 export default {
   name: 'Annotate',
-  props: ['project'],
+  props: ['project', 'review'],
   data () {
     return {
       documents: [],

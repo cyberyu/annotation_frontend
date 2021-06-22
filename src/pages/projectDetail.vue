@@ -35,10 +35,12 @@
 
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat @click="$router.push({ name: 'annotate', params: { project: project, review: true }})" :disable="project.number_of_docs===0">
+          <q-btn v-if="project.id && canReview()" flat  :disable="project.number_of_docs===0"
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: true }})">
             Review
           </q-btn>
-          <q-btn flat @click="$router.push({ name: 'annotate', params: { project: project, review: false }})" :disable="project.number_of_docs===0">
+          <q-btn flat  :disable="project.number_of_docs===0"
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">
             Annotate It
           </q-btn>
         </q-card-actions>
@@ -64,6 +66,14 @@ export default {
       this.$axios.get(this.$hostname + `/api/projects/${id}/`).then(response => {
         this.project = response.data
       })
+    },
+    canReview () {
+      return this.project.admins.includes(this.loggedInUser.id)
+    }
+  },
+  computed: {
+    loggedInUser () {
+      return this.$store.getters['auth/user']
     }
   }
 }
