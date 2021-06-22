@@ -154,24 +154,39 @@
 
       <div class="col-2 summary q-mb-none">
         <q-card>
-          <q-card-actions class="bg-accent annotation-header" :style="'color: white; font-weight: bold; font-size: 1.2em'">
+          <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
            ANNOTATIONS
+            <q-btn icon="visibility" class="float-right" flat @click="showConflict=!showConflict"></q-btn>
           </q-card-actions>
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
-          <q-list bordered class="rounded-borders bg-white" v-if="tokens">
-            <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
-                              expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`" header-class="header-label"
-                              :label="`${label[0]} (${label[1].length})`">
-              <div class="summary-word q-pb-sm">
-                <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
-                  <span>
-                    <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
-                    <span @click="scrollTo(w)">{{w.pos}} - {{w.text}}</span>
-                  </span>
-                </li>
+            <q-list bordered class="rounded-borders bg-white" v-if="tokens && !showConflict">
+              <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
+                                expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`" header-class="header-label"
+                                :label="`${label[0]} (${label[1].length})`">
+                <div class="summary-word q-pb-sm">
+                  <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
+                    <span>
+                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
+                      <span @click="scrollTo(w)">{{w.pos}} - {{w.text}}</span>
+                    </span>
+                  </li>
+                </div>
+              </q-expansion-item>
+            </q-list>
+            <q-list bordered class="rounded-borders bg-white" v-if="tokens && showConflict">
+              <div v-for="(label, i) in Object.entries(conflicts)" :key="i"
+                                :label="`${label[0]} (${label[1].length})`">
+                 <div class="summary-word q-pb-sm">
+                  <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
+                    <span>
+                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
+                      <q-avatar v-else size="12px"></q-avatar>
+                      <span @click="scrollTo(w)">{{w.pos}} - {{w.text}} 【{{w.name}}】</span>
+                    </span>
+                  </li>
+                </div>
               </div>
-            </q-expansion-item>
-          </q-list>
+            </q-list>
           </q-scroll-area>
         </q-card>
 <!--        <q-scroll-area style="height: 100%" v-if="tokens">-->
@@ -229,7 +244,8 @@ export default {
       processedQ: [],
       offsetTop: null,
       isAnnotated: null,
-      numAnnotated: 0
+      numAnnotated: 0,
+      showConflict: false
     }
   },
   mounted () {
@@ -415,6 +431,10 @@ export default {
       // convert detailed annotations into compressed (index-based) format
     },
     saveAnnotations () {
+      if (this.conflicts) {
+        alert('There are unresolved conflicts')
+        return
+      }
       this.saving = true
       const data = {
         document: this.document.id,
@@ -553,6 +573,25 @@ export default {
         })
       })
       return results
+    },
+    conflicts () {
+      const d = {}
+      this.annotations.forEach(a => {
+        const k = JSON.stringify(a.pos)
+        if (d[k]) {
+          d[k].push(a)
+        } else {
+          d[k] = [a]
+        }
+      })
+
+      const r = {}
+      Object.keys(d).forEach(k => {
+        if (d[k].length > 1) {
+          r[k] = d[k]
+        }
+      })
+      return r
     },
     lLabels () {
       // convert to format like
