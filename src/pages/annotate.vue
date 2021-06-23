@@ -4,7 +4,7 @@
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
-        <q-breadcrumbs-el label="Annotate" icon="navigation" />
+        <q-breadcrumbs-el :label="review? 'Review': 'Annotate'" icon="navigation" />
       </q-breadcrumbs>
     </div>
     <div class="row self-start q-pt-lg">
