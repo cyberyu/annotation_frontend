@@ -138,7 +138,8 @@
 <!--                  <div v-if="label[0]==='B'" :style="`width:${getWidth(i,k)}px;height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>-->
 <!--                </div>-->
 <!--              </span>-->
-              <span v-if="detailedAnnotations[i]" style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.26}em`">
+              <span v-if="detailedAnnotations[i]" @mouseover="activeLabel=`l-${i}`" :class="{'active-label shadow-4': activeLabel===`l-${i}`}"
+                    style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.26}em`" :id="`l-${i}`">
                 <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
                   <span v-if="label[0]==='B'" :style="`margin-left:${j*2}px`">
                     <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
@@ -147,6 +148,20 @@
                     <q-icon v-else name="check_circle" @click="removeAnnotation(i, label[1])"/> {{ label[1].name }} <br>
                   </span>
                 </span>
+                <q-menu anchor="top right" self="top left">
+                  <q-list bordered separator>
+                  <q-item clickable v-for="(label, j) in detailedAnnotations[i]" :key="`label${j}`" dense>
+                    <q-item-section>
+                      <span class="text-bold">{{ label[1].name }} ({{label[1].authors.length}})</span>
+                      <div class="q-px-sm">
+                        <div v-for="(author, ii) in label[1].authors" :key="`author${ii}`">
+                          {{author}}
+                        </div>
+                      </div>
+                    </q-item-section>
+                  </q-item>
+                  </q-list>
+                </q-menu>
               </span>
               <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].length*1.4}em` "> </span>
             </div>
@@ -315,7 +330,8 @@ export default {
       showTab: 'annotations',
       activeAuthors: [],
       feedback: '',
-      modelResultCache: null
+      modelResultCache: null,
+      activeLabel: null
     }
   },
   mounted () {
@@ -844,5 +860,10 @@ export default {
   font-weight: bold;
   font-size: 1.2em;
   text-transform: uppercase;
+}
+.active-label {
+  z-index: 99;
+  background-color: white;
+  padding: 2px;
 }
 </style>
