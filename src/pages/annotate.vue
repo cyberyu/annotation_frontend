@@ -200,7 +200,10 @@
 <!--            model results review -->
             <q-list class="q-pa-sm" v-if="tokens && modelResultCache && showTab==='sort'">
               <div v-for="(label, i) in sortedModelResults" :key="i">
-                ({{ label.confidence.toFixed(2) }}) {{label.pos}} - {{label.text}}
+                <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.tpos[0], label); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
+                <span @click="scrollTo(label)">
+                  ({{ label.confidence.toFixed(2) }}) {{label.pos}} - {{label.text}}
+                </span>
               </div>
               <div class="flex justify-center">
                 <q-btn label="Clear model results" color="primary" @click="modelResultCache=null" class="q-mt-sm"/>
@@ -551,6 +554,10 @@ export default {
       // console.log('label', labelObj)
       this.annotations.push(labelObj)
       this.getDetailedAnnotations()
+    },
+    removeFromModelCache (i, label) {
+      const idx = this.modelResultCache.indexOf(label)
+      this.modelResultCache.splice(idx, 1)
     },
     removeAnnotation (i, label) {
       const idx = this.annotations.indexOf(label)
