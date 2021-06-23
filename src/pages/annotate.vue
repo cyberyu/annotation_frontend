@@ -127,7 +127,7 @@
                     <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
                       m
                     </q-avatar>
-                    <q-icon v-else name="check_circle" @click="removeAnnotation(i, label)"/> {{ label[1].name }} <br>
+                    <q-icon v-else name="check_circle" @click="removeAnnotation(i, label[1])"/> {{ label[1].name }} <br>
                   </span>
                 </span>
               </span>
@@ -293,12 +293,13 @@ export default {
         if (ann.status === false) { continue }
         result = result.concat(ann.annotations.map(a => { a.author = ann.author; return a }))
       }
-
+      console.log(result.length)
       result = result.filter((ann, index, self) =>
         index === self.findIndex((t) => (
           String(t.pos) === String(ann.pos) && t.name === ann.name
         ))
       )
+      console.log(result.length)
       // console.log(result)
 
       return result
@@ -467,6 +468,7 @@ export default {
       const idx = this.annotations.indexOf(label)
       console.log('find label', idx, label)
       this.annotations.splice(idx, 1)
+      console.log(this.annotations.length)
 
       this.getDetailedAnnotations()
     },
