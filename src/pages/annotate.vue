@@ -154,7 +154,9 @@
           <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
             <q-btn label="ANNOTATIONS" flat @click="showTab='annotations'"></q-btn>
             <q-btn icon="group" class="float-right" flat @click="showTab='annotators'"></q-btn>
-            <q-btn icon="visibility" class="float-right" flat @click="showTab='conflicts'"></q-btn>
+            <q-btn icon="visibility" class="float-right" flat @click="showTab='conflicts'">
+              <q-badge color="red" floating>{{ Object.keys(conflicts).length }}</q-badge>
+            </q-btn>
           </q-card-actions>
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
             <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'">
@@ -172,20 +174,20 @@
               </q-expansion-item>
             </q-list>
 <!--            conflict-->
-            <q-list bordered class="bg-white" v-if="tokens && showTab==='conflicts'">
+            <q-list bordered separator class="bg-white" v-if="tokens && showTab==='conflicts'">
               <span v-if="Object.keys(conflicts).length===0" class="text-subtitle2 q-pa-sm"> Cool, there is no conflict</span>
-              <div v-for="(label, i) in Object.entries(conflicts)" :key="i"
+              <q-item v-for="(label, i) in Object.entries(conflicts)" :key="i"
                                 :label="`${label[0]} (${label[1].length})`">
-                 <div class="summary-word q-pb-sm">
-                  <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
+                 <div class="">
+                  <div v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
                     <span>
                       <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
                       <q-avatar v-else size="12px"></q-avatar>
                       <span @click="scrollTo(w)">{{w.pos}} - {{w.text}} 【{{w.name}}】</span>
                     </span>
-                  </li>
+                  </div>
                 </div>
-              </div>
+              </q-item>
             </q-list>
 <!--            list of annotators-->
             <q-list bordered separator class="bg-white" v-if="tokens && showTab==='annotators'">
