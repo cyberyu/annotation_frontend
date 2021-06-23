@@ -189,16 +189,17 @@
             </q-list>
 <!--            list of annotators-->
             <q-list bordered separator class="bg-white" v-if="tokens && showTab==='annotators'">
-              <q-item v-for="(anns, author, i) in annotations4Review" :key="i" clickable v-ripple
-                      :active="activeAuthors.includes(author)" active-class="bg-teal-1 text-grey-8"
-                      @click="getAnnotations(author)">
-                <q-item-section>{{anns.author}} ({{anns.annotations.length}})</q-item-section>
-                <q-item-section side>
-                  <q-btn icon="check" flat size="sm" style="width: 20px" ></q-btn>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn icon="clear" flat size="sm" style="width: 20px" ></q-btn>
-                </q-item-section>
+              <q-item v-for="(anns, author, i) in annotations4Review" :key="i" clickable v-ripple class="q-pr-xs"
+                      :active="activeAuthors.includes(author)" active-class="bg-teal-1 text-grey-8">
+                <div class="row col-12">
+                  <div @click="getAnnotations(author)" class="col-9">{{anns.author}} ({{anns.annotations.length}})</div>
+                  <div :class="{'text-negative': anns.status===true}" class="col">
+                    <q-btn :icon="anns.status===true? 'check_circle': 'check'" flat size="sm" style="width: 20px" @click="rejectOrAccept(anns, true)"></q-btn>
+                  </div>
+                  <div class="col" :class="{'text-negative': anns.status===false}">
+                    <q-btn :icon="anns.status===false? 'highlight_off':'clear'" flat size="sm" style="width: 20px"  @click="rejectOrAccept(anns, false)"></q-btn>
+                  </div>
+                </div>
               </q-item>
             </q-list>
           </q-scroll-area>
@@ -263,6 +264,12 @@ export default {
     })
   },
   methods: {
+    rejectOrAccept (ann, status) {
+      ann.status = ann.status === status ? null : status
+      this.annotations = this.mergeAnnotations(this.activeAuthors)
+      this.getDetailedAnnotations()
+      this.$forceUpdate()
+    },
     getAnnotations (author) {
       const indx = this.activeAuthors.indexOf(author)
       if (indx >= 0) {
@@ -281,6 +288,7 @@ export default {
       let result = []
       for (let i = 0; i < n; i++) {
         const ann = this.annotations4Review[ary[i]]
+        if (ann.status === false) { continue }
         result = result.concat(ann.annotations.map(a => { a.author = ann.author; return a }))
       }
 
