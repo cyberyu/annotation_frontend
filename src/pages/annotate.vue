@@ -119,7 +119,7 @@
                 </span>
               </span>
               <!-- dropdown menu for labels -->
-              <q-card v-if="selected[0]===i" class="label-window q-px-md q-py-sm" bordered :style="`top: ${offsetTop}px`">
+              <q-card v-if="selected[0]===i" class="label-window fixed q-px-md q-py-sm" id="label-window" :style="`top: ${offsetTop}px;`">
                 <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                   <div v-if="detailedAnnotations[i] && detailedAnnotations[i].map(a=>a[1].id).includes(label.id)"
                        @click="removeAnnotation(i, findAnnotation(i, label.id))">
@@ -148,7 +148,7 @@
                     <q-icon v-else name="check_circle" @click="removeAnnotation(i, label[1])"/> {{ label[1].name }} <br>
                   </span>
                 </span>
-                <q-menu anchor="top right" self="top left">
+                <q-menu anchor="top right" self="top left" v-if="review">
                   <q-list bordered separator>
                   <q-item clickable v-for="(label, j) in detailedAnnotations[i]" :key="`label${j}`" dense>
                     <q-item-section>
@@ -789,8 +789,14 @@ export default {
       this.highlighted = []
       this.$nextTick(() => {
         if (v.length > 0) {
-          this.offsetTop = document.getElementById('selected').getBoundingClientRect().top
-          console.log('top', this.offsetTop)
+          const token = document.getElementById('selected').getBoundingClientRect()
+          const tokenY = token.top
+          const wH = document.getElementById('label-window').getBoundingClientRect().height
+          if (tokenY > wH + token.height) {
+            this.offsetTop = tokenY - wH - token.height
+          } else {
+            this.offsetTop = tokenY
+          }
         }
       })
     }
@@ -837,9 +843,12 @@ export default {
   margin-top: 1.8em;
   /*position: fixed;*/
   /*margin-top: -1.8em;*/
+  display: inline-block;
   font-size: 1.3em;
-  z-index: 10;
-  overflow: auto;
+  z-index: 100;
+  visibility: visible;
+  overflow-y: auto;
+  /*bottom: 0;*/
 }
 
 .summary {
