@@ -370,10 +370,15 @@ export default {
         result = result.concat(ann.annotations.map(a => { a.author = ann.author; return a }))
       }
       console.log(result.length)
+      result.forEach(a => (a.authors = []))
       result = result.filter((ann, index, self) =>
-        index === self.findIndex((t) => (
-          String(t.pos) === String(ann.pos) && t.name === ann.name
-        ))
+        index === self.findIndex((t) => {
+          if (String(t.pos) === String(ann.pos) && t.name === ann.name) {
+            t.authors.push(result[index].author)
+            return true
+          }
+          return false
+        })
       )
       console.log(result.length)
       // console.log(result)
