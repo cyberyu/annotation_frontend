@@ -169,17 +169,20 @@
       <div class="col-2 summary q-mb-none">
         <q-card>
           <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
-            <q-btn label="ANNOTATIONS" flat @click="showTab='annotations'">
+            <q-btn label="ANNOTATIONS" flat @click="showTab='annotations'" :class="{'bg-purple-5': showTab=='annotations'}">
               <q-badge color="info" floating> {{annotations.length}}</q-badge>
             </q-btn>
-            <q-btn v-if="review" icon="group" class="float-right" flat @click="showTab='annotators'">
+            <q-btn icon="sort" class="float-right" flat @click="showTab='sort'" :class="{'bg-purple-5': showTab=='sort'}">
+            </q-btn>
+            <q-btn v-if="review" icon="group" class="float-right" flat @click="showTab='annotators'" :class="{'bg-purple-5': showTab=='annotators'}">
               <q-badge color="info" floating v-if="annotations4Review"> {{Object.keys(annotations4Review).length}}</q-badge>
             </q-btn>
-            <q-btn icon="visibility" class="float-right" flat @click="showTab='conflicts'">
+            <q-btn icon="visibility" class="float-right" flat @click="showTab='conflicts'" :class="{'bg-purple-5': showTab=='conflicts'}">
               <q-badge color="red" floating>{{ Object.keys(conflicts).length }}</q-badge>
             </q-btn>
           </q-card-actions>
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
+<!--            categorized annotations-->
             <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'">
               <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
                                 expand-separator :header-style="`color: ${lLabels[label[0]].color}`" header-class="header-label"
