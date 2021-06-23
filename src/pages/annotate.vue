@@ -4,7 +4,7 @@
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
-        <q-breadcrumbs-el :label="review? 'Review': 'Annotate'" icon="navigation" />
+        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Annotate'" icon="navigation" />
       </q-breadcrumbs>
     </div>
     <div class="row self-start q-pt-lg">
@@ -19,15 +19,15 @@
             </q-linear-progress>
 
             <q-tabs v-model="tab" dense class="text-grey" active-color="primary" indicator-color="primary" align="justify" narrow-indicator>
-              <q-tab name="models" label="Models"/>
-              <q-tab name="rules" label="Rules"/>
-              <q-tab name="dicts" label="Dictionaries"/>
+              <q-tab name="models" :label="consensus? 'Consensus Models' : 'Models'"/>
+              <q-tab v-if="!consensus" name="rules" label="Rules"/>
+              <q-tab v-if="!consensus" name="dicts" label="Dictionaries"/>
             </q-tabs>
 
             <q-separator/>
 
             <q-tab-panels v-model="tab" animated>
-              <q-tab-panel name="models">
+              <q-tab-panel name="models" v-if="!consensus">
                 <div v-for="(m,i) in project.vmodels" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
@@ -40,6 +40,23 @@
                 </div>
                 <div v-if="project.vmodels.length===0">
                   No model defined for this project yet
+                </div>
+              </q-tab-panel>
+
+<!--              consensus model results-->
+              <q-tab-panel name="models" v-else>
+                <div v-for="(m,i) in project.cmodels" :key="i">
+                  <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
+                         :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
+                    <template v-slot:loading>
+                      <q-spinner-hourglass class="on-left" />
+                      Loading...
+                    </template>
+                  </q-btn>
+                  <q-circular-progress show-value font-size="12px" :value="82" size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-md">
+                    {{ 82 }}
+                  </q-circular-progress>
+                  <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
               </q-tab-panel>
 
@@ -242,7 +259,7 @@
 <script>
 export default {
   name: 'Annotate',
-  props: ['project', 'review'],
+  props: ['project', 'review', 'consensus'],
   data () {
     return {
       documents: [],

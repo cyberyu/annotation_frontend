@@ -34,9 +34,18 @@
           <div v-if="project.vmodels">models: {{ project.vmodels.length }}</div>
           <div v-if="project.rules">rules: {{ project.rules.length }}</div>
           <div v-if="project.dicts">dictionaries: {{ project.dicts.length }}</div>
+          <div v-if="project.cmodels">consensus model: {{ project.cmodels.length }}</div>
+
+          <div class="flex justify-start q-mt-sm">
+            <q-btn label="Export curation data" size="sm" color="primary" />
+          </div>
 
         </q-card-section>
         <q-card-actions align="right">
+          <q-btn v-if="project.id && canReview() && project.cmodels.length>0" flat  :disable="project.number_of_docs===0"
+                 @click="$router.push({ name: 'annotate', params: { project: project, consensus: true}})">
+            Check Consensus
+          </q-btn>
           <q-btn v-if="project.id && canReview()" flat  :disable="project.number_of_docs===0"
                  @click="$router.push({ name: 'annotate', params: { project: project, review: true }})">
             Review
