@@ -195,11 +195,11 @@
                       :active="activeAuthors.includes(author)" active-class="bg-teal-1 text-grey-8">
                 <div class="row col-12">
                   <div @click="getAnnotations(author)" class="col-9">{{anns.author}} ({{anns.annotations.length}})</div>
-                  <div :class="{'text-negative': anns.status===true}" class="col">
-                    <q-btn :icon="anns.status===true? 'check_circle': 'check'" flat size="sm" style="width: 20px" @click="rejectOrAccept(anns, true)"></q-btn>
+                  <div :class="{'text-negative': anns.status===1}" class="col">
+                    <q-btn :icon="anns.status===1? 'check_circle': 'check'" flat size="sm" style="width: 20px" @click="rejectOrAccept(anns, 1)"></q-btn>
                   </div>
-                  <div class="col" :class="{'text-negative': anns.status===false}">
-                    <q-btn :icon="anns.status===false? 'highlight_off':'clear'" flat size="sm" style="width: 20px"  @click="rejectOrAccept(anns, false)"></q-btn>
+                  <div class="col" :class="{'text-negative': anns.status===-1}">
+                    <q-btn :icon="anns.status===-1? 'highlight_off':'clear'" flat size="sm" style="width: 20px"  @click="rejectOrAccept(anns, -1)"></q-btn>
                   </div>
                 </div>
               </q-item>
@@ -267,7 +267,12 @@ export default {
   },
   methods: {
     rejectOrAccept (ann, status) {
-      ann.status = ann.status === status ? null : status
+      ann.status = ann.status === status ? 0 : status
+      const url = `/api/annotations/${ann.id}/`
+      const data = { status: ann.status }
+      this.$axios.patch(url, data).then(response => {
+        console.log(response.data)
+      })
       this.annotations = this.mergeAnnotations(this.activeAuthors)
       this.getDetailedAnnotations()
       this.$forceUpdate()
@@ -290,7 +295,7 @@ export default {
       let result = []
       for (let i = 0; i < n; i++) {
         const ann = this.annotations4Review[ary[i]]
-        if (ann.status === false) { continue }
+        if (ann.status === -1) { continue } // if rejected, skip
         result = result.concat(ann.annotations.map(a => { a.author = ann.author; return a }))
       }
       console.log(result.length)
