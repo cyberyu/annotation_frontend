@@ -152,8 +152,12 @@
       <div class="col-2 summary q-mb-none">
         <q-card>
           <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
-            <q-btn label="ANNOTATIONS" flat @click="showTab='annotations'"></q-btn>
-            <q-btn icon="group" class="float-right" flat @click="showTab='annotators'"></q-btn>
+            <q-btn label="ANNOTATIONS" flat @click="showTab='annotations'">
+              <q-badge color="info" floating> {{annotations.length}}</q-badge>
+            </q-btn>
+            <q-btn v-if="review" icon="group" class="float-right" flat @click="showTab='annotators'">
+              <q-badge color="info" floating v-if="annotations4Review"> {{Object.keys(annotations4Review).length}}</q-badge>
+            </q-btn>
             <q-btn icon="visibility" class="float-right" flat @click="showTab='conflicts'">
               <q-badge color="red" floating>{{ Object.keys(conflicts).length }}</q-badge>
             </q-btn>
