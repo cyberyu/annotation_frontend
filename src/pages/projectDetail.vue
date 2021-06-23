@@ -37,7 +37,7 @@
           <div v-if="project.cmodels">consensus model: {{ project.cmodels.length }}</div>
 
           <div class="flex justify-start q-mt-sm">
-            <q-btn label="Export curation data" size="sm" color="primary" />
+            <q-btn label="Export curation data" color="primary" style="font-size: 12px"/>
           </div>
 
         </q-card-section>

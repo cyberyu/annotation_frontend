@@ -173,6 +173,7 @@
               <q-badge color="info" floating> {{annotations.length}}</q-badge>
             </q-btn>
             <q-btn icon="sort" class="float-right" flat @click="showTab='sort'" :class="{'bg-purple-5': showTab=='sort'}">
+              <q-badge color="info" floating v-if="modelResultCache"> {{modelResultCache.length}}</q-badge>
             </q-btn>
             <q-btn v-if="review" icon="group" class="float-right" flat @click="showTab='annotators'" :class="{'bg-purple-5': showTab=='annotators'}">
               <q-badge color="info" floating v-if="annotations4Review"> {{Object.keys(annotations4Review).length}}</q-badge>
