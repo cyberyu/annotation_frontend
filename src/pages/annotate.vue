@@ -197,6 +197,12 @@
                 </div>
               </q-expansion-item>
             </q-list>
+<!--            model results review -->
+            <q-list class="q-pa-sm" v-if="modelResultCache">
+              <div v-for="(label, i) in sortedModelResults" :key="i">
+                ({{ label.confidence.toFixed(2) }}) {{label.pos}} - {{label.text}}
+              </div>
+            </q-list>
 <!--            conflict-->
             <q-list bordered separator class="bg-white" v-if="tokens && showTab==='conflicts'">
               <span v-if="Object.keys(conflicts).length===0" class="text-subtitle2 q-pa-sm"> Cool, there is no conflict</span>
@@ -430,6 +436,7 @@ export default {
           message: msg,
           color: 'secondary',
           position: 'center',
+          timeout: 0,
           actions: [
             { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } },
             { label: 'Review', color: 'white', handler: () => { this.showTab = 'sort' } }
@@ -688,6 +695,10 @@ export default {
     }
   },
   computed: {
+    sortedModelResults () {
+      const ary = JSON.parse(JSON.stringify(this.modelResultCache))
+      return ary.sort((a, b) => b.confidence - a.confidence)
+    },
     progressStats () {
       const totalAnnotated = (this.project.num_of_annotated_docs + this.numAnnotated)
       const pct = totalAnnotated / this.project.num_of_docs
