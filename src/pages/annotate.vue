@@ -185,7 +185,7 @@
 <!--            categorized annotations-->
             <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'">
               <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
-                                expand-separator :header-style="`color: ${lLabels[label[0]].color}`" header-class="header-label"
+                                expand-separator :header-style="`color: ${(lLabels[label[0]]|lLabels[null]).color}`" header-class="header-label"
                                 :label="`${label[0]} (${label[1].length})`">
                 <div class="summary-word q-pb-sm">
                   <li v-for="(w, j) in label[1].sort((a,b)=>a.pos[0]-b.pos[0])" :key="j" style="list-style: circle">
@@ -301,7 +301,8 @@ export default {
       annotations4Review: null,
       showTab: 'annotations',
       activeAuthors: [],
-      feedback: ''
+      feedback: '',
+      modelResultCache: null
     }
   },
   mounted () {
@@ -309,6 +310,14 @@ export default {
     this.project.labels.forEach(a => {
       this.labels[a.id] = a
     })
+    const nullLabel = {
+      id: null,
+      description: 'a dummy label for labels which were createad in the project',
+      color: '#e0e0e0',
+      name: 'NULL'
+    }
+    this.labels.null = nullLabel
+
     this.fetchDocs()
     setTimeout(() => {
       this.$forceUpdate()
@@ -402,15 +411,30 @@ export default {
         const results = response.data
         results.forEach(ann => {
           ann.m = 'm' // machine generated
-          ann.id = this.lLabels[ann.name].id // todo: returned label may not included in project labels
+          ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
           const annotation = ann
           if (!this.existInAnnotations(annotation)) {
             this.annotations.push(annotation)
           }
         })
         this.getDetailedAnnotations()
-
         this.removeFromQ(id)
+
+        if (this.modelResultCache) {
+          this.modelResultCache = this.modelResultCache.concat(results)
+        } else {
+          this.modelResultCache = results
+        }
+        const msg = `Finished running model, and got ${results.length} results`
+        this.$q.notify({
+          message: msg,
+          color: 'secondary',
+          position: 'center',
+          actions: [
+            { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } },
+            { label: 'Review', color: 'white', handler: () => { this.showTab = 'sort' } }
+          ]
+        })
         // this.$forceUpdate()
         // process return annotations
       })
