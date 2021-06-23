@@ -193,15 +193,39 @@
             <q-list bordered separator class="bg-white" v-if="tokens && showTab==='annotators'">
               <q-item v-for="(anns, author, i) in annotations4Review" :key="i" clickable v-ripple class="q-pr-xs"
                       :active="activeAuthors.includes(author)" active-class="bg-teal-1 text-grey-8">
-                <div class="row col-12">
+                <q-item-section>
                   <div @click="getAnnotations(author)" class="col-9">{{anns.author}} ({{anns.annotations.length}})</div>
-                  <div :class="{'text-negative': anns.status===1}" class="col">
-                    <q-btn :icon="anns.status===1? 'check_circle': 'check'" flat size="sm" style="width: 20px" @click="rejectOrAccept(anns, 1)"></q-btn>
-                  </div>
-                  <div class="col" :class="{'text-negative': anns.status===-1}">
-                    <q-btn :icon="anns.status===-1? 'highlight_off':'clear'" flat size="sm" style="width: 20px"  @click="rejectOrAccept(anns, -1)"></q-btn>
-                  </div>
-                </div>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn-dropdown color="primary" flat size="sm" dense label="" :dropdown-icon="{1: 'check_circle', '-1': 'highlight_off', 2: 'redo'}[anns.status]">
+                    <q-list bordered>
+                      <q-item :class="{'text-positive': anns.status===1}" dense clickable v-ripple  @click="rejectOrAccept(anns, 1)">
+                        <q-item-section avatar>
+                          <q-icon :name="anns.status===1? 'check_circle': 'check'" flat size="sm"/>
+                        </q-item-section>
+                        <q-item-section>
+                          Accept
+                        </q-item-section>
+                      </q-item>
+                      <q-item :class="{'text-negative': anns.status===-1}" clickable v-ripple @click="rejectOrAccept(anns, -1)">
+                        <q-item-section avatar>
+                          <q-icon :name="anns.status===-1? 'highlight_off':'clear'" flat size="sm" />
+                        </q-item-section>
+                        <q-item-section>
+                          Reject
+                        </q-item-section>
+                      </q-item>
+                      <q-item :class="{'text-negative': anns.status===2}" clickable v-ripple @click="rejectOrAccept(anns, 2)">
+                        <q-item-section avatar>
+                          <q-icon name="redo" flat size="sm" />
+                        </q-item-section>
+                        <q-item-section>
+                          Ask for redo
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-btn-dropdown>
+                </q-item-section>
               </q-item>
             </q-list>
           </q-scroll-area>
@@ -252,7 +276,8 @@ export default {
       numAnnotated: 0,
       annotations4Review: null,
       showTab: 'annotations',
-      activeAuthors: []
+      activeAuthors: [],
+      feedback: ''
     }
   },
   mounted () {
