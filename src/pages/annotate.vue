@@ -198,9 +198,12 @@
               </q-expansion-item>
             </q-list>
 <!--            model results review -->
-            <q-list class="q-pa-sm" v-if="modelResultCache">
+            <q-list class="q-pa-sm" v-if="tokens && modelResultCache && showTab==='sort'">
               <div v-for="(label, i) in sortedModelResults" :key="i">
                 ({{ label.confidence.toFixed(2) }}) {{label.pos}} - {{label.text}}
+              </div>
+              <div class="flex justify-center">
+                <q-btn label="Clear model results" color="primary" @click="modelResultCache=null" class="q-mt-sm"/>
               </div>
             </q-list>
 <!--            conflict-->
