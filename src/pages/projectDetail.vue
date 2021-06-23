@@ -24,9 +24,11 @@
             </div>
           </q-linear-progress>
 
-          <q-btn outline v-for="(label,i) in project.labels" :key="i" :style="`color: ${label.color}`" size="sm" class="q-mr-xs q-my-sm">
-            {{ label.name }}
-          </q-btn>
+          <div class="flex justify-center">
+            <q-btn outline v-for="(label,i) in project.labels" :key="i" :style="`color: ${label.color}`" size="sm" class="q-mr-xs q-my-sm">
+              {{ label.name }}
+            </q-btn>
+          </div>
 
           <div v-if="project.curators">curators: {{ project.curators.length }}</div>
           <div v-if="project.vmodels">models: {{ project.vmodels.length }}</div>
