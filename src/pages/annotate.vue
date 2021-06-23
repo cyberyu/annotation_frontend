@@ -82,7 +82,7 @@
 
       <div class="col-6 bg-white">
           <q-card-actions class="bg-white annotation-header">
-            <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-ml-0 q-mr-xs"> {{ label.name }}</q-btn>
+            <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
           </q-card-actions>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col">
@@ -652,6 +652,7 @@ export default {
   /*margin-top: -1.8em;*/
   font-size: 1.3em;
   z-index: 10;
+  overflow: auto;
 }
 
 .summary {
