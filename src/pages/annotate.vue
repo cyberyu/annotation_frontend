@@ -121,7 +121,7 @@
 <!--                  <div v-if="label[0]==='B'" :style="`width:${getWidth(i,k)}px;height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>-->
 <!--                </div>-->
 <!--              </span>-->
-              <span v-if="detailedAnnotations[i]" style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.1}em`">
+              <span v-if="detailedAnnotations[i]" style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.26}em`">
                 <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
                   <span v-if="label[0]==='B'" :style="`margin-left:${j*2}px`">
                     <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
@@ -131,7 +131,7 @@
                   </span>
                 </span>
               </span>
-              <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].length*1.3}em` "> </span>
+              <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].length*1.4}em` "> </span>
             </div>
           </div>
         </q-scroll-area>
@@ -152,16 +152,17 @@
       <div class="col-2 summary q-mb-none">
         <q-card>
           <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
-           ANNOTATIONS
-            <q-btn icon="visibility" class="float-right" flat @click="showConflict=!showConflict"></q-btn>
+            <q-btn label="ANNOTATIONS" flat @click="showTab='annotations'"></q-btn>
+            <q-btn icon="group" class="float-right" flat @click="showTab='annotators'"></q-btn>
+            <q-btn icon="visibility" class="float-right" flat @click="showTab='conflicts'"></q-btn>
           </q-card-actions>
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
-            <q-list bordered class="bg-white" v-if="tokens && !showConflict">
+            <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'">
               <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
-                                expand-separator default-opened :header-style="`color: ${lLabels[label[0]].color}`" header-class="header-label"
+                                expand-separator :header-style="`color: ${lLabels[label[0]].color}`" header-class="header-label"
                                 :label="`${label[0]} (${label[1].length})`">
                 <div class="summary-word q-pb-sm">
-                  <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
+                  <li v-for="(w, j) in label[1].sort((a,b)=>a.pos[0]-b.pos[0])" :key="j" style="list-style: circle">
                     <span>
                       <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
                       <span @click="scrollTo(w)">{{w.pos}} - {{w.text}}</span>
@@ -170,7 +171,8 @@
                 </div>
               </q-expansion-item>
             </q-list>
-            <q-list bordered class="bg-white" v-if="tokens && showConflict">
+<!--            conflict-->
+            <q-list bordered class="bg-white" v-if="tokens && showTab==='conflicts'">
               <span v-if="Object.keys(conflicts).length===0" class="text-subtitle2 q-pa-sm"> Cool, there is no conflict</span>
               <div v-for="(label, i) in Object.entries(conflicts)" :key="i"
                                 :label="`${label[0]} (${label[1].length})`">
@@ -184,6 +186,20 @@
                   </li>
                 </div>
               </div>
+            </q-list>
+<!--            list of annotators-->
+            <q-list bordered separator class="bg-white" v-if="tokens && showTab==='annotators'">
+              <q-item v-for="(anns, author, i) in annotations4Review" :key="i" clickable v-ripple
+                      :active="activeAuthors.includes(author)" active-class="bg-teal-1 text-grey-8"
+                      @click="getAnnotations(author)">
+                <q-item-section>{{anns.author}} ({{anns.annotations.length}})</q-item-section>
+                <q-item-section side>
+                  <q-btn icon="check" flat size="sm" style="width: 20px" ></q-btn>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn icon="clear" flat size="sm" style="width: 20px" ></q-btn>
+                </q-item-section>
+              </q-item>
             </q-list>
           </q-scroll-area>
         </q-card>
@@ -231,7 +247,9 @@ export default {
       offsetTop: null,
       isAnnotated: null,
       numAnnotated: 0,
-      showConflict: false
+      annotations4Review: null,
+      showTab: 'annotations',
+      activeAuthors: []
     }
   },
   mounted () {
@@ -245,6 +263,36 @@ export default {
     })
   },
   methods: {
+    getAnnotations (author) {
+      const indx = this.activeAuthors.indexOf(author)
+      if (indx >= 0) {
+        this.activeAuthors.splice(indx, 1)
+      } else {
+        this.activeAuthors.push(author)
+      }
+      this.annotations = this.mergeAnnotations(this.activeAuthors)
+      this.getDetailedAnnotations()
+    },
+    mergeAnnotations (ary) {
+      if (!ary || ary.length === 0) {
+        ary = Object.keys(this.annotations4Review)
+      }
+      const n = ary.length
+      let result = []
+      for (let i = 0; i < n; i++) {
+        const ann = this.annotations4Review[ary[i]]
+        result = result.concat(ann.annotations.map(a => { a.author = ann.author; return a }))
+      }
+
+      result = result.filter((ann, index, self) =>
+        index === self.findIndex((t) => (
+          String(t.pos) === String(ann.pos) && t.name === ann.name
+        ))
+      )
+      // console.log(result)
+
+      return result
+    },
     getColor (label) {
       // console.log(this.labels, label, label.id)
       return this.labels[label.id].color
@@ -303,8 +351,10 @@ export default {
       })
     },
     scrollTo (label) {
-      console.log(label)
-      const indx = label.tpos
+      let indx = label.tpos
+      if (indx[0] > indx[1]) {
+        indx = [indx[0], indx[0]]
+      }
       const id = `t-${indx[0]}`
       this.highlighted = Array(indx[1] - indx[0] + 1).fill(indx[0]).map((x, y) => x + y)
       document.getElementById(id).scrollIntoView({ block: 'center' })
@@ -417,7 +467,7 @@ export default {
       // convert detailed annotations into compressed (index-based) format
     },
     saveAnnotations () {
-      if (this.conflicts) {
+      if (Object.keys(this.conflicts).length > 0) {
         const msg = 'You must resolve all conflicts before saving.'
         this.$q.notify({
           message: msg,
@@ -478,6 +528,10 @@ export default {
         this.prevURL = response.data.previous
         this.document = this.documents[0]
         this.annotations = this.document.annotations.id ? this.document.annotations.annotations : []
+        this.annotations4Review = this.document.reviews
+        if (this.review) {
+          this.annotations = this.mergeAnnotations()
+        }
         this.isAnnotated = this.document.annotations.id
         this.tokens = this.document.tokens
         // this.tokens = this.document.text.split(' ')
