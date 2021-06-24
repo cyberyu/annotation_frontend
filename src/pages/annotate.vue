@@ -110,14 +110,16 @@
               <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"
                     v-on:mouseup="selectEnd(i);mousePressed=false"
-                    v-on:mouseover="mousePressed && select(i)">
+                    v-on:mouseover="mousePressed && select(i)"
+                    style="position:relative">
                 <span style="white-space: pre" :class="getTokenClass(i)" v-if="!isPunct(i)">&nbsp;</span>
                 <span :class="getTokenClass(i)" >{{ token[0] }}</span>
-                <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0">
-                  <div v-for="(label,k) in detailedAnnotations[i]" :key="k">
-                    <div :style="`height: ${k==0? 1: 4}px; margin-top: ${isPunct(i)? 2: 0}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${label[0]=='B'? 4+k*2: 0}px`"></div>
+<!--                underline -->
+<!--                <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: relative">-->
+                  <div v-for="(label,k) in detailedAnnotations[i]" :key="k" :class="`${getPosOfLabel(i,k,label).order}`"
+                    :style="getPosOfLabel(i,k,label).cls">
                   </div>
-                </span>
+<!--                </span>-->
               </span>
               <!-- dropdown menu for labels -->
               <q-card v-if="selected[0]===i" class="label-window fixed q-px-md q-py-sm" id="label-window" :style="`top: ${offsetTop}px;`">
@@ -165,7 +167,7 @@
                   </q-list>
                 </q-menu>
               </span>
-              <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].filter(a=>a[0]=='B').length*1.3 }em` "> </span>
+              <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].filter(a=>a[0]=='B').length*18 + detailedAnnotations[i].length*4 }px` "> </span>
             </div>
           </div>
         </q-scroll-area>
@@ -333,7 +335,8 @@ export default {
       activeAuthors: [],
       feedback: '',
       modelResultCache: null,
-      activeLabel: null
+      activeLabel: null,
+      annotationOrders: null
     }
   },
   mounted () {
@@ -406,6 +409,21 @@ export default {
     getColor (label) {
       // console.log(this.labels, label, label.id)
       return this.labels[label.id].color
+    },
+    getPosOfLabel (i, k, label) {
+      const order = this.annotationOrders[i][this.getKey(label)]
+      const pos = 1 + 3 * order
+      const cls = `margin-top: ${pos}px;
+      position: absolute;
+      width:calc(100% - ${label[0] === 'B' ? 4 + order * 2 : 0}px);
+      border-bottom: solid ${this.getColor(label[1])} 1px;
+      margin-left: ${label[0] === 'B' ? 4 + order * 2 : 0}px`
+      return {
+        order: order,
+        pos: pos,
+        name: label.name,
+        cls: cls
+      }
     },
     add2Q (id) {
       const minfo = this.tab + id
@@ -675,8 +693,8 @@ export default {
     },
     getDetailedAnnotations () {
       // convert annotations into detailed token based format
-      // [ ['B/I': [label.id, label.id]], ... ]
-      this.detailedAnnotations = new Array(this.tokens.length)
+      // [ ['B/I': {label}], ... ]
+      this.detailedAnnotations = new Array(this.tokens.length).fill(null)
       this.annotations.forEach(a => {
         if (!a.name) {
           a.name = this.labels[a.id].name
@@ -708,7 +726,49 @@ export default {
           }
         }
       })
+      this.getLabelOrder()
       // console.log(this.detailedAnnotations)
+    },
+    getKey (ann) {
+      // const BorI = ann[0]
+      return `${ann[1].name}-${ann[1].pos[0]}-${ann[1].pos[1]}`
+    },
+    getLabelOrder () {
+      const orders = []
+      this.detailedAnnotations.forEach((anns, i) => {
+        if (anns) {
+          const order = {}
+          const used = []
+          let avail = Array(anns.length).fill().map((x, i) => i)
+
+          anns.forEach((ann, idx) => {
+            const k = this.getKey(ann)
+            if (i === 0) {
+              order[k] = idx
+            } else {
+              if (ann[0] === 'I') {
+                const rank = orders[ann[1].tpos[0]][this.getKey(ann)]
+                order[k] = rank
+                used.push(rank)
+              }
+            }
+          })
+          avail = avail.filter(v => !used.includes(v))
+
+          if (i > 0) {
+            anns.forEach((ann, idx) => {
+              const k = this.getKey(ann)
+              if (ann[0] === 'B') {
+                order[k] = avail.shift()
+              }
+            })
+          }
+          orders.push(order)
+        } else {
+          orders.push(null)
+        }
+      })
+      this.annotationOrders = orders
     },
     getSelection (obj) {
       /**
