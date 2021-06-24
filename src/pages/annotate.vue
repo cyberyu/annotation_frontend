@@ -143,7 +143,7 @@
 <!--              </span>-->
               <span v-if="detailedAnnotations[i]" @mouseover="activeLabel=`l-${i}`" @mouseleave="activeLabel=null"
                     :class="{'active-label shadow-4': activeLabel===`l-${i}`}" class="label"
-                    style="position: absolute;" :style="`margin-top: ${2.1+detailedAnnotations[i].length*0.25}em`" :id="`l-${i}`">
+                    style="position: absolute;" :style="`margin-top: ${2.1+detailedAnnotations[i].length*0.25+prevTight(i)}em`" :id="`l-${i}`">
                 <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
                   <span v-if="label[0]==='B'" :style="`margin-left:${j*2-4}px`">
                     <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
@@ -424,6 +424,17 @@ export default {
         name: label.name,
         cls: cls
       }
+    },
+    prevTight (i) {
+      let n = 0
+      if (i === 0 || !this.detailedAnnotations[i - 1] || this.detailedAnnotations[i - 1].length < 1) return n
+      this.detailedAnnotations[i - 1].forEach(a => {
+        const prevToken = this.tokens[a[1].tpos[0]][0]
+        if (a[0] === 'B' && prevToken.length < a[1].name.length) {
+          n += 1
+        }
+      })
+      return n === 0 ? 0 : n - Math.floor(this.detailedAnnotations[i].length / 4)
     },
     add2Q (id) {
       const minfo = this.tab + id
