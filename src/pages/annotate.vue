@@ -111,10 +111,11 @@
                     v-on:mousedown="selectStart(i);mousePressed=true"
                     v-on:mouseup="selectEnd(i);mousePressed=false"
                     v-on:mouseover="mousePressed && select(i)">
+                <span class="token q-pr-sm" v-if="!isPunct(i)"></span>
                 {{ token[0] }}
                 <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0">
                   <div v-for="(label,k) in detailedAnnotations[i]" :key="k">
-                    <div :style="`height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>
+                    <div :style="`height: ${k==0? 1: 4}px; margin-top: ${isPunct(i)? 2: 0}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${label[0]=='B'? k*2: 0}px`"></div>
                   </div>
                 </span>
               </span>
@@ -138,8 +139,8 @@
 <!--                  <div v-if="label[0]==='B'" :style="`width:${getWidth(i,k)}px;height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>-->
 <!--                </div>-->
 <!--              </span>-->
-              <span v-if="detailedAnnotations[i]" @mouseover="activeLabel=`l-${i}`" :class="{'active-label shadow-4': activeLabel===`l-${i}`}"
-                    style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.26}em`" :id="`l-${i}`">
+              <span v-if="detailedAnnotations[i]" @mouseover="activeLabel=`l-${i}`" :class="{'active-label shadow-4': activeLabel===`l-${i}`}" class="label"
+                    style="position: absolute;" :style="`margin-top: ${2.7+detailedAnnotations[i].length*0.27}em`" :id="`l-${i}`">
                 <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
                   <span v-if="label[0]==='B'" :style="`margin-left:${j*2}px`">
                     <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
@@ -149,10 +150,10 @@
                   </span>
                 </span>
                 <q-menu anchor="top right" self="top left" v-if="review">
-                  <q-list bordered separator>
+                  <q-list bordered separator >
                   <q-item clickable v-for="(label, j) in detailedAnnotations[i]" :key="`label${j}`" dense>
                     <q-item-section>
-                      <span class="text-bold">{{ label[1].name }} ({{label[1].authors.length}})</span>
+                      <span class="text-bold">{{ label[1].name }} ({{ label[1].authors.length }})</span>
                       <div class="q-px-sm">
                         <div v-for="(author, ii) in label[1].authors" :key="`author${ii}`">
                           {{author}}
@@ -163,7 +164,7 @@
                   </q-list>
                 </q-menu>
               </span>
-              <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].length*1.4}em` "> </span>
+              <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].filter(a=>a[0]=='B').length*1.3 }em` "> </span>
             </div>
           </div>
         </q-scroll-area>
@@ -527,15 +528,12 @@ export default {
       cls += this.selected.includes(i) ? ' selected' : ''
       cls += this.highlighted.includes(i) ? ' highlight' : ''
 
+      return cls
+    },
+    isPunct (i) {
       const punct = '.,!"\''
       const t = this.tokens[i][0][0]
-      if (punct.includes(t)) {
-        cls += ''
-      } else {
-        cls += ' q-pl-sm'
-      }
-
-      return cls
+      return punct.includes(t)
     },
     getWidth (i, k) {
       let w = 0
