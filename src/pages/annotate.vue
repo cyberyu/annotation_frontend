@@ -53,8 +53,8 @@
                       Loading...
                     </template>
                   </q-btn>
-                  <q-circular-progress show-value font-size="12px" :value="82" size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-md">
-                    {{ 82 }}
+                  <q-circular-progress v-if="consensusScore" show-value font-size="12px" :value="82" size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-md">
+                    {{ consensusScore }}
                   </q-circular-progress>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
@@ -143,7 +143,7 @@
 <!--              </span>-->
               <span v-if="detailedAnnotations[i]" @mouseover="activeLabel=`l-${i}`" @mouseleave="activeLabel=null"
                     :class="{'active-label shadow-4': activeLabel===`l-${i}`}" class="label"
-                    style="position: absolute;" :style="`margin-top: ${2.1+detailedAnnotations[i].length*0.25+prevTight(i)}em`" :id="`l-${i}`">
+                    style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.25+prevTight(i)}em`" :id="`l-${i}`">
                 <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
                   <span v-if="label[0]==='B'" :style="`margin-left:${j*2-4}px`">
                     <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
@@ -155,7 +155,7 @@
                 <q-menu anchor="top right" self="top left" v-if="review">
                   <q-list bordered separator >
                   <q-item clickable v-for="(label, j) in detailedAnnotations[i]" :key="`label${j}`" dense>
-                    <q-item-section>
+                    <q-item-section v-if="label[1].authors">
                       <span class="text-bold">{{ label[1].name }} ({{ label[1].authors.length }}) - {{ label[1].text }}</span>
                       <div class="q-px-sm">
                         <div v-for="(author, ii) in label[1].authors" :key="`author${ii}`">
@@ -222,7 +222,7 @@
               <div v-for="(label, i) in sortedModelResults" :key="i">
                 <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.tpos[0], label); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
                 <span @click="scrollTo(label)">
-                  ({{ label.confidence.toFixed(2) }}) {{label.pos}} - {{label.text}}
+                  <span v-if="label.confidence">({{ label.confidence.toFixed(2) }})</span> {{label.pos}} - {{label.text}}
                 </span>
               </div>
               <div class="flex justify-center">
@@ -338,7 +338,8 @@ export default {
       feedback: '',
       modelResultCache: null,
       activeLabel: null,
-      annotationOrders: null
+      annotationOrders: null,
+      consensusScore: null
     }
   },
   mounted () {
@@ -414,12 +415,14 @@ export default {
     },
     getPosOfLabel (i, k, label) {
       const order = this.annotationOrders[i][this.getKey(label)]
-      const pos = 1 + 3 * order
-      const cls = `margin-top: ${pos}px;
+      const pos = 1 + 4 * order
+      const cls = `
+      margin-top: ${pos}px;
       position: absolute;
       width:calc(100% - ${label[0] === 'B' ? 4 + order * 2 : 0}px);
-      border-bottom: solid ${this.getColor(label[1])} 1px;
-      margin-left: ${label[0] === 'B' ? 4 + order * 2 : 0}px`
+      border-bottom: solid ${this.getColor(label[1])} 2px;
+      margin-left: ${label[0] === 'B' ? 4 + order * 2 : 0}px
+      `
       return {
         order: order,
         pos: pos,
@@ -503,6 +506,10 @@ export default {
             { label: 'Review', color: 'white', handler: () => { this.showTab = 'sort' } }
           ]
         })
+
+        if (this.consensus) {
+          this.consensusScore = 82
+        }
         // this.$forceUpdate()
         // process return annotations
       })
