@@ -154,7 +154,7 @@
                   <q-list bordered separator >
                   <q-item clickable v-for="(label, j) in detailedAnnotations[i]" :key="`label${j}`" dense>
                     <q-item-section>
-                      <span class="text-bold">{{ label[1].name }} ({{ label[1].authors.length }})</span>
+                      <span class="text-bold">{{ label[1].name }} ({{ label[1].authors.length }}) - {{ label[1].text }}</span>
                       <div class="q-px-sm">
                         <div v-for="(author, ii) in label[1].authors" :key="`author${ii}`">
                           {{author}}
