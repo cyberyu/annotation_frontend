@@ -102,7 +102,7 @@
             <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
           </q-card-actions>
         <q-separator />
-        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col">
+        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col" ref="textArea">
           <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
@@ -292,6 +292,8 @@
 </template>
 
 <script>
+// import { ref } from 'vue'
+
 export default {
   name: 'Annotate',
   props: ['project', 'review', 'consensus'],
@@ -701,6 +703,8 @@ export default {
         this.highlighted = []
         this.processedQ = []
       })
+      // const textArea = ref(null)
+      this.$refs.textArea.setScrollPosition('vertical', 0)
     },
     getDetailedAnnotations () {
       // convert annotations into detailed token based format
