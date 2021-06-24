@@ -115,7 +115,7 @@
                 <span :class="getTokenClass(i)" >{{ token[0] }}</span>
                 <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0">
                   <div v-for="(label,k) in detailedAnnotations[i]" :key="k">
-                    <div :style="`height: ${k==0? 1: 4}px; margin-top: ${isPunct(i)? 2: 0}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${label[0]=='B'? 8+k*2: 0}px`"></div>
+                    <div :style="`height: ${k==0? 1: 4}px; margin-top: ${isPunct(i)? 2: 0}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${label[0]=='B'? 4+k*2: 0}px`"></div>
                   </div>
                 </span>
               </span>
@@ -143,7 +143,7 @@
                     :class="{'active-label shadow-4': activeLabel===`l-${i}`}" class="label"
                     style="position: absolute;" :style="`margin-top: ${2.1+detailedAnnotations[i].length*0.25}em`" :id="`l-${i}`">
                 <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
-                  <span v-if="label[0]==='B'" :style="`margin-left:${j*2}px`">
+                  <span v-if="label[0]==='B'" :style="`margin-left:${j*2-4}px`">
                     <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
                       m
                     </q-avatar>
