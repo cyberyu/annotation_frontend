@@ -102,7 +102,7 @@
             <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
           </q-card-actions>
         <q-separator />
-        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col" ref="textArea">
+        <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
           <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
@@ -219,7 +219,7 @@
             </q-list>
 <!--            model results review -->
             <q-list class="q-pa-sm" v-if="tokens && modelResultCache && showTab==='sort'">
-              <div v-for="(label, i) in sortedModelResults" :key="i">
+              <div v-for="(label, i) in modelResultCache" :key="i">
                 <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.tpos[0], label); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
                 <span @click="scrollTo(label)">
                   <span v-if="label.confidence">({{ label.confidence.toFixed(2) }})</span> {{label.pos}} - {{label.text}}
@@ -393,7 +393,7 @@ export default {
         if (ann.status === -1) { continue } // if rejected, skip
         result = result.concat(ann.annotations.map(a => { a.author = ann.author; return a }))
       }
-      console.log(result.length)
+      // console.log(result.length)
       result.forEach(a => (a.authors = []))
       result = result.filter((ann, index, self) =>
         index === self.findIndex((t) => {
@@ -404,7 +404,7 @@ export default {
           return false
         })
       )
-      console.log(result.length)
+      // console.log(result.length)
       // console.log(result)
 
       return result
@@ -463,7 +463,7 @@ export default {
     findAnnotation (i, lid) {
       let ann
       this.detailedAnnotations[i].forEach(a => {
-        console.log('find', a[1])
+        // console.log('find', a[1])
         if (a[1].id === lid) {
           ann = a[1]
         }
@@ -495,6 +495,8 @@ export default {
         } else {
           this.modelResultCache = results
         }
+        this.modelResultCache.sort((a, b) => b.confidence - a.confidence)
+
         const msg = `Finished running model, and got ${results.length} results`
         this.$q.notify({
           message: msg,
@@ -620,9 +622,9 @@ export default {
     },
     removeAnnotation (i, label) {
       const idx = this.annotations.indexOf(label)
-      console.log('find label', idx, label)
+      // console.log('find label', idx, label)
       this.annotations.splice(idx, 1)
-      console.log(this.annotations.length)
+      // console.log(this.annotations.length)
 
       this.getDetailedAnnotations()
     },
@@ -666,7 +668,7 @@ export default {
 
       this.$axios({ method: method, url: url, data: data }).then(response => {
         this.saving = false
-        console.log('saving...')
+        // console.log('saving...')
         if (!this.isAnnotated && data.annotations.length >= 1) {
           this.incrProgress(1)
         } else if (this.isAnnotated && data.annotations.length === 0) {
@@ -796,7 +798,7 @@ export default {
       /**
        * get a selection in the format of {fixStr, allStr, start, end}
        **/
-      console.log(obj)
+      // console.log(obj)
       this.highlight(this.documents[0].text, obj.start, obj.end)
     },
     highlight (text, start, end) {
@@ -808,10 +810,6 @@ export default {
     }
   },
   computed: {
-    sortedModelResults () {
-      const ary = JSON.parse(JSON.stringify(this.modelResultCache))
-      return ary.sort((a, b) => b.confidence - a.confidence)
-    },
     progressStats () {
       const totalAnnotated = (this.project.num_of_annotated_docs + this.numAnnotated)
       const pct = totalAnnotated / this.project.num_of_docs
