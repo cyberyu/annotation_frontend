@@ -115,7 +115,7 @@
                 {{ token[0] }}
                 <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0">
                   <div v-for="(label,k) in detailedAnnotations[i]" :key="k">
-                    <div :style="`height: ${k==0? 1: 4}px; margin-top: ${isPunct(i)? 2: 0}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${label[0]=='B'? k*2: 0}px`"></div>
+                    <div :style="`height: ${k==0? 1: 4}px; margin-top: ${isPunct(i)? 2: 0}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${label[0]=='B'? 8+k*2: 0}px`"></div>
                   </div>
                 </span>
               </span>
