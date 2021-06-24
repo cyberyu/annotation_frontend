@@ -139,7 +139,8 @@
 <!--                  <div v-if="label[0]==='B'" :style="`width:${getWidth(i,k)}px;height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>-->
 <!--                </div>-->
 <!--              </span>-->
-              <span v-if="detailedAnnotations[i]" @mouseover="activeLabel=`l-${i}`" :class="{'active-label shadow-4': activeLabel===`l-${i}`}" class="label"
+              <span v-if="detailedAnnotations[i]" @mouseover="activeLabel=`l-${i}`" @mouseleave="activeLabel=null"
+                    :class="{'active-label shadow-4': activeLabel===`l-${i}`}" class="label"
                     style="position: absolute;" :style="`margin-top: ${2.7+detailedAnnotations[i].length*0.27}em`" :id="`l-${i}`">
                 <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
                   <span v-if="label[0]==='B'" :style="`margin-left:${j*2}px`">
