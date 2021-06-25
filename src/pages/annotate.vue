@@ -713,6 +713,7 @@ export default {
         this.processedQ = []
       })
       // const textArea = ref(null)
+      this.modelResultCache = null
       this.$refs.textArea.setScrollPosition('vertical', 0)
     },
     getDetailedAnnotations () {
