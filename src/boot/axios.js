@@ -1,10 +1,16 @@
-import Vue from 'vue'
 import axios from 'axios'
-
-Vue.prototype.$axios = axios
+import Vue from 'vue'
 
 if (process.env.PROD === true) {
   Vue.prototype.$hostname = window.location.origin + window.location.pathname
 } else {
   Vue.prototype.$hostname = 'http://127.0.0.1:8000'
 }
+
+Vue.prototype.$axios = axios.create({
+  baseURL: Vue.prototype.$hostname
+})
+
+Vue.prototype.$axios.defaults.xsrfHeaderName = 'X-CSRFToken'
+Vue.prototype.$axios.defaults.xsrfCookieName = 'csrftoken'
+Vue.prototype.$axios.defaults.withCredentials = true

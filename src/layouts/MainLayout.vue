@@ -5,12 +5,15 @@
         <q-btn flat dense round icon="home" aria-label="Menu" @click="$router.push('/')" />
 
         <q-toolbar-title> <router-link to="/" class="main-link">Vanguard NLP Annotation</router-link> </q-toolbar-title>
-        <q-btn-dropdown color="primary" label="Welcome, User">
+        <q-btn-dropdown v-if="isLoggedIn" color="primary" :label="`Welcome ${user.username}`">
           <div class="q-px-md q-py-sm"><a :href="$hostname+'/admin/'" target="_blank">admin</a> </div>
-          <div class="q-px-md q-py-sm"> Profile</div>
+          <div class="q-px-md q-py-sm" @click="logout()" style="color:blue">logout</div>
+<!--          <div class="q-px-md q-py-sm"> My profile</div>-->
         </q-btn-dropdown>
       </q-toolbar>
     </q-header>
+
+    <login v-if="!isLoggedIn"></login>
 
 <!--    <q-drawer v-model="leftDrawerOpen" show-if-above bordered content-class="bg-grey-1" >-->
 <!--      <q-list>-->
@@ -19,7 +22,7 @@
 <!--      </q-list>-->
 <!--    </q-drawer>-->
 
-    <q-page-container>
+    <q-page-container v-if="isLoggedIn">
       <router-view />
     </q-page-container>
   </q-layout>
@@ -27,62 +30,30 @@
 
 <script>
 // import EssentialLink from 'components/EssentialLink.vue'
-
-const linksData = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-]
+import Login from 'pages/login'
 
 export default {
   name: 'MainLayout',
-  // components: { EssentialLink },
+  components: { Login },
   data () {
     return {
-      leftDrawerOpen: false,
-      essentialLinks: linksData
+      leftDrawerOpen: false
     }
   },
   mounted () {
+  },
+  methods: {
+    logout () {
+      this.$store.dispatch('auth/logout')
+    }
+  },
+  computed: {
+    isLoggedIn () {
+      return this.$store.getters['auth/authenticated']
+    },
+    user () {
+      return this.$store.getters['auth/user']
+    }
   }
 }
 </script>
