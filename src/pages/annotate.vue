@@ -721,7 +721,9 @@ export default {
         this.highlighted = []
         this.processedQ = []
         this.modelQueue = []
-        this.consensusScore.f1 = null
+        if (this.consensusScore) {
+          this.consensusScore.f1 = null
+        }
       })
       // const textArea = ref(null)
       this.modelResultCache = null
