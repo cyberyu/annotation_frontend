@@ -53,13 +53,13 @@
                       Loading...
                     </template>
                   </q-btn>
-                  <q-circular-progress v-if="consensusScore && consensusScore.f1" show-value font-size="12px" :value="consensusScore.f1"
-                                       size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-xs">
-                    {{ consensusScore.f1.toFixed(1) }}
-                  </q-circular-progress>
                   <q-circular-progress v-if="consensusScore && consensusScore.total" show-value font-size="12px" :value="consensusScore.total"
                                        size="35px" :thickness="0.22" color="red" track-color="grey-3" class="q-ma-xs">
                     {{ consensusScore.total.toFixed(1) }}
+                  </q-circular-progress>
+                  <q-circular-progress v-if="consensusScore && consensusScore.f1" show-value font-size="12px" :value="consensusScore.f1"
+                                       size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-xs">
+                    {{ consensusScore.f1.toFixed(1) }}
                   </q-circular-progress>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
@@ -721,7 +721,7 @@ export default {
         this.highlighted = []
         this.processedQ = []
         this.modelQueue = []
-        this.consensusScore = {}
+        this.consensusScore.f1 = null
       })
       // const textArea = ref(null)
       this.modelResultCache = null
