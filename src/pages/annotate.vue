@@ -359,6 +359,13 @@ export default {
       name: 'NULL'
     }
     this.labels.null = nullLabel
+    const miscLabel = {
+      id: 'misc',
+      description: 'misc',
+      color: '#e0e0e0',
+      name: 'MISC'
+    }
+    this.labels.misc = miscLabel
 
     this.fetchDocs()
     setTimeout(() => {
@@ -691,7 +698,7 @@ export default {
     },
     fetchDocs (url) {
       if (!url) {
-        url = `/api/documents/?project=${this.project.id}&review=${this.review}`
+        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}`
       } else {
         const n = url.split('/').length
         url = '/' + url.split('/').splice(n - 3, n).join('/')
@@ -705,9 +712,15 @@ export default {
         this.prevURL = response.data.previous
         this.document = this.documents[0]
         this.annotations = this.document.annotations.id ? this.document.annotations.annotations : []
-        this.annotations4Review = this.document.reviews
         if (this.review) {
+          this.annotations4Review = this.document.reviews
           this.annotations = this.mergeAnnotations()
+        }
+        if (this.consensus) {
+          this.document.gold.annotations.forEach(ann => {
+            ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
+          })
+          this.annotations = this.document.gold.annotations
         }
         this.isAnnotated = this.document.annotations.id
         this.tokens = this.document.tokens
