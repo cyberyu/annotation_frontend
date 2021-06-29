@@ -720,6 +720,8 @@ export default {
         this.getDetailedAnnotations()
         this.highlighted = []
         this.processedQ = []
+        this.modelQueue = []
+        this.consensusScore = {}
       })
       // const textArea = ref(null)
       this.modelResultCache = null
