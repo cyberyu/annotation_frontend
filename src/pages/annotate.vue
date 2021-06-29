@@ -53,8 +53,11 @@
                       Loading...
                     </template>
                   </q-btn>
-                  <q-circular-progress v-if="consensusScore" show-value font-size="12px" :value="consensusScore" size="45px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-md">
-                    {{ consensusScore.toFixed(1) }}
+                  <q-circular-progress v-if="consensusScore" show-value font-size="12px" :value="consensusScore.f1" size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-xs">
+                    {{ consensusScore.f1.toFixed(1) }}
+                  </q-circular-progress>
+                  <q-circular-progress v-if="consensusScore" show-value font-size="12px" :value="consensusScore.total" size="35px" :thickness="0.22" color="red" track-color="grey-3" class="q-ma-xs">
+                    {{ consensusScore.total.toFixed(1) }}
                   </q-circular-progress>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
@@ -511,7 +514,10 @@ export default {
         })
 
         if (this.consensus) {
-          this.consensusScore = response.data.f1 * 100
+          this.consensusScore = {
+            f1: response.data.f1 * 100,
+            total: response.data.total * 100
+          }
         }
         // this.$forceUpdate()
         // process return annotations
