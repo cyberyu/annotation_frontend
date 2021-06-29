@@ -53,7 +53,7 @@
                       Loading...
                     </template>
                   </q-btn>
-                  <q-circular-progress v-if="consensusScore" show-value font-size="12px" :value="82" size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-md">
+                  <q-circular-progress v-if="consensusScore" show-value font-size="12px" :value="consensusScore" size="45px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-md">
                     {{ consensusScore }}
                   </q-circular-progress>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
@@ -477,8 +477,9 @@ export default {
         id: id,
         document: this.document.id
       }
-      this.$axios.post(this.$hostname + '/api/calculate/', data).then(response => {
-        const results = response.data
+      const url = this.consensus ? '/api/calculate_consensus/' : '/api/calculate/'
+      this.$axios.post(this.$hostname + url, data).then(response => {
+        const results = response.data.result
         results.forEach(ann => {
           ann.m = 'm' // machine generated
           ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
@@ -510,7 +511,7 @@ export default {
         })
 
         if (this.consensus) {
-          this.consensusScore = 82
+          this.consensusScore = (response.data.f1 * 100).toFixed(2)
         }
         // this.$forceUpdate()
         // process return annotations
