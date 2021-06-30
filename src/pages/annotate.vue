@@ -492,6 +492,7 @@ export default {
       const url = this.consensus ? '/api/calculate_consensus/' : '/api/calculate/'
       this.$axios.post(this.$hostname + url, data).then(response => {
         const results = response.data.result
+        this.alignTokens(results)
         results.forEach(ann => {
           ann.m = 'm' // machine generated
           ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
@@ -741,6 +742,27 @@ export default {
       // const textArea = ref(null)
       this.modelResultCache = null
       this.$refs.textArea.setScrollPosition('vertical', 0)
+    },
+    alignTokens (annotations) {
+      annotations.forEach(a => {
+        if (!a.name) {
+          a.name = this.labels[a.id].name
+        }
+        const start = a.tpos[0]
+        const end = a.tpos[1]
+        const startChar = a.pos[0]
+        const endChar = a.pos[1]
+        for (let i = 0; i < this.tokens.length; i++) {
+          if (this.tokens[i][2] === startChar) {
+            a.tpos[0] = i
+            if (start === end) {
+              a.tpos[1] = i
+            }
+          } else if (this.tokens[i][2] > startChar && this.tokens[i][2] < endChar) {
+            a.tpos[1] = i
+          }
+        }
+      })
     },
     getDetailedAnnotations () {
       // convert annotations into detailed token based format
