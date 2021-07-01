@@ -36,9 +36,21 @@
           <div v-if="project.dicts">dictionaries: {{ project.dicts.length }}</div>
           <div v-if="project.cmodels">consensus model: {{ project.cmodels.length }}</div>
 
-          <div class="flex justify-start q-mt-sm">
+          <div v-if="canReview()" class="flex justify-start q-mt-sm">
             <q-btn label="Export curation data" color="primary" style="font-size: 12px"/>
+            <q-btn label="Upload documents" color="primary" style="font-size: 12px" @click="upload=true"/>
           </div>
+          <q-dialog v-model="upload">
+            <q-card>
+              <q-card-section>
+                <q-uploader :url="`${$hostname}/api/upload/`" :form-fields="[{name: 'project', value: project.id}, {name: 'user', value: loggedInUser.id}]" @added="uploadFile"
+                            style="max-width: 300px" flat bordered method="put"/>
+              </q-card-section>
+              <q-card-actions align="right">
+                <q-btn flat label="OK" color="primary" v-close-popup />
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
 
         </q-card-section>
         <q-card-actions align="right">
@@ -65,7 +77,9 @@ export default {
   name: 'projectDetail',
   data () {
     return {
-      project: {}
+      project: {},
+      upload: false,
+      download: false
     }
   },
   mounted () {
@@ -80,6 +94,9 @@ export default {
     },
     canReview () {
       return this.project.admins.includes(this.loggedInUser.id)
+    },
+    uploadFile (files) {
+      console.log(files)
     }
   },
   computed: {
