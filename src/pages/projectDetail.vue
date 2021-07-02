@@ -24,21 +24,52 @@
             </div>
           </q-linear-progress>
 
-          <q-btn outline v-for="(label,i) in project.labels" :key="i" :style="`color: ${label.color}`" size="sm" class="q-mr-xs q-my-sm">
-            {{ label.name }}
-          </q-btn>
+          <div class="flex justify-center">
+            <q-btn outline v-for="(label,i) in project.labels" :key="i" :style="`color: ${label.color}`" size="sm" class="q-mr-xs q-my-sm">
+              {{ label.name }}
+            </q-btn>
+          </div>
 
           <div v-if="project.curators">curators: {{ project.curators.length }}</div>
           <div v-if="project.vmodels">models: {{ project.vmodels.length }}</div>
           <div v-if="project.rules">rules: {{ project.rules.length }}</div>
           <div v-if="project.dicts">dictionaries: {{ project.dicts.length }}</div>
+          <div v-if="project.cmodels">consensus model: {{ project.cmodels.length }}</div>
+
+          <div v-if="project.id && canReview" class="flex justify-start q-mt-sm">
+            <q-btn label="Upload documents" color="primary" style="font-size: 12px" @click="upload=true"/>
+            <q-btn label="Export curation data" color="primary" style="font-size: 12px" class="q-mx-sm"
+                   @click="downloadLabel()" :loading="loading"/>
+          </div>
+          <div v-if="fileInfo">
+            <a :href="`cache/${fileInfo.text}`">download texts </a>
+            <a :href="`cache/${fileInfo.label}`" class="q-mx-sm">download labels </a>
+          </div>
+          <q-dialog v-model="upload">
+            <q-card>
+              <q-card-section>
+                <q-uploader :url="`${$hostname}/api/upload/`" :form-fields="[{name: 'project', value: project.id}, {name: 'user', value: loggedInUser.id}]"
+                            @added="uploadFile"
+                            style="max-width: 300px" flat bordered method="put"/>
+              </q-card-section>
+              <q-card-actions align="right">
+                <q-btn flat label="OK" color="primary" v-close-popup />
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
 
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat @click="$router.push({ name: 'annotate', params: { project: project, review: true }})" :disable="project.number_of_docs===0">
+          <q-btn v-if="project.id && canReview && project.cmodels.length>0" flat  :disable="project.number_of_docs===0"
+                 @click="$router.push({ name: 'annotate', params: { project: project, consensus: true}})">
+            Check Consensus
+          </q-btn>
+          <q-btn v-if="project.id && canReview" flat  :disable="project.number_of_docs===0"
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: true }})">
             Review
           </q-btn>
-          <q-btn flat @click="$router.push({ name: 'annotate', params: { project: project, review: false }})" :disable="project.number_of_docs===0">
+          <q-btn flat  :disable="project.number_of_docs===0"
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">
             Annotate It
           </q-btn>
         </q-card-actions>
@@ -52,7 +83,11 @@ export default {
   name: 'projectDetail',
   data () {
     return {
-      project: {}
+      project: {},
+      upload: false,
+      download: false,
+      loading: false,
+      fileInfo: null
     }
   },
   mounted () {
@@ -64,6 +99,24 @@ export default {
       this.$axios.get(this.$hostname + `/api/projects/${id}/`).then(response => {
         this.project = response.data
       })
+    },
+    uploadFile (files) {
+      console.log(files)
+    },
+    downloadLabel () {
+      this.loading = true
+      this.$axios.get(`/api/projects/${this.project.id}/download/`).then(resp => {
+        this.fileInfo = resp.data
+        this.loading = false
+      })
+    }
+  },
+  computed: {
+    canReview () {
+      return this.project.admins.includes(this.loggedInUser.id)
+    },
+    loggedInUser () {
+      return this.$store.getters['auth/user']
     }
   }
 }
