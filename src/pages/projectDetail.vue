@@ -37,8 +37,13 @@
           <div v-if="project.cmodels">consensus model: {{ project.cmodels.length }}</div>
 
           <div v-if="canReview()" class="flex justify-start q-mt-sm">
-            <q-btn label="Export curation data" color="primary" style="font-size: 12px"/>
             <q-btn label="Upload documents" color="primary" style="font-size: 12px" @click="upload=true"/>
+            <q-btn label="Export curation data" color="primary" style="font-size: 12px" class="q-mx-sm"
+                   @click="downloadLabel()" :loading="loading"/>
+          </div>
+          <div v-if="fileInfo">
+            <a :href="`cache/${fileInfo.text}`">download texts </a>
+            <a :href="`cache/${fileInfo.label}`" class="q-mx-sm">download labels </a>
           </div>
           <q-dialog v-model="upload">
             <q-card>
@@ -79,7 +84,9 @@ export default {
     return {
       project: {},
       upload: false,
-      download: false
+      download: false,
+      loading: false,
+      fileInfo: null
     }
   },
   mounted () {
@@ -97,6 +104,13 @@ export default {
     },
     uploadFile (files) {
       console.log(files)
+    },
+    downloadLabel () {
+      this.loading = true
+      this.$axios.get(`/api/projects/${this.project.id}/download/`).then(resp => {
+        this.fileInfo = resp.data
+        this.loading = false
+      })
     }
   },
   computed: {
