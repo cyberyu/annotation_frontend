@@ -48,7 +48,8 @@
           <q-dialog v-model="upload">
             <q-card>
               <q-card-section>
-                <q-uploader :url="`${$hostname}/api/upload/`" :form-fields="[{name: 'project', value: project.id}, {name: 'user', value: loggedInUser.id}]" @added="uploadFile"
+                <q-uploader :url="`${$hostname}/api/upload/`" :form-fields="[{name: 'project', value: project.id}, {name: 'user', value: loggedInUser.id}]"
+                            @added="uploadFile"
                             style="max-width: 300px" flat bordered method="put"/>
               </q-card-section>
               <q-card-actions align="right">
