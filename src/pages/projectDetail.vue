@@ -36,7 +36,7 @@
           <div v-if="project.dicts">dictionaries: {{ project.dicts.length }}</div>
           <div v-if="project.cmodels">consensus model: {{ project.cmodels.length }}</div>
 
-          <div v-if="canReview()" class="flex justify-start q-mt-sm">
+          <div v-if="project.id && canReview" class="flex justify-start q-mt-sm">
             <q-btn label="Upload documents" color="primary" style="font-size: 12px" @click="upload=true"/>
             <q-btn label="Export curation data" color="primary" style="font-size: 12px" class="q-mx-sm"
                    @click="downloadLabel()" :loading="loading"/>
@@ -59,11 +59,11 @@
 
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn v-if="project.id && canReview() && project.cmodels.length>0" flat  :disable="project.number_of_docs===0"
+          <q-btn v-if="project.id && canReview && project.cmodels.length>0" flat  :disable="project.number_of_docs===0"
                  @click="$router.push({ name: 'annotate', params: { project: project, consensus: true}})">
             Check Consensus
           </q-btn>
-          <q-btn v-if="project.id && canReview()" flat  :disable="project.number_of_docs===0"
+          <q-btn v-if="project.id && canReview" flat  :disable="project.number_of_docs===0"
                  @click="$router.push({ name: 'annotate', params: { project: project, review: true }})">
             Review
           </q-btn>
@@ -99,9 +99,6 @@ export default {
         this.project = response.data
       })
     },
-    canReview () {
-      return this.project.admins.includes(this.loggedInUser.id)
-    },
     uploadFile (files) {
       console.log(files)
     },
@@ -114,6 +111,9 @@ export default {
     }
   },
   computed: {
+    canReview () {
+      return this.project.admins.includes(this.loggedInUser.id)
+    },
     loggedInUser () {
       return this.$store.getters['auth/user']
     }
