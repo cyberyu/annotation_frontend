@@ -53,13 +53,13 @@
                       Loading...
                     </template>
                   </q-btn>
-                  <q-circular-progress v-if="consensusScore && consensusScore.total" show-value font-size="12px" :value="consensusScore.total"
+                  <q-circular-progress v-if="cmodels[m.id].consensusScore.total" show-value font-size="12px" :value="cmodels[m.id].consensusScore.total"
                                        size="35px" :thickness="0.22" color="red" track-color="grey-3" class="q-ma-xs">
-                    {{ consensusScore.total.toFixed(1) }}
+                    {{ cmodels[m.id].consensusScore.total.toFixed(1) }}
                   </q-circular-progress>
-                  <q-circular-progress v-if="consensusScore && consensusScore.f1" show-value font-size="12px" :value="consensusScore.f1"
+                  <q-circular-progress v-if="cmodels[m.id].consensusScore.f1" show-value font-size="12px" :value="cmodels[m.id].consensusScore.f1"
                                        size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-xs">
-                    {{ consensusScore.f1.toFixed(1) }}
+                    {{ cmodels[m.id].consensusScore.f1.toFixed(1) }}
                   </q-circular-progress>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
@@ -344,6 +344,7 @@ export default {
       modelResultCache: null,
       activeLabel: null,
       annotationOrders: null,
+      cmodels: {},
       consensusScore: null
     }
   },
@@ -352,6 +353,10 @@ export default {
     this.project.labels.forEach(a => {
       this.labels[a.id] = a
     })
+    this.project.cmodels.forEach(m => {
+      this.cmodels[m.id] = m
+    })
+
     const nullLabel = {
       id: null,
       description: 'a dummy label for labels which were createad in the project',
@@ -524,7 +529,7 @@ export default {
         })
 
         if (this.consensus) {
-          this.consensusScore = {
+          this.cmodels[id].consensusScore = {
             f1: response.data.f1 * 100,
             total: response.data.total * 100
           }
@@ -735,8 +740,10 @@ export default {
         this.highlighted = []
         this.processedQ = []
         this.modelQueue = []
-        if (this.consensusScore) {
-          this.consensusScore.f1 = null
+        if (this.consensus) {
+          this.project.cmodels.forEach(m => {
+            this.cmodels[m.id].consensusScore.f1 = null
+          })
         }
       })
       // const textArea = ref(null)
