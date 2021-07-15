@@ -53,11 +53,11 @@
                       Loading...
                     </template>
                   </q-btn>
-                  <q-circular-progress v-if="cmodels[m.id].consensusScore.total" show-value font-size="12px" :value="cmodels[m.id].consensusScore.total"
+                  <q-circular-progress v-if="cmodels[m.id] && cmodels[m.id].consensusScore.total" show-value font-size="12px" :value="cmodels[m.id].consensusScore.total"
                                        size="35px" :thickness="0.22" color="red" track-color="grey-3" class="q-ma-xs">
                     {{ cmodels[m.id].consensusScore.total.toFixed(1) }}
                   </q-circular-progress>
-                  <q-circular-progress v-if="cmodels[m.id].consensusScore.f1" show-value font-size="12px" :value="cmodels[m.id].consensusScore.f1"
+                  <q-circular-progress v-if="cmodels[m.id] && cmodels[m.id].consensusScore.f1" show-value font-size="12px" :value="cmodels[m.id].consensusScore.f1"
                                        size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-xs">
                     {{ cmodels[m.id].consensusScore.f1.toFixed(1) }}
                   </q-circular-progress>
@@ -355,6 +355,7 @@ export default {
     })
     this.project.cmodels.forEach(m => {
       this.cmodels[m.id] = m
+      this.cmodels[m.id].consensusScore = { f1: null, total: null }
     })
 
     const nullLabel = {
