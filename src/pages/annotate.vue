@@ -45,7 +45,7 @@
 
 <!--              consensus model results-->
               <q-tab-panel name="models" v-else>
-                <div v-for="(m,i) in project.cmodels" :key="i">
+                <div v-for="(m,i) in project.cmodels" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
