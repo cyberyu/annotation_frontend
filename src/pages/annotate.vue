@@ -53,14 +53,22 @@
                       Loading...
                     </template>
                   </q-btn>
-                  <q-circular-progress v-if="cmodels[m.id] && cmodels[m.id].consensusScore.total" show-value font-size="12px" :value="cmodels[m.id].consensusScore.total"
-                                       size="35px" :thickness="0.22" color="red" track-color="grey-3" class="q-ma-xs">
-                    {{ cmodels[m.id].consensusScore.total.toFixed(1) }}
-                  </q-circular-progress>
-                  <q-circular-progress v-if="cmodels[m.id] && cmodels[m.id].consensusScore.f1" show-value font-size="12px" :value="cmodels[m.id].consensusScore.f1"
-                                       size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-xs">
-                    {{ cmodels[m.id].consensusScore.f1.toFixed(1) }}
-                  </q-circular-progress>
+<!--                  <q-circular-progress v-if="cmodels[m.id] && cmodels[m.id].consensusScore.total" show-value font-size="12px" :value="cmodels[m.id].consensusScore.total"-->
+<!--                                       size="35px" :thickness="0.22" color="red" track-color="grey-3" class="q-ma-xs">-->
+<!--                    {{ cmodels[m.id].consensusScore.total.toFixed(1) }}-->
+<!--                  </q-circular-progress>-->
+<!--                  <q-circular-progress v-if="cmodels[m.id] && cmodels[m.id].consensusScore.f1" show-value font-size="12px" :value="cmodels[m.id].consensusScore.f1"-->
+<!--                                       size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-xs">-->
+<!--                    {{ cmodels[m.id].consensusScore.f1.toFixed(1) }}-->
+<!--                  </q-circular-progress>-->
+                  <div v-if="cmodels[m.id] && cmodels[m.id].consensusScore">
+                    <span v-if="cmodels[m.id].consensusScore.total">
+                      <span class="text-bold text-primary">Accum F1</span>: {{ cmodels[m.id].consensusScore.total.toFixed(1) }}
+                    </span>
+                    <span v-if="cmodels[m.id].consensusScore.f1" class="q-pl-sm">
+                      <span class="text-bold text-positive">F1</span>: {{ cmodels[m.id].consensusScore.f1.toFixed(1) }}
+                    </span>
+                  </div>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
               </q-tab-panel>
