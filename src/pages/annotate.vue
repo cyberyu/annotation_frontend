@@ -187,14 +187,14 @@
         <q-separator />
           <q-card-actions class="justify-center">
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
-                   @click="fetchDocs(prevURL)" style="width: 100px"/>
+                   @click="fetchDocs({url:prevURL})" style="width: 100px"/>
             <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()" :loading="saving" style="width: 100px">
                    <template v-slot:loading>
                      Saving...
                    </template>
             </q-btn>
             <q-btn color="primary" label="Next" class="justify-center q-ml-md"
-                   @click="nextURL? fetchDocs(nextURL): $router.push('/')" style="width: 100px"/>
+                   @click="nextURL? fetchDocs({url: nextURL}): $router.push('/')" style="width: 100px"/>
           </q-card-actions>
       </div>
 
@@ -381,7 +381,7 @@ export default {
     }
     this.labels.misc = miscLabel
 
-    this.fetchDocs()
+    this.fetchDocs({ page: this.project.first_unannotated })
     setTimeout(() => {
       this.$forceUpdate()
     })
@@ -554,6 +554,7 @@ export default {
       }
       const id = `t-${indx[0]}`
       this.highlighted = Array(indx[1] - indx[0] + 1).fill(indx[0]).map((x, y) => x + y)
+      console.log(label, this.highlighted)
       document.getElementById(id).scrollIntoView({ block: 'center' })
     },
     // fetchLabels () {
@@ -711,12 +712,16 @@ export default {
     incrProgress (n) {
       this.numAnnotated += n
     },
-    fetchDocs (url) {
-      if (!url) {
+    fetchDocs (params) {
+      let url
+      if (!params.url) {
         url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}`
+        if (params.page) {
+          url += `&page=${params.page}`
+        }
       } else {
-        const n = url.split('/').length
-        url = '/' + url.split('/').splice(n - 3, n).join('/')
+        const n = params.url.split('/').length
+        url = '/' + params.url.split('/').splice(n - 3, n).join('/')
         // console.log('hostname', this.$hostname)
         // console.log('next url', url)
       }
@@ -805,7 +810,7 @@ export default {
               this.detailedAnnotations[i] = []
             }
             this.detailedAnnotations[i].push(label)
-          } else if (this.tokens[i][2] > startChar && this.tokens[i][2] < endChar) {
+          } else if (this.tokens[i][2] >= startChar && this.tokens[i][2] <= endChar) {
             a.tpos[1] = i
             label = ['I', a]
             if (!this.detailedAnnotations[i]) {
