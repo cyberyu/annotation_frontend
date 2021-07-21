@@ -186,6 +186,12 @@
         </q-scroll-area>
         <q-separator />
           <q-card-actions class="justify-center">
+            <div class="row items-center">
+              Go to page <q-input v-model.number="go2page" type="number" dense style="max-width: 5em" class="q-pl-xs" />
+              <q-btn color="primary" label="Go" class="float-right q-ml-md"
+                     @click="fetchDocs({page: go2page})" />
+            </div>
+            <q-space />
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
                    @click="fetchDocs({url:prevURL})" style="width: 100px"/>
             <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()" :loading="saving" style="width: 100px">
@@ -353,7 +359,8 @@ export default {
       activeLabel: null,
       annotationOrders: null,
       cmodels: {},
-      consensusScore: null
+      consensusScore: null,
+      go2page: ''
     }
   },
   mounted () {
