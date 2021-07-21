@@ -388,7 +388,12 @@ export default {
     }
     this.labels.misc = miscLabel
 
-    this.fetchDocs({ page: this.project.first_unannotated })
+    if (!this.review && !this.consensus) {
+      this.fetchDocs({ page: this.project.first_unannotated })
+    } else {
+      this.fetchDocs({})
+    }
+
     setTimeout(() => {
       this.$forceUpdate()
     })
