@@ -125,7 +125,7 @@
                     v-on:mouseup="selectEnd(i);mousePressed=false"
                     v-on:mouseover="mousePressed && select(i)"
                     style="position:relative">
-                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!isPunct(i)">&nbsp;</span>
+<!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
                 <span :class="getTokenClass(i)" >{{ token[0] }}</span>
 <!--                underline -->
 <!--                <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: relative">-->
@@ -593,6 +593,8 @@ export default {
       // if not annotated, then it will be the start
       this.start = i
       this.selected = [i]
+      // console.log()
+      // console.log('..start', new Date())
     },
     selectEnd (i) {
       this.end = i
@@ -600,18 +602,25 @@ export default {
         this.end = this.start
         this.start = i
       }
+      // console.log('..end', new Date())
     },
     select (i) {
       const min = Math.min(i, this.start)
       const max = Math.max(i, this.start)
       this.selected = [...Array(max - min + 1).keys()].map(k => k + min)
       // this.selected.includes(i) ? this.selected.pop() : this.selected.push(i)
+      // console.log('..select', new Date())
     },
     getTokenClass (i) {
-      let cls
+      let cls = ''
       cls = this.detailedAnnotations[i] ? this.detailedAnnotations[i][0][0] : ''
-      cls += this.selected.includes(i) ? ' selected' : ''
-      cls += this.highlighted.includes(i) ? ' highlight' : ''
+      cls += this.selectedClasses[i]
+      // cls += this.selected.indexOf(i) > -1 ? ' selected' : ''
+      // if (!this.puncts[i]) {
+      //   cls += ' q-pl-sm'
+      // }
+      cls += ' q-pl-sm'
+      // cls += this.highlighted.includes(i) ? ' highlight' : ''
 
       return cls
     },
@@ -725,6 +734,9 @@ export default {
       this.numAnnotated += n
     },
     fetchDocs (params) {
+      this.tokens = []
+      this.$q.loading.show({ message: 'Fetching documet from server and set it up for curation. This may take a few seconds.' })
+
       let url
       if (!params.url) {
         url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}`
@@ -771,6 +783,7 @@ export default {
             this.cmodels[m.id].consensusScore.f1 = null
           })
         }
+        this.$q.loading.hide()
       })
       // const textArea = ref(null)
       this.modelResultCache = null
@@ -892,6 +905,24 @@ export default {
     }
   },
   computed: {
+    selectedClasses () {
+      const obj = {}
+      this.selected.forEach(i => {
+        obj[i] = 'selected'
+      })
+      return obj
+    },
+    puncts () {
+      console.log('get puncts', new Date())
+      const ary = []
+      const punct = [',', '.', ':', '!', '?', '\'']
+      for (let i = 0; i < this.tokens.length; i++) {
+        const a = this.tokens[i][0][0]
+        ary[i] = punct.indexOf(a[0][0]) !== -1
+      }
+      console.log('get puncts 2', new Date())
+      return ary
+    },
     progressStats () {
       const totalAnnotated = (this.project.num_of_annotated_docs + this.numAnnotated)
       const pct = totalAnnotated / this.project.num_of_docs
