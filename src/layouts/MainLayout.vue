@@ -4,7 +4,7 @@
       <q-toolbar>
         <q-btn flat dense round icon="home" aria-label="Menu" @click="$router.push('/')" />
 
-        <q-toolbar-title> <router-link to="/" class="main-link">Vanguard NLP Annotation</router-link> </q-toolbar-title>
+        <q-toolbar-title> <router-link to="/" class="main-link">VGLM.Curation</router-link> </q-toolbar-title>
         <q-btn-dropdown v-if="isLoggedIn" color="primary" :label="`Welcome ${user.username}`">
           <div class="q-px-md q-py-sm"><a :href="$hostname+'/admin/'" target="_blank">admin</a> </div>
           <div class="q-px-md q-py-sm" @click="logout()" style="color:blue">logout</div>
