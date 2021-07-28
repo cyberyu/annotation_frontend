@@ -620,7 +620,7 @@ export default {
       //   cls += ' q-pl-sm'
       // }
       cls += ' q-pl-sm'
-      // cls += this.highlighted.includes(i) ? ' highlight' : ''
+      cls += this.highlighted.includes(i) ? ' highlight' : ''
 
       return cls
     },
