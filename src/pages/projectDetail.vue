@@ -48,12 +48,14 @@
           <q-dialog v-model="upload">
             <q-card>
               <q-card-section>
-                <q-uploader :url="`${$hostname}/api/upload/`" :form-fields="[{name: 'project', value: project.id}, {name: 'user', value: loggedInUser.id}]"
-                            @added="uploadFile"
-                            style="max-width: 300px" flat bordered method="put"/>
+                <axios-uploader :url="`${$hostname}/api/upload/`"
+                                :form-fields="[{name: 'project', value: project.id}, {name: 'user', value: loggedInUser.id}]"
+                                style="max-width: 300px" flat bordered method="put" @uploaded="uploaded">
+                </axios-uploader>
+                <span v-if="numOfUploaded" class="q-pa-sm text-positive">{{ numOfUploaded }} docs uploaded</span>
               </q-card-section>
               <q-card-actions align="right">
-                <q-btn flat label="OK" color="primary" v-close-popup />
+                <q-btn flat label="OK" color="primary" v-close-popup @click="numOfUploaded=null"/>
               </q-card-actions>
             </q-card>
           </q-dialog>
@@ -79,15 +81,19 @@
 </template>
 
 <script>
+import AxiosUploader from 'components/AxiosUploader'
+
 export default {
   name: 'projectDetail',
+  components: { AxiosUploader },
   data () {
     return {
       project: {},
       upload: false,
       download: false,
       loading: false,
-      fileInfo: null
+      fileInfo: null,
+      numOfUploaded: null
     }
   },
   mounted () {
@@ -101,7 +107,20 @@ export default {
       })
     },
     uploadFile (files) {
-      console.log(files)
+      return new Promise((resolve) => {
+        // simulating a delay of 2 seconds
+        setTimeout(() => {
+          resolve({
+          })
+        }, 2000)
+      })
+    },
+    uploaded (info) {
+      info.xhr.then((resp) => {
+        this.numOfUploaded = resp.data.total
+        this.project.num_of_docs += this.numOfUploaded
+        this.$forceUpdate()
+      })
     },
     downloadLabel () {
       this.loading = true
