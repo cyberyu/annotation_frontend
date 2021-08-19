@@ -6,7 +6,9 @@ const routes = [
     children: [
       { name: 'projects', path: '', component: () => import('pages/projectList') },
       { name: 'project', path: '/project/:id', component: () => import('pages/projectDetail') },
-      { name: 'annotate', path: '/annotate/:id', props: true, component: () => import('pages/annotate.vue') }
+      { name: 'annotate', path: '/annotate/:id', props: true, component: () => import('pages/annotate.vue') },
+      { name: 'sentenceAnnotate', path: '/sentenceAnnotate/:id', props: true, component: () => import('pages/sentenceAnnotate.vue') },
+      { name: 'relationAnnotate', path: '/relationAnnotate/:id', props: true, component: () => import('pages/relationAnnotate.vue') }
     ]
   },
 

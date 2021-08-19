@@ -4,7 +4,7 @@
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
-        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Phrase Annotate'" icon="navigation" />
+        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Relation Annotate'" icon="navigation" />
       </q-breadcrumbs>
     </div>
     <div class="row self-start q-pt-lg">
@@ -112,9 +112,9 @@
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white">
-          <q-btn size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }}).catch(err => {})" class="q-mr-xs">phrase</q-btn>
+          <q-btn outline size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }})" class="q-mr-xs">phrase</q-btn>
           <q-btn outline size="13px" color="secondary" @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }})" class="q-mr-xs">sentence</q-btn>
-          <q-btn outline size="13px" color="brown-5" @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }})" class="q-mr-xs">relation</q-btn>
+          <q-btn size="13px" color="brown-5" @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }}).catch(err => {})" class="q-mr-xs">relation</q-btn>
         </q-card-actions>
         <q-card-actions class="bg-white annotation-header">
           <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
@@ -319,7 +319,7 @@
 // import { ref } from 'vue'
 
 export default {
-  name: 'Annotate',
+  name: 'RelationAnnotate',
   props: ['project', 'review', 'consensus'],
   data () {
     return {
