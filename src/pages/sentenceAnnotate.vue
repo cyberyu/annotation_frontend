@@ -4,7 +4,7 @@
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
-        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Phrase Annotate'" icon="navigation" />
+        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Sentence Annotate'" icon="navigation" />
       </q-breadcrumbs>
     </div>
     <div class="row self-start q-pt-lg">
@@ -112,8 +112,8 @@
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white">
-          <q-btn size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }}).catch(err => {})" class="q-mr-xs">phrase</q-btn>
-          <q-btn outline size="13px" color="secondary" @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }})" class="q-mr-xs">sentence</q-btn>
+          <q-btn outline size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }})" class="q-mr-xs">phrase</q-btn>
+          <q-btn size="13px" color="secondary" @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }}).catch(err => {})" class="q-mr-xs">sentence</q-btn>
           <q-btn outline size="13px" color="brown-5" @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }})" class="q-mr-xs">relation</q-btn>
         </q-card-actions>
         <q-card-actions class="bg-white annotation-header">
@@ -319,13 +319,14 @@
 // import { ref } from 'vue'
 
 export default {
-  name: 'Annotate',
+  name: 'SentenceAnnotate',
   props: ['project', 'review', 'consensus'],
   data () {
     return {
       documents: [],
       document: null,
       tokens: null,
+      sentences: null,
       start: null,
       end: null,
       labels: {},
@@ -596,22 +597,25 @@ export default {
       //   }
       // }
       // if not annotated, then it will be the start
-      this.start = i
-      this.selected = [i]
+      this.start = this.tokens[i][3][1]
+      const min = this.tokens[i][3][1]
+      const max = this.tokens[i][3][3]
+      this.selected = this.selected = [...Array(max - min + 1).keys()].map(k => k + min)
+      // find the sentence contains current token
       // console.log()
       // console.log('..start', new Date())
     },
     selectEnd (i) {
-      this.end = i
+      this.end = this.tokens[i][3][3]
       if (this.end < this.start) {
-        this.end = this.start
-        this.start = i
+        this.end = this.tokens[this.start][3][3]
+        this.start = this.tokens[i][3][1]
       }
       // console.log('..end', new Date())
     },
     select (i) {
-      const min = Math.min(i, this.start)
-      const max = Math.max(i, this.start)
+      const min = Math.min(i, this.tokens[i][3][1], this.start)
+      const max = Math.max(i, this.tokens[i][3][3], this.start, this.tokens[this.start][3][3])
       this.selected = [...Array(max - min + 1).keys()].map(k => k + min)
       // this.selected.includes(i) ? this.selected.pop() : this.selected.push(i)
       // console.log('..select', new Date())
@@ -773,6 +777,24 @@ export default {
         }
         this.isAnnotated = this.document.annotations.id
         this.tokens = this.document.tokens
+        this.sentences = this.document.sentences
+        // extend index for token and sentence
+        const tokenLen = this.tokens.length
+        const sentLen = this.sentences.length
+        for (let i = 0; i < sentLen; i++) {
+          const curSent = this.sentences[i]
+          const nextSent = (i < sentLen - 1) ? this.sentences[i + 1] : null
+          for (let j = curSent[1]; j < tokenLen; j++) {
+            if (nextSent != null && nextSent[1] === j) {
+              curSent[3] = j - 1
+              break
+            }
+            if (nextSent == null) {
+              curSent[3] = tokenLen - 1
+            }
+            this.tokens[j][3] = curSent
+          }
+        }
         // this.tokens = this.document.text.split(' ')
         // this.tokens = []
         // this.document.text.split('\n').forEach(s => {
