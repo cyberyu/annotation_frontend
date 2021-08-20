@@ -325,7 +325,8 @@ export default {
   mixins: [commAnnoMixin],
   data () {
     return {
-      sentences: null
+      sentences: null,
+      model: 'sentence'
     }
   },
   mounted () {},
@@ -381,7 +382,7 @@ export default {
 
       let url
       if (!params.url) {
-        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}`
+        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}&model=${this.model}`
         if (params.page) {
           url += `&page=${params.page}`
         }
