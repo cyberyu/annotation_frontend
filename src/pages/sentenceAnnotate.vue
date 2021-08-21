@@ -376,79 +376,11 @@ export default {
       // this.selected.includes(i) ? this.selected.pop() : this.selected.push(i)
       // console.log('..select', new Date())
     },
-    fetchDocs (params) {
-      this.tokens = []
-      this.$q.loading.show({ message: 'Fetching documet from server and set it up for curation. This may take a few seconds.' })
-
-      let url
-      if (!params.url) {
-        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}&model=${this.model}`
-        if (params.page) {
-          url += `&page=${params.page}`
-        }
-      } else {
-        const n = params.url.split('/').length
-        url = '/' + params.url.split('/').splice(n - 3, n).join('/')
-        // console.log('hostname', this.$hostname)
-        // console.log('next url', url)
-      }
-      this.$axios.get(url).then(response => {
-        // console.log('use host', this.$hostname)
-        this.documents = response.data.results
-        this.nextURL = response.data.next
-        this.prevURL = response.data.previous
-        this.document = this.documents[0]
-        this.annotations = this.document.annotations.id ? this.document.annotations.annotations : []
-        if (this.review) {
-          this.annotations4Review = this.document.reviews
-          this.annotations = this.mergeAnnotations()
-        }
-        if (this.consensus) {
-          this.document.gold.annotations.forEach(ann => {
-            ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
-          })
-          this.annotations = this.document.gold.annotations
-        }
-        this.isAnnotated = this.document.annotations.id
-        this.tokens = this.document.tokens
-        this.sentences = this.document.sentences
-        // extend index for token and sentence
-        const tokenLen = this.tokens.length
-        const sentLen = this.sentences.length
-        for (let i = 0; i < sentLen; i++) {
-          const curSent = this.sentences[i]
-          const nextSent = (i < sentLen - 1) ? this.sentences[i + 1] : null
-          for (let j = curSent[1]; j < tokenLen; j++) {
-            if (nextSent != null && nextSent[1] === j) {
-              curSent[3] = j - 1
-              break
-            }
-            if (nextSent == null) {
-              curSent[3] = tokenLen - 1
-            }
-            this.tokens[j][3] = curSent
-          }
-        }
-        // this.tokens = this.document.text.split(' ')
-        // this.tokens = []
-        // this.document.text.split('\n').forEach(s => {
-        //   this.tokens.push(...s.split(' '))
-        //   this.tokens.push('\n')
-        // })
-        this.getDetailedAnnotations()
-        this.highlighted = []
-        this.processedQ = []
-        this.modelQueue = []
-        if (this.consensus) {
-          this.project.cmodels.forEach(m => {
-            this.cmodels[m.id].consensusScore.f1 = null
-          })
-        }
-        this.$q.loading.hide()
+    initialLabels (allLabels) {
+      allLabels.filter(a => a.is_sentence === true).forEach(a => {
+        this.labels[a.id] = a
+        this.labelNames.add(a.name)
       })
-      // const textArea = ref(null)
-      this.modelResultCache = null
-      this.$refs.textArea.setScrollPosition('vertical', 0)
     }
   }
 }

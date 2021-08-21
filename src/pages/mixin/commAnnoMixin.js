@@ -10,6 +10,7 @@ export const commAnnoMixin = {
       start: null,
       end: null,
       labels: {},
+      labelNames: new Set(),
       doneFetchLabels: false,
       // labels: {
       //   2: { name: 'label A', color: 'red', id: 2 },
@@ -17,6 +18,7 @@ export const commAnnoMixin = {
       //   5: { name: 'label C', color: 'blue', id: 5 }
       // },
       annotations: [],
+      annotationsExcludeCur: [],
       // annotations: [
       //   [11, 15, [2]],
       //   [27, 27, [5, 3]]
@@ -51,9 +53,7 @@ export const commAnnoMixin = {
   },
   mounted () {
     // this.fetchLabels()
-    this.project.labels.forEach(a => {
-      this.labels[a.id] = a
-    })
+    this.initialLabels(this.project.labels)
     this.project.cmodels.forEach(m => {
       this.cmodels[m.id] = m
       this.cmodels[m.id].consensusScore = { f1: null, total: null }
@@ -73,7 +73,6 @@ export const commAnnoMixin = {
       name: 'MISC'
     }
     this.labels.misc = miscLabel
-
     if (!this.review && !this.consensus) {
       this.fetchDocs({ page: this.project.first_unannotated })
     } else {
@@ -85,6 +84,7 @@ export const commAnnoMixin = {
     })
   },
   methods: {
+    initialLabels (allLabels) {},
     rejectOrAccept (ann, status) {
       ann.status = ann.status === status ? 0 : status
       const url = `/api/annotations/${ann.id}/`
@@ -389,7 +389,7 @@ export const commAnnoMixin = {
       this.saving = true
       const data = {
         document: this.document.id,
-        annotations: this.annotations
+        annotations: this.annotations.concat(this.annotationsExcludeCur)
       }
       let url
       let method
@@ -419,7 +419,77 @@ export const commAnnoMixin = {
     incrProgress (n) {
       this.numAnnotated += n
     },
-    fetchDocs (params) {},
+
+    fetchDocs (params) {
+      this.tokens = []
+      this.$q.loading.show({ message: 'Fetching documet from server and set it up for curation. This may take a few seconds.' })
+
+      let url
+      if (!params.url) {
+        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}&model=${this.model}`
+        if (params.page) {
+          url += `&page=${params.page}`
+        }
+      } else {
+        const n = params.url.split('/').length
+        url = '/' + params.url.split('/').splice(n - 3, n).join('/')
+        // console.log('hostname', this.$hostname)
+        // console.log('next url', url)
+      }
+      this.$axios.get(url).then(response => {
+        // console.log('use host', this.$hostname)
+        this.documents = response.data.results
+        this.nextURL = response.data.next
+        this.prevURL = response.data.previous
+        this.document = this.documents[0]
+        const allAnnotations = this.document.annotations.id ? this.document.annotations.annotations : []
+        this.annotations = allAnnotations.filter(a => this.labelNames.has(a.name))
+        this.annotationsExcludeCur = allAnnotations.filter(a => !this.labelNames.has(a.name))
+        if (this.review) {
+          this.annotations4Review = this.document.reviews
+          this.annotations = this.mergeAnnotations()
+        }
+        if (this.consensus) {
+          this.document.gold.annotations.forEach(ann => {
+            ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
+          })
+          this.annotations = this.document.gold.annotations
+        }
+        this.isAnnotated = this.document.annotations.id
+        this.tokens = this.document.tokens
+        this.sentences = this.document.sentences
+        // extend index for token and sentence
+        const tokenLen = this.tokens.length
+        const sentLen = this.sentences.length
+        for (let i = 0; i < sentLen; i++) {
+          const curSent = this.sentences[i]
+          const nextSent = (i < sentLen - 1) ? this.sentences[i + 1] : null
+          for (let j = curSent[1]; j < tokenLen; j++) {
+            if (nextSent != null && nextSent[1] === j) {
+              curSent[3] = j - 1
+              break
+            }
+            if (nextSent == null) {
+              curSent[3] = tokenLen - 1
+            }
+            this.tokens[j][3] = curSent
+          }
+        }
+        this.getDetailedAnnotations()
+        this.highlighted = []
+        this.processedQ = []
+        this.modelQueue = []
+        if (this.consensus) {
+          this.project.cmodels.forEach(m => {
+            this.cmodels[m.id].consensusScore.f1 = null
+          })
+        }
+        this.$q.loading.hide()
+      })
+      // const textArea = ref(null)
+      this.modelResultCache = null
+      this.$refs.textArea.setScrollPosition('vertical', 0)
+    },
     alignTokens (annotations) {
       annotations.forEach(a => {
         if (!a.name) {
