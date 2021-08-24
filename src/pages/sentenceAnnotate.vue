@@ -28,7 +28,7 @@
 
             <q-tab-panels v-model="tab" animated>
               <q-tab-panel name="models" v-if="!consensus">
-                <div v-for="(m,i) in project.vmodels" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in vmodels" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -38,14 +38,14 @@
                   </q-btn>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
-                <div v-if="project.vmodels.length===0">
+                <div v-if="vmodels.length===0">
                   No model defined for this project yet
                 </div>
               </q-tab-panel>
 
 <!--              consensus model results-->
               <q-tab-panel name="models" v-else>
-                <div v-for="(m,i) in project.cmodels" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in cmodels" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -74,7 +74,7 @@
               </q-tab-panel>
 
               <q-tab-panel name="rules">
-                <div v-for="(m,i) in project.rules" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in rules" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -84,13 +84,13 @@
                   </q-btn>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
-                <div v-if="project.rules.length===0">
+                <div v-if="rules.length===0">
                   No rule defined for this project yet
                 </div>
               </q-tab-panel>
 
               <q-tab-panel name="dicts">
-                <div v-for="(m,i) in project.dicts" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in dicts" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -100,7 +100,7 @@
                   </q-btn>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
-                <div v-if="project.dicts.length===0">
+                <div v-if="dicts.length===0">
                   No dictionary defined for this project yet
                 </div>
               </q-tab-panel>
@@ -112,34 +112,45 @@
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white">
-          <q-btn outline size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }})" class="q-mr-xs">phrase</q-btn>
+          <q-btn outline size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }})" class="q-mr-xs">ner</q-btn>
           <q-btn size="13px" color="secondary" @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }}).catch(err => {})" class="q-mr-xs">sentence</q-btn>
           <q-btn outline size="13px" color="brown-5" @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }})" class="q-mr-xs">relation</q-btn>
         </q-card-actions>
-        <q-card-actions class="bg-white annotation-header">
-          <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
-        </q-card-actions>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
-          <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
-               @focusout="selected=[]" >
-            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
+          <div v-if="sentences && sentences.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0" >
+            <div v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="sentences[0]==='\r\n'? 'row q-my-sm' : 'row'" class="sentence">
               <!-- each token display -->
-              <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
-                    v-on:mousedown="selectStart(i);mousePressed=true"
-                    v-on:mouseup="selectEnd(i);mousePressed=false"
-                    v-on:mouseover="mousePressed && select(i)"
+              <div class="q-pt-xs col-8 col-md-8" :id="selected[0]===i? 'selected' : null"
                     style="position:relative">
 <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
-                <span :class="getTokenClass(i)" >{{ token[0] }}</span>
-<!--                underline -->
-<!--                <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: relative">-->
-                  <div v-for="(label,k) in detailedAnnotations[i]" :key="k" :class="`${getPosOfLabel(i,k,label).order}`"
-                    :style="getPosOfLabel(i,k,label).cls">
-                  </div>
-<!--                </span>-->
-              </span>
+                <span :class="getSentenceClass(i)" >{{ sentence[0] }}</span>
+                <!-- right sub-panel for each sentence cat labels -->
+              </div>
               <!-- dropdown menu for labels -->
+              <!-- right sub-panel for each sentence cat labels -->
+              <div class="q-pt-xs col-4 col-md-4 cat-labels">
+                <div class="q-pa-xs">
+                  <q-scroll-area
+                    horizontal
+                    style="height: 70px; "
+                    class="bg-grey-1 rounded-borders"
+                  >
+                    <div class="row no-wrap" v-if="catLabels && catLabels.length > 0">
+                      <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
+                      <q-checkbox style="width: 40px;" v-model="catLabels[i].checked" val="Test1" />
+                      <q-select v-for="(subLabels, cat) in catLabels[i].subLabels"  :key="`cat-${i}-${cat}`"
+                        :label="`${cat}`"
+                        transition-show="scale"
+                        transition-hide="scale"
+                        filled
+                        v-model="subLabels.selected"
+                        :options="subLabels.names"
+                      />
+                    </div>
+                  </q-scroll-area>
+                </div>
+              </div>
               <q-card v-if="selected[0]===i" class="label-window fixed q-px-md q-py-sm" id="label-window" :style="`top: ${offsetTop}px;`">
                 <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                   <div v-if="detailedAnnotations[i] && detailedAnnotations[i].map(a=>a[1].id).includes(label.id)"
@@ -153,41 +164,9 @@
                   </div>
                 </div>
               </q-card>
-              <!-- display label under token -->
-<!--              <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: absolute;" :style="`margin-top: ${2.0}em`">-->
-<!--                <div v-for="(label,k) in detailedAnnotations[i]" :key="k">-->
-<!--                  <div v-if="label[0]==='B'" :style="`width:${getWidth(i,k)}px;height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>-->
-<!--                </div>-->
-<!--              </span>-->
-              <span v-if="detailedAnnotations[i]" @mouseover="activeLabel=`l-${i}`" @mouseleave="activeLabel=null"
-                    :class="{'active-label shadow-4': activeLabel===`l-${i}`}" class="label"
-                    style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.25+prevTight(i)}em`" :id="`l-${i}`">
-                <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
-                  <span v-if="label[0]==='B'" :style="`margin-left:${j*2-4}px`">
-                    <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
-                      m
-                    </q-avatar>
-                    <q-icon v-else name="check_circle" @click="removeAnnotation(i, label[1])"/> {{ label[1].name }} <br>
-                  </span>
-                </span>
-                <q-menu anchor="top right" self="top left" v-if="review">
-                  <q-list bordered separator >
-                  <q-item clickable v-for="(label, j) in detailedAnnotations[i]" :key="`label${j}`" dense>
-                    <q-item-section v-if="label[1].authors">
-                      <span class="text-bold">{{ label[1].name }} ({{ label[1].authors.length }}) - {{ label[1].text }}</span>
-                      <div class="q-px-sm">
-                        <div v-for="(author, ii) in label[1].authors" :key="`author${ii}`">
-                          {{author}}
-                        </div>
-                      </div>
-                    </q-item-section>
-                  </q-item>
-                  </q-list>
-                </q-menu>
-              </span>
-              <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].filter(a=>a[0]=='B').length*18 + detailedAnnotations[i].length*4 }px` "> </span>
             </div>
           </div>
+
         </q-scroll-area>
         <q-separator />
           <q-card-actions class="justify-center">
@@ -208,7 +187,6 @@
                    @click="nextURL? fetchDocs({url: nextURL}): $router.push('/')" style="width: 100px"/>
           </q-card-actions>
       </div>
-
       <div class="col-2 summary q-mb-none">
         <q-card>
           <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
@@ -318,263 +296,20 @@
 <script>
 // import { ref } from 'vue'
 
+import { commAnnoMixin } from 'pages/mixin/commAnnoMixin'
+
 export default {
   name: 'SentenceAnnotate',
-  props: ['project', 'review', 'consensus'],
+  mixins: [commAnnoMixin],
   data () {
     return {
-      documents: [],
-      document: null,
-      tokens: null,
-      sentences: null,
-      start: null,
-      end: null,
-      labels: {},
-      doneFetchLabels: false,
-      // labels: {
-      //   2: { name: 'label A', color: 'red', id: 2 },
-      //   3: { name: 'label B', color: 'green', id: 3 },
-      //   5: { name: 'label C', color: 'blue', id: 5 }
-      // },
-      annotations: [],
-      // annotations: [
-      //   [11, 15, [2]],
-      //   [27, 27, [5, 3]]
-      // ],
-      detailedAnnotations: [],
-      // each element is in the format of [ type, [labels]] where type is B or I
-      selected: [],
-      highlighted: [],
-      mousePressed: false,
-      nextURL: null,
-      prevURL: null,
-      tab: 'models',
-      loading: false,
-      saving: false,
-      currentModel: null,
-      modelQueue: [],
-      processedQ: [],
-      offsetTop: null,
-      isAnnotated: null,
-      numAnnotated: 0,
-      annotations4Review: null,
-      showTab: 'annotations',
-      activeAuthors: [],
-      feedback: '',
-      modelResultCache: null,
-      activeLabel: null,
-      annotationOrders: null,
-      cmodels: {},
-      consensusScore: null,
-      go2page: ''
+      model: 'sentence',
+      catLabels: [],
+      category: null
     }
   },
-  mounted () {
-    // this.fetchLabels()
-    this.project.labels.forEach(a => {
-      this.labels[a.id] = a
-    })
-    this.project.cmodels.forEach(m => {
-      this.cmodels[m.id] = m
-      this.cmodels[m.id].consensusScore = { f1: null, total: null }
-    })
-
-    const nullLabel = {
-      id: null,
-      description: 'a dummy label for labels which were createad in the project',
-      color: '#e0e0e0',
-      name: 'NULL'
-    }
-    this.labels.null = nullLabel
-    const miscLabel = {
-      id: 'misc',
-      description: 'misc',
-      color: '#e0e0e0',
-      name: 'MISC'
-    }
-    this.labels.misc = miscLabel
-
-    if (!this.review && !this.consensus) {
-      this.fetchDocs({ page: this.project.first_unannotated })
-    } else {
-      this.fetchDocs({})
-    }
-
-    setTimeout(() => {
-      this.$forceUpdate()
-    })
-  },
+  mounted () {},
   methods: {
-    rejectOrAccept (ann, status) {
-      ann.status = ann.status === status ? 0 : status
-      const url = `/api/annotations/${ann.id}/`
-      const data = { status: ann.status }
-      this.$axios.patch(url, data).then(response => {
-        console.log(response.data)
-      })
-      this.annotations = this.mergeAnnotations(this.activeAuthors)
-      this.getDetailedAnnotations()
-      this.$forceUpdate()
-    },
-    getAnnotations (author) {
-      const indx = this.activeAuthors.indexOf(author)
-      if (indx >= 0) {
-        this.activeAuthors.splice(indx, 1)
-      } else {
-        this.activeAuthors.push(author)
-      }
-      this.annotations = this.mergeAnnotations(this.activeAuthors)
-      this.getDetailedAnnotations()
-    },
-    mergeAnnotations (ary) {
-      if (!ary || ary.length === 0) {
-        ary = Object.keys(this.annotations4Review)
-      }
-      const n = ary.length
-      let result = []
-      for (let i = 0; i < n; i++) {
-        const ann = this.annotations4Review[ary[i]]
-        if (ann.status === -1) { continue } // if rejected, skip
-        result = result.concat(ann.annotations.map(a => { a.author = ann.author; return a }))
-      }
-      // console.log(result.length)
-      result.forEach(a => (a.authors = []))
-      result = result.filter((ann, index, self) =>
-        index === self.findIndex((t) => {
-          if (String(t.pos) === String(ann.pos) && t.name === ann.name) {
-            t.authors.push(result[index].author)
-            return true
-          }
-          return false
-        })
-      )
-      // console.log(result.length)
-      // console.log(result)
-
-      return result
-    },
-    getColor (label) {
-      // console.log(this.labels, label, label.id)
-      return this.labels[label.id].color
-    },
-    getPosOfLabel (i, k, label) {
-      const order = this.annotationOrders[i][this.getKey(label)]
-      const pos = 1 + 4 * order
-      const cls = `
-      margin-top: ${pos}px;
-      position: absolute;
-      width:calc(100% - ${label[0] === 'B' ? 4 + order * 2 : 0}px);
-      border-bottom: solid ${this.getColor(label[1])} 2px;
-      margin-left: ${label[0] === 'B' ? 4 + order * 2 : 0}px
-      `
-      return {
-        order: order,
-        pos: pos,
-        name: label.name,
-        cls: cls
-      }
-    },
-    prevTight (i) {
-      let n = 0
-      if (i === 0 || !this.detailedAnnotations[i - 1] || this.detailedAnnotations[i - 1].length < 1) return n
-      this.detailedAnnotations[i - 1].forEach(a => {
-        const prevToken = this.tokens[a[1].tpos[0]][0]
-        if (a[0] === 'B' && prevToken.length < a[1].name.length) {
-          n += 1
-        }
-      })
-      return n === 0 ? 0 : n - Math.floor(this.detailedAnnotations[i].length / 4)
-    },
-    add2Q (id) {
-      const minfo = this.tab + id
-      this.modelQueue.push(minfo)
-    },
-    removeFromQ (id) {
-      const minfo = this.tab + id
-      const indx = this.modelQueue.indexOf(minfo)
-      this.modelQueue.splice(indx, 1)
-      this.processedQ.push(minfo)
-    },
-    existInAnnotations (annotation) {
-      return this.annotations.some(a => {
-        if (a.pos[0] === annotation.pos[0] && a.pos[1] === annotation.pos[1] && a.name === annotation.name) {
-          return true
-        } else {
-          return false
-        }
-      })
-    },
-    findAnnotation (i, lid) {
-      let ann
-      this.detailedAnnotations[i].forEach(a => {
-        // console.log('find', a[1])
-        if (a[1].id === lid) {
-          ann = a[1]
-        }
-      })
-      return ann
-    },
-    executeModel (id) {
-      this.add2Q(id)
-      const data = {
-        mtype: this.tab, // which type of model (rule, dict, model)
-        id: id,
-        document: this.document.id
-      }
-      const url = this.consensus ? '/api/calculate_consensus/' : '/api/calculate/'
-      this.$axios.post(this.$hostname + url, data).then(response => {
-        const results = response.data.result
-        this.alignTokens(results)
-        results.forEach(ann => {
-          ann.m = 'm' // machine generated
-          ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
-          const annotation = ann
-          if (!this.existInAnnotations(annotation)) {
-            this.annotations.push(annotation)
-          }
-        })
-        this.getDetailedAnnotations()
-        this.removeFromQ(id)
-
-        if (this.modelResultCache) {
-          this.modelResultCache = this.modelResultCache.concat(results)
-        } else {
-          this.modelResultCache = results
-        }
-        this.modelResultCache.sort((a, b) => b.confidence - a.confidence)
-
-        const msg = `Finished running model, and got ${results.length} results`
-        this.$q.notify({
-          message: msg,
-          color: 'secondary',
-          position: 'center',
-          timeout: 0,
-          actions: [
-            { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } },
-            { label: 'Review', color: 'white', handler: () => { this.showTab = 'sort' } }
-          ]
-        })
-
-        if (this.consensus) {
-          this.cmodels[id].consensusScore = {
-            f1: response.data.f1 * 100,
-            total: response.data.total * 100
-          }
-        }
-        // this.$forceUpdate()
-        // process return annotations
-      })
-    },
-    scrollTo (label) {
-      let indx = label.tpos
-      if (indx[0] > indx[1]) {
-        indx = [indx[0], indx[0]]
-      }
-      const id = `t-${indx[0]}`
-      this.highlighted = Array(indx[1] - indx[0] + 1).fill(indx[0]).map((x, y) => x + y)
-      console.log(label, this.highlighted)
-      document.getElementById(id).scrollIntoView({ block: 'center' })
-    },
     // fetchLabels () {
     //   const url = this.$hostname + '/api/labels/'
     //   this.$axios.get(url).then(response => {
@@ -584,438 +319,36 @@ export default {
     //     this.doneFetchLabels = true
     //   })
     // },
-    selectStart (i) {
-      // if the token is already annotated
-      // for (let k = 0; k < this.annotations.length; k++) {
-      //   const start = this.annotations[k][0]
-      //   const end = this.annotations[k][1]
-      //   if (i <= end && i >= start) {
-      //     this.start = start
-      //     this.end = end
-      //     this.selected = [...Array(end - start + 1).keys()].map(i => i + start)
-      //     return 0
-      //   }
-      // }
-      // if not annotated, then it will be the start
-      this.start = this.tokens[i][3][1]
-      const min = this.tokens[i][3][1]
-      const max = this.tokens[i][3][3]
-      this.selected = this.selected = [...Array(max - min + 1).keys()].map(k => k + min)
-      // find the sentence contains current token
-      // console.log()
-      // console.log('..start', new Date())
-    },
-    selectEnd (i) {
-      this.end = this.tokens[i][3][3]
-      if (this.end < this.start) {
-        this.end = this.tokens[this.start][3][3]
-        this.start = this.tokens[i][3][1]
+    selectStart (i) {},
+    selectEnd (i) {},
+    select (i) {},
+    getSentenceClass (i) {
+      if (this.catLabels[i].checked) {
+        return 'highlight'
       }
-      // console.log('..end', new Date())
+      return ''
     },
-    select (i) {
-      const min = Math.min(i, this.tokens[i][3][1], this.start)
-      const max = Math.max(i, this.tokens[i][3][3], this.start, this.tokens[this.start][3][3])
-      this.selected = [...Array(max - min + 1).keys()].map(k => k + min)
-      // this.selected.includes(i) ? this.selected.pop() : this.selected.push(i)
-      // console.log('..select', new Date())
-    },
-    getTokenClass (i) {
-      let cls = ''
-      cls = this.detailedAnnotations[i] ? this.detailedAnnotations[i][0][0] : ''
-      cls += this.selectedClasses[i]
-      // cls += this.selected.indexOf(i) > -1 ? ' selected' : ''
-      // if (!this.puncts[i]) {
-      //   cls += ' q-pl-sm'
-      // }
-      cls += ' q-pl-sm'
-      cls += this.highlighted.includes(i) ? ' highlight' : ''
-
-      return cls
-    },
-    isPunct (i) {
-      const punct = '.,!"\''
-      const t = this.tokens[i][0][0]
-      return punct.includes(t)
-    },
-    getWidth (i, k) {
-      let w = 0
-      const tpos = this.detailedAnnotations[i][k][1].tpos
-      // console.log(this.detailedAnnotations[i][k][1].text)
-      for (let j = tpos[0]; j < tpos[1] + 1; j++) {
-        const e = document.getElementById('t-' + j)
-        if (e) {
-          w += e.offsetWidth
-          // console.log(e, w)
-        }
-      }
-      return w
-    },
-    annotate (label) {
-      const startChar = this.tokens[this.start][2]
-      const endChar = this.tokens[this.end][2] + (this.tokens[this.end][0].length - 1)
-      const labelObj = {
-        id: label.id,
-        name: label.name,
-        pos: [startChar, endChar],
-        tpos: [this.start, this.end],
-        text: this.document.text.substring(startChar, endChar + 1)
-      }
-
-      for (let k = 0; k < this.annotations.length; k++) {
-        const ann = this.annotations[k]
-        if (ann.pos[0] === labelObj.pos[0] && ann.pos[1] === labelObj.pos[1]) {
-          if (ann.id === label.id) {
-            alert('already there')
-            return 0
+    postConstruct () {
+      const senLen = this.sentences.length
+      this.category = {}
+      Object.values(this.labels).forEach(label => {
+        if (label.category) {
+          if (!this.category[label.category]) {
+            this.category[label.category] = {
+              labels: [label],
+              names: [label.name]
+            }
           } else {
-            // const idx = this.annotations.indexOf(labelObj)
-            this.annotations.splice(k, 1)
-          }
-        }
-      }
-      // console.log('label', labelObj)
-      this.annotations.push(labelObj)
-      this.getDetailedAnnotations()
-    },
-    removeFromModelCache (i, label) {
-      const idx = this.modelResultCache.indexOf(label)
-      this.modelResultCache.splice(idx, 1)
-    },
-    removeAnnotation (i, label) {
-      const idx = this.annotations.indexOf(label)
-      // console.log('find label', idx, label)
-      this.annotations.splice(idx, 1)
-      // console.log(this.annotations.length)
-
-      this.getDetailedAnnotations()
-    },
-    key (e) {
-      console.log('key pressed: ', e.key)
-    },
-    compressAnnotations () {
-      // convert detailed annotations into compressed (index-based) format
-    },
-    saveAnnotations () {
-      if (Object.keys(this.conflicts).length > 0) {
-        const msg = 'You must resolve all conflicts before saving.'
-        this.$q.notify({
-          message: msg,
-          color: 'secondary',
-          position: 'center',
-          actions: [
-            { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } }
-          ]
-        })
-        return -1
-      }
-      this.saving = true
-      const data = {
-        document: this.document.id,
-        annotations: this.annotations
-      }
-      let url
-      let method
-      if (this.document.annotations.id) {
-        method = 'patch'
-        url = this.$hostname + '/api/annotations/' + this.document.annotations.id + '/'
-      } else {
-        method = 'post'
-        url = this.$hostname + '/api/annotations/'
-      }
-      if (this.annotations.length === 0) {
-        // todo: tell if modified
-        console.log(0)
-      }
-
-      this.$axios({ method: method, url: url, data: data }).then(response => {
-        this.saving = false
-        // console.log('saving...')
-        if (!this.isAnnotated && data.annotations.length >= 1) {
-          this.incrProgress(1)
-        } else if (this.isAnnotated && data.annotations.length === 0) {
-          this.incrProgress(-1)
-        }
-        // console.log(response.data)
-      })
-    },
-    incrProgress (n) {
-      this.numAnnotated += n
-    },
-    fetchDocs (params) {
-      this.tokens = []
-      this.$q.loading.show({ message: 'Fetching documet from server and set it up for curation. This may take a few seconds.' })
-
-      let url
-      if (!params.url) {
-        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}`
-        if (params.page) {
-          url += `&page=${params.page}`
-        }
-      } else {
-        const n = params.url.split('/').length
-        url = '/' + params.url.split('/').splice(n - 3, n).join('/')
-        // console.log('hostname', this.$hostname)
-        // console.log('next url', url)
-      }
-      this.$axios.get(url).then(response => {
-        // console.log('use host', this.$hostname)
-        this.documents = response.data.results
-        this.nextURL = response.data.next
-        this.prevURL = response.data.previous
-        this.document = this.documents[0]
-        this.annotations = this.document.annotations.id ? this.document.annotations.annotations : []
-        if (this.review) {
-          this.annotations4Review = this.document.reviews
-          this.annotations = this.mergeAnnotations()
-        }
-        if (this.consensus) {
-          this.document.gold.annotations.forEach(ann => {
-            ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
-          })
-          this.annotations = this.document.gold.annotations
-        }
-        this.isAnnotated = this.document.annotations.id
-        this.tokens = this.document.tokens
-        this.sentences = this.document.sentences
-        // extend index for token and sentence
-        const tokenLen = this.tokens.length
-        const sentLen = this.sentences.length
-        for (let i = 0; i < sentLen; i++) {
-          const curSent = this.sentences[i]
-          const nextSent = (i < sentLen - 1) ? this.sentences[i + 1] : null
-          for (let j = curSent[1]; j < tokenLen; j++) {
-            if (nextSent != null && nextSent[1] === j) {
-              curSent[3] = j - 1
-              break
-            }
-            if (nextSent == null) {
-              curSent[3] = tokenLen - 1
-            }
-            this.tokens[j][3] = curSent
-          }
-        }
-        // this.tokens = this.document.text.split(' ')
-        // this.tokens = []
-        // this.document.text.split('\n').forEach(s => {
-        //   this.tokens.push(...s.split(' '))
-        //   this.tokens.push('\n')
-        // })
-        this.getDetailedAnnotations()
-        this.highlighted = []
-        this.processedQ = []
-        this.modelQueue = []
-        if (this.consensus) {
-          this.project.cmodels.forEach(m => {
-            this.cmodels[m.id].consensusScore.f1 = null
-          })
-        }
-        this.$q.loading.hide()
-      })
-      // const textArea = ref(null)
-      this.modelResultCache = null
-      this.$refs.textArea.setScrollPosition('vertical', 0)
-    },
-    alignTokens (annotations) {
-      annotations.forEach(a => {
-        if (!a.name) {
-          a.name = this.labels[a.id].name
-        }
-        const start = a.tpos[0]
-        const end = a.tpos[1]
-        const startChar = a.pos[0]
-        const endChar = a.pos[1]
-        for (let i = 0; i < this.tokens.length; i++) {
-          if (this.tokens[i][2] === startChar) {
-            a.tpos[0] = i
-            if (start === end) {
-              a.tpos[1] = i
-            }
-          } else if (this.tokens[i][2] > startChar && this.tokens[i][2] < endChar) {
-            a.tpos[1] = i
+            this.category[label.category].labels.push(label)
+            this.category[label.category].names.push(label.name)
           }
         }
       })
-    },
-    getDetailedAnnotations () {
-      // convert annotations into detailed token based format
-      // [ ['B/I': {label}], ... ]
-      this.detailedAnnotations = new Array(this.tokens.length).fill(null)
-      this.annotations.forEach(a => {
-        if (!a.name) {
-          a.name = this.labels[a.id].name
-        }
-        const start = a.tpos[0]
-        const end = a.tpos[1]
-        const startChar = a.pos[0]
-        const endChar = a.pos[1]
-        // const label = [a] // todo: if review mode or machine, could have multiple values
-        let label
-        for (let i = 0; i < this.tokens.length; i++) {
-          if (this.tokens[i][2] === startChar) {
-            a.tpos[0] = i
-            if (start === end) {
-              a.tpos[1] = i
-            }
-            label = ['B', a] // B: beginning
-            if (!this.detailedAnnotations[i]) {
-              this.detailedAnnotations[i] = []
-            }
-            this.detailedAnnotations[i].push(label)
-          } else if (this.tokens[i][2] >= startChar && this.tokens[i][2] <= endChar) {
-            a.tpos[1] = i
-            label = ['I', a]
-            if (!this.detailedAnnotations[i]) {
-              this.detailedAnnotations[i] = []
-            }
-            this.detailedAnnotations[i].push(label)
-          }
-        }
-      })
-      this.getLabelOrder()
-      // console.log(this.detailedAnnotations)
-    },
-    getKey (ann) {
-      // const BorI = ann[0]
-      return `${ann[1].name}-${ann[1].pos[0]}-${ann[1].pos[1]}`
-    },
-    getLabelOrder () {
-      const orders = []
-      this.detailedAnnotations.forEach((anns, i) => {
-        if (anns) {
-          const order = {}
-          const used = []
-          let avail = Array(anns.length).fill().map((x, i) => i)
-
-          anns.forEach((ann, idx) => {
-            const k = this.getKey(ann)
-            if (i === 0) {
-              order[k] = idx
-            } else {
-              if (ann[0] === 'I') {
-                const rank = orders[ann[1].tpos[0]][this.getKey(ann)]
-                order[k] = rank
-                used.push(rank)
-              }
-            }
-          })
-          avail = avail.filter(v => !used.includes(v))
-
-          if (i > 0) {
-            anns.forEach((ann, idx) => {
-              const k = this.getKey(ann)
-              if (ann[0] === 'B') {
-                order[k] = avail.shift()
-              }
-            })
-          }
-          orders.push(order)
-        } else {
-          orders.push(null)
-        }
-      })
-      this.annotationOrders = orders
-    },
-    getSelection (obj) {
-      /**
-       * get a selection in the format of {fixStr, allStr, start, end}
-       **/
-      // console.log(obj)
-      this.highlight(this.documents[0].text, obj.start, obj.end)
-    },
-    highlight (text, start, end) {
-      this.text = `${text.substring(0, start)}<span style="background-color: red">${text.substring(start, end)}</span>${text.substring(end)}`
-    },
-    getTokenOffsetTop (i) {
-      const id = 't-' + i
-      return document.getElementById(id).getBoundingClientRect().top
-    }
-  },
-  computed: {
-    selectedClasses () {
-      const obj = {}
-      this.selected.forEach(i => {
-        obj[i] = 'selected'
-      })
-      return obj
-    },
-    puncts () {
-      console.log('get puncts', new Date())
-      const ary = []
-      const punct = [',', '.', ':', '!', '?', '\'']
-      for (let i = 0; i < this.tokens.length; i++) {
-        const a = this.tokens[i][0][0]
-        ary[i] = punct.indexOf(a[0][0]) !== -1
-      }
-      console.log('get puncts 2', new Date())
-      return ary
-    },
-    progressStats () {
-      const totalAnnotated = (this.project.num_of_annotated_docs + this.numAnnotated)
-      const pct = totalAnnotated / this.project.num_of_docs
-      const label = (pct * 100).toFixed(2) + '%' + ` (${totalAnnotated}/${this.project.num_of_docs})`
-      return {
-        pct: pct,
-        label: label
-      }
-    },
-    categorizedAnnotations () {
-      // { 'label': [ {word: 'xxx', index: [12, 15]}, ...]
-      const results = {}
-      this.annotations.forEach(a => {
-        [a].forEach(ann => {
-          const name = ann.name || this.labels[ann.id].name
-          if (results[name]) {
-            results[name].push(ann)
-          } else {
-            results[name] = [ann]
-          }
-        })
-      })
-      return results
-    },
-    conflicts () {
-      const d = {}
-      this.annotations.forEach(a => {
-        const k = JSON.stringify(a.pos)
-        if (d[k]) {
-          d[k].push(a)
-        } else {
-          d[k] = [a]
-        }
-      })
-
-      const r = {}
-      Object.keys(d).forEach(k => {
-        if (d[k].length > 1) {
-          r[k] = d[k]
-        }
-      })
-      return r
-    },
-    lLabels () {
-      // convert to format like
-      // { 'label name' : { ...properties}}
-      const results = {}
-      Object.entries(this.labels).forEach(a => {
-        results[a[1].name] = a[1]
-      })
-      return results
-    }
-  },
-  watch: {
-    selected (v) {
-      this.highlighted = []
-      this.$nextTick(() => {
-        if (v.length > 0) {
-          const token = document.getElementById('selected').getBoundingClientRect()
-          const tokenY = token.top
-          const wH = document.getElementById('label-window').getBoundingClientRect().height
-          if (tokenY > wH + token.height) {
-            this.offsetTop = tokenY - wH - token.height
-          } else {
-            this.offsetTop = tokenY
-          }
+      this.catLabels = Array(senLen).fill({}).map(a => {
+        return {
+          checked: false,
+          cat: '',
+          subLabels: JSON.parse(JSON.stringify(this.category))
         }
       })
     }
@@ -1023,10 +356,18 @@ export default {
 }
 </script>
 <style>
-.token {
+.sentence {
   font-size: 1.3em;
   /*font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;*/
   font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
+}
+.sentence.row{
+  margin-bottom: 20px;
+}
+
+.cat-labels label{
+  margin-left: 5px;
+  min-width: 90px;
 }
 
 .B, .I {
