@@ -112,9 +112,12 @@
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white">
-          <q-btn size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }}).catch(err => {})" class="q-mr-xs">ner</q-btn>
-          <q-btn outline size="13px" color="secondary" @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }})" class="q-mr-xs">sentence</q-btn>
-          <q-btn outline size="13px" color="brown-5" @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }})" class="q-mr-xs">relation</q-btn>
+          <q-btn size="13px" color="primary" class="q-mr-xs" style="width: 100px"
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">ner</q-btn>
+          <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
+                 @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }})">sentence</q-btn>
+          <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
+                 @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }}).catch(err => {})">relation</q-btn>
         </q-card-actions>
         <q-card-actions class="bg-white annotation-header">
           <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
