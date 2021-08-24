@@ -118,37 +118,30 @@
         </q-card-actions>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
-          <div v-if="sentences && sentences.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0" >
-            <div v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="sentences[0]==='\r\n'? 'row q-my-sm' : 'row'" class="sentence">
+          <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" @keyup="key" tabindex="0" >
+            <div v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" class="sentence row">
               <!-- each token display -->
-              <div class="q-pt-xs col-8 col-md-8" :id="selected[0]===i? 'selected' : null"
-                    style="position:relative">
+              <div class="q-py-sm col-9" :id="selected[0]===i? 'selected' : null" style="position:relative">
 <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
                 <span :class="getSentenceClass(i)" >{{ sentence[0] }}</span>
                 <!-- right sub-panel for each sentence cat labels -->
               </div>
               <!-- dropdown menu for labels -->
               <!-- right sub-panel for each sentence cat labels -->
-              <div class="q-pt-xs col-4 col-md-4 cat-labels">
-                <div class="q-pa-xs">
-                  <q-scroll-area
-                    horizontal
-                    style="height: 70px; "
-                    class="bg-grey-1 rounded-borders"
-                  >
-                    <div class="row no-wrap" v-if="catLabels && catLabels.length > 0">
-                      <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
-                      <q-checkbox style="width: 40px;" v-model="catLabels[i].checked" val="Test1" />
-                      <q-select v-for="(subLabels, cat) in catLabels[i].subLabels"  :key="`cat-${i}-${cat}`"
-                        :label="`${cat}`"
-                        transition-show="scale"
-                        transition-hide="scale"
-                        filled
-                        v-model="subLabels.selected"
-                        :options="subLabels.names"
-                      />
-                    </div>
-                  </q-scroll-area>
+              <div class="col-3 q-py-sm cat-labels" style="border-left: solid 1px #bbb;">
+                <div class="q-px-xs">
+                  <div class="row no-wrap" style="overflow-x: auto;">
+                    <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
+                    <q-checkbox style="width: 40px;" v-model="relevantSentences" :val="i" dense />
+                    <q-select v-for="(cat, ci) in categoryNames"  :key="`cat-${i}-${ci}`"
+                      :label="`${cat}`"
+                      transition-show="scale"
+                      transition-hide="scale"
+                      filled dense
+                      v-model="catAnnotations[i][cat]"
+                      :options="category[cat].labels" option-value="name" option-label="name"
+                    />
+                  </div>
                 </div>
               </div>
               <q-card v-if="selected[0]===i" class="label-window fixed q-px-md q-py-sm" id="label-window" :style="`top: ${offsetTop}px;`">
@@ -304,7 +297,8 @@ export default {
   data () {
     return {
       model: 'sentence',
-      catLabels: [],
+      catAnnotations: [],
+      relevantSentences: [],
       category: null
     }
   },
@@ -323,7 +317,7 @@ export default {
     selectEnd (i) {},
     select (i) {},
     getSentenceClass (i) {
-      if (this.catLabels[i].checked) {
+      if (this.relevantSentences.includes(i)) {
         return 'highlight'
       }
       return ''
@@ -344,13 +338,16 @@ export default {
           }
         }
       })
-      this.catLabels = Array(senLen).fill({}).map(a => {
-        return {
-          checked: false,
-          cat: '',
-          subLabels: JSON.parse(JSON.stringify(this.category))
-        }
+      this.catAnnotations = Array(senLen).fill({}).map(a => {
+        const tmp = {}
+        this.categoryNames.forEach(c => { tmp[c] = '' })
+        return tmp
       })
+    }
+  },
+  computed: {
+    categoryNames () {
+      return Object.keys(this.category)
     }
   }
 }
@@ -360,9 +357,6 @@ export default {
   font-size: 1.3em;
   /*font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;*/
   font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
-}
-.sentence.row{
-  margin-bottom: 20px;
 }
 
 .cat-labels label{

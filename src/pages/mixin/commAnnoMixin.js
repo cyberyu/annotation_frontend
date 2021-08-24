@@ -604,15 +604,6 @@ export const commAnnoMixin = {
     getTokenOffsetTop (i) {
       const id = 't-' + i
       return document.getElementById(id).getBoundingClientRect().top
-    }
-  },
-  computed: {
-    selectedClasses () {
-      const obj = {}
-      this.selected.forEach(i => {
-        obj[i] = 'selected'
-      })
-      return obj
     },
     puncts () {
       console.log('get puncts', new Date())
@@ -624,6 +615,15 @@ export const commAnnoMixin = {
       }
       console.log('get puncts 2', new Date())
       return ary
+    }
+  },
+  computed: {
+    selectedClasses () {
+      const obj = {}
+      this.selected.forEach(i => {
+        obj[i] = 'selected'
+      })
+      return obj
     },
     progressStats () {
       const totalAnnotated = (this.project.num_of_annotated_docs + this.numAnnotated)
