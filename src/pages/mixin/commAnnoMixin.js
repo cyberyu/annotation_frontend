@@ -442,7 +442,7 @@ export const commAnnoMixin = {
 
       let url
       if (!params.url) {
-        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}&model=${this.model}`
+        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}&mode=${this.model}`
         if (params.page) {
           url += `&page=${params.page}`
         }
