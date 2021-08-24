@@ -346,14 +346,22 @@ export default {
         return { labels: tmp }
       })
       this.annotations.forEach((item, i) => {
-        this.catAnnotations[i].pos = item.pos
-        this.catAnnotations[i].tpos = item.tpos
-        this.catAnnotations[i].text = item.text
-        if (!this.catAnnotations[i].labels) {
-          this.catAnnotations[i].labels = { }
+        const idx = this.getSentence(item.pos) // which sentence
+        this.catAnnotations[idx].pos = item.pos
+        this.catAnnotations[idx].tpos = item.tpos
+        this.catAnnotations[idx].text = item.text
+        if (!this.catAnnotations[idx].labels) {
+          this.catAnnotations[idx].labels = { }
         }
-        this.catAnnotations[i].labels[item.category] = this.labels[item.id]
+        this.catAnnotations[idx].labels[item.category] = this.labels[item.id]
       })
+    },
+    getSentence (pos) {
+      for (let i = 0; i < this.sentences.length; i++) {
+        if (this.sentences[i].start_char === pos[0]) {
+          return i
+        }
+      }
     },
     annotate (i) {
       this.catAnnotations[i].pos = [this.sentences[i].start_char, this.sentences[i].end_char]
@@ -386,6 +394,25 @@ export default {
     },
     categorizedAnnotations () {
       return {}
+    },
+    conflicts () {
+      const d = {}
+      this.annotations.forEach(a => {
+        const k = `${JSON.stringify(a.pos)}-${a.id}`
+        if (d[k]) {
+          d[k].push(a)
+        } else {
+          d[k] = [a]
+        }
+      })
+
+      const r = {}
+      Object.keys(d).forEach(k => {
+        if (d[k].length > 1) {
+          r[k] = d[k]
+        }
+      })
+      return r
     }
   }
 }
