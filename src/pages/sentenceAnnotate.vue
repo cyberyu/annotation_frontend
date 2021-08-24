@@ -126,7 +126,7 @@
               <!-- each token display -->
               <div class="q-py-sm col-9" :id="selected[0]===i? 'selected' : null" style="position:relative">
 <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
-                <span :class="getSentenceClass(i)" >{{ sentence[0] }}</span>
+                <span :class="getSentenceClass(i)" >{{ sentence.text }}</span>
                 <!-- right sub-panel for each sentence cat labels -->
               </div>
               <!-- dropdown menu for labels -->
@@ -140,8 +140,8 @@
                       :label="`${cat}`"
                       transition-show="scale"
                       transition-hide="scale"
-                      filled dense
-                      v-model="catAnnotations[i][cat]"
+                      filled dense options-dense
+                      v-model="catAnnotations[i].labels[cat]" @input="annotate(i)"
                       :options="category[cat].labels" option-value="name" option-label="name"
                     />
                   </div>
@@ -174,7 +174,7 @@
             <q-space />
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
                    @click="fetchDocs({url:prevURL})" style="width: 100px"/>
-            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()" :loading="saving" style="width: 100px">
+            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="formatAndSaveAnnotations()" :loading="saving" style="width: 100px">
                    <template v-slot:loading>
                      Saving...
                    </template>
@@ -187,7 +187,7 @@
         <q-card>
           <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
             <q-btn label="ANNOTATIONS" flat @click="showTab='annotations'" :class="{'bg-purple-5': showTab=='annotations'}">
-              <q-badge color="info" floating> {{annotations.length}}</q-badge>
+<!--              <q-badge color="info" floating> {{annotations.length}}</q-badge>-->
             </q-btn>
             <q-btn icon="sort" class="float-right" flat @click="showTab='sort'" :class="{'bg-purple-5': showTab=='sort'}">
               <q-badge color="info" floating v-if="modelResultCache"> {{modelResultCache.length}}</q-badge>
@@ -327,12 +327,12 @@ export default {
     },
     postConstruct () {
       const senLen = this.sentences.length
-      this.category = {}
+      this.category = { }
       Object.values(this.labels).forEach(label => {
         if (label.category) {
           if (!this.category[label.category]) {
             this.category[label.category] = {
-              labels: [label],
+              labels: [null, label],
               names: [label.name]
             }
           } else {
@@ -343,14 +343,49 @@ export default {
       })
       this.catAnnotations = Array(senLen).fill({}).map(a => {
         const tmp = {}
-        this.categoryNames.forEach(c => { tmp[c] = '' })
-        return tmp
+        return { labels: tmp }
       })
+      this.annotations.forEach((item, i) => {
+        this.catAnnotations[i].pos = item.pos
+        this.catAnnotations[i].tpos = item.tpos
+        this.catAnnotations[i].text = item.text
+        if (!this.catAnnotations[i].labels) {
+          this.catAnnotations[i].labels = { }
+        }
+        this.catAnnotations[i].labels[item.category] = this.labels[item.id]
+      })
+    },
+    annotate (i) {
+      this.catAnnotations[i].pos = [this.sentences[i].start_char, this.sentences[i].end_char]
+      this.catAnnotations[i].tpos = [this.sentences[i].start, this.sentences[i].end]
+      this.catAnnotations[i].text = this.sentences[i].text
+    },
+    formatAndSaveAnnotations () {
+      // convert annotations into save-ready format
+      this.annotations = []
+      this.catAnnotations.forEach(item => {
+        if (Object.keys(item.labels).length > 0) {
+          Object.keys(item.labels).forEach(label => {
+            const ann = {}
+            ann.text = item.text
+            ann.pos = item.pos
+            ann.tpos = item.tpos
+            ann.name = item.labels[label].name
+            ann.category = item.labels[label].category
+            ann.id = item.labels[label].id
+            this.annotations.push(ann)
+          })
+        }
+      })
+      this.saveAnnotations()
     }
   },
   computed: {
     categoryNames () {
       return Object.keys(this.category)
+    },
+    categorizedAnnotations () {
+      return {}
     }
   }
 }

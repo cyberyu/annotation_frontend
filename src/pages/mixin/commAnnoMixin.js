@@ -405,7 +405,8 @@ export const commAnnoMixin = {
       this.saving = true
       const data = {
         document: this.document.id,
-        annotations: this.annotations.concat(this.annotationsExcludeCur)
+        annotations: this.annotations.concat(this.annotationsExcludeCur),
+        kind: this.model
       }
       let url
       let method
@@ -426,10 +427,12 @@ export const commAnnoMixin = {
         // console.log('saving...')
         if (!this.isAnnotated && data.annotations.length >= 1) {
           this.incrProgress(1)
+          this.isAnnotated = true
         } else if (this.isAnnotated && data.annotations.length === 0) {
           this.incrProgress(-1)
+          this.isAnnotated = false
         }
-        // console.log(response.data)
+        this.document.annotations = response.data
       })
     },
     incrProgress (n) {
