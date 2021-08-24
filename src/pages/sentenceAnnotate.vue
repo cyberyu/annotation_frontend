@@ -364,20 +364,18 @@ export default {
       }
     },
     annotate (i) {
-      this.catAnnotations[i].pos = [this.sentences[i].start_char, this.sentences[i].end_char]
-      this.catAnnotations[i].tpos = [this.sentences[i].start, this.sentences[i].end]
-      this.catAnnotations[i].text = this.sentences[i].text
+      this.$forceUpdate() // if not re-render, change select options of existing labels wont work
     },
     formatAndSaveAnnotations () {
       // convert annotations into save-ready format
       this.annotations = []
-      this.catAnnotations.forEach(item => {
+      this.catAnnotations.forEach((item, i) => {
         if (Object.keys(item.labels).length > 0) {
           Object.keys(item.labels).forEach(label => {
             const ann = {}
-            ann.text = item.text
-            ann.pos = item.pos
-            ann.tpos = item.tpos
+            ann.text = this.sentences[i].text
+            ann.pos = this.sentences[i].pos
+            ann.tpos = this.sentences[i].tpos
             ann.name = item.labels[label].name
             ann.category = item.labels[label].category
             ann.id = item.labels[label].id
