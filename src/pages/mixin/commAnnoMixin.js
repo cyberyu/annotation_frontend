@@ -7,6 +7,7 @@ export const commAnnoMixin = {
       documents: [],
       document: null,
       tokens: null,
+      sentences: null,
       start: null,
       end: null,
       labels: {},
@@ -47,14 +48,29 @@ export const commAnnoMixin = {
       activeLabel: null,
       annotationOrders: null,
       cmodels: {},
+      rules: [],
+      dicts: [],
+      vmodels: [],
       consensusScore: null,
       go2page: ''
     }
   },
   mounted () {
     // this.fetchLabels()
-    this.initialLabels(this.project.labels)
-    this.project.cmodels.forEach(m => {
+    this.project.labels.filter(a => a.kind === this.model).forEach(a => {
+      this.labels[a.id] = a
+      this.labelNames.add(a.name)
+    })
+    this.project.rules.filter(a => a.kind === this.model).forEach(a => {
+      this.rules.push(a)
+    })
+    this.project.dicts.filter(a => a.kind === this.model).forEach(a => {
+      this.dicts.push(a)
+    })
+    this.project.vmodels.filter(a => a.kind === this.model).forEach(a => {
+      this.vmodels.push(a)
+    })
+    this.project.cmodels.filter(a => a.kind === this.model).forEach(m => {
       this.cmodels[m.id] = m
       this.cmodels[m.id].consensusScore = { f1: null, total: null }
     })
@@ -458,23 +474,6 @@ export const commAnnoMixin = {
         this.isAnnotated = this.document.annotations.id
         this.tokens = this.document.tokens
         this.sentences = this.document.sentences
-        // extend index for token and sentence
-        const tokenLen = this.tokens.length
-        const sentLen = this.sentences.length
-        for (let i = 0; i < sentLen; i++) {
-          const curSent = this.sentences[i]
-          const nextSent = (i < sentLen - 1) ? this.sentences[i + 1] : null
-          for (let j = curSent[1]; j < tokenLen; j++) {
-            if (nextSent != null && nextSent[1] === j) {
-              curSent[3] = j - 1
-              break
-            }
-            if (nextSent == null) {
-              curSent[3] = tokenLen - 1
-            }
-            this.tokens[j][3] = curSent
-          }
-        }
         this.getDetailedAnnotations()
         this.highlighted = []
         this.processedQ = []
@@ -485,11 +484,13 @@ export const commAnnoMixin = {
           })
         }
         this.$q.loading.hide()
+        this.postConstruct()
       })
       // const textArea = ref(null)
       this.modelResultCache = null
       this.$refs.textArea.setScrollPosition('vertical', 0)
     },
+    postConstruct () {},
     alignTokens (annotations) {
       annotations.forEach(a => {
         if (!a.name) {

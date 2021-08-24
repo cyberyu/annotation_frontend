@@ -4,7 +4,7 @@
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
-        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Phrase Annotate'" icon="navigation" />
+        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Ner Annotate'" icon="navigation" />
       </q-breadcrumbs>
     </div>
     <div class="row self-start q-pt-lg">
@@ -28,7 +28,7 @@
 
             <q-tab-panels v-model="tab" animated>
               <q-tab-panel name="models" v-if="!consensus">
-                <div v-for="(m,i) in project.vmodels" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in vmodels" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -38,14 +38,14 @@
                   </q-btn>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
-                <div v-if="project.vmodels.length===0">
+                <div v-if="vmodels.length===0">
                   No model defined for this project yet
                 </div>
               </q-tab-panel>
 
 <!--              consensus model results-->
               <q-tab-panel name="models" v-else>
-                <div v-for="(m,i) in project.cmodels" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in cmodels" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -74,7 +74,7 @@
               </q-tab-panel>
 
               <q-tab-panel name="rules">
-                <div v-for="(m,i) in project.rules" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in rules" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -84,13 +84,13 @@
                   </q-btn>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
-                <div v-if="project.rules.length===0">
+                <div v-if="rules.length===0">
                   No rule defined for this project yet
                 </div>
               </q-tab-panel>
 
               <q-tab-panel name="dicts">
-                <div v-for="(m,i) in project.dicts" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in dicts" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -100,7 +100,7 @@
                   </q-btn>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
-                <div v-if="project.dicts.length===0">
+                <div v-if="dicts.length===0">
                   No dictionary defined for this project yet
                 </div>
               </q-tab-panel>
@@ -112,7 +112,7 @@
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white">
-          <q-btn size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }}).catch(err => {})" class="q-mr-xs">phrase</q-btn>
+          <q-btn size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }}).catch(err => {})" class="q-mr-xs">ner</q-btn>
           <q-btn outline size="13px" color="secondary" @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }})" class="q-mr-xs">sentence</q-btn>
           <q-btn outline size="13px" color="brown-5" @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }})" class="q-mr-xs">relation</q-btn>
         </q-card-actions>
@@ -324,18 +324,11 @@ export default {
   mixins: [commAnnoMixin],
   data () {
     return {
-      model: 'phrase'
+      model: 'ner'
     }
   },
   mounted () {},
-  methods: {
-    initialLabels (allLabels) {
-      allLabels.filter(a => a.is_ner === true).forEach(a => {
-        this.labels[a.id] = a
-        this.labelNames.add(a.name)
-      })
-    }
-  },
+  methods: {},
   computed: {}
 }
 </script>

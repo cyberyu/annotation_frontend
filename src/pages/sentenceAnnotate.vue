@@ -28,7 +28,7 @@
 
             <q-tab-panels v-model="tab" animated>
               <q-tab-panel name="models" v-if="!consensus">
-                <div v-for="(m,i) in project.vmodels" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in vmodels" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -38,14 +38,14 @@
                   </q-btn>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
-                <div v-if="project.vmodels.length===0">
+                <div v-if="vmodels.length===0">
                   No model defined for this project yet
                 </div>
               </q-tab-panel>
 
 <!--              consensus model results-->
               <q-tab-panel name="models" v-else>
-                <div v-for="(m,i) in project.cmodels" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in cmodels" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -74,7 +74,7 @@
               </q-tab-panel>
 
               <q-tab-panel name="rules">
-                <div v-for="(m,i) in project.rules" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in rules" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -84,13 +84,13 @@
                   </q-btn>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
-                <div v-if="project.rules.length===0">
+                <div v-if="rules.length===0">
                   No rule defined for this project yet
                 </div>
               </q-tab-panel>
 
               <q-tab-panel name="dicts">
-                <div v-for="(m,i) in project.dicts" :key="i" class="q-pa-sm">
+                <div v-for="(m,i) in dicts" :key="i" class="q-pa-sm">
                   <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
@@ -100,7 +100,7 @@
                   </q-btn>
                   <q-tooltip content-class="bg-indigo" :delay="1000" :offset="[10, 10]" max-width="250px"> {{ m.note }} </q-tooltip>
                 </div>
-                <div v-if="project.dicts.length===0">
+                <div v-if="dicts.length===0">
                   No dictionary defined for this project yet
                 </div>
               </q-tab-panel>
@@ -112,34 +112,45 @@
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white">
-          <q-btn outline size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }})" class="q-mr-xs">phrase</q-btn>
+          <q-btn outline size="13px" color="primary" @click="$router.push({ name: 'annotate', params: { project: project, review: false }})" class="q-mr-xs">ner</q-btn>
           <q-btn size="13px" color="secondary" @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }}).catch(err => {})" class="q-mr-xs">sentence</q-btn>
           <q-btn outline size="13px" color="brown-5" @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }})" class="q-mr-xs">relation</q-btn>
         </q-card-actions>
-        <q-card-actions class="bg-white annotation-header">
-          <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
-        </q-card-actions>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
-          <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
-               @focusout="selected=[]" >
-            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
+          <div v-if="sentences && sentences.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0" >
+            <div v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="sentences[0]==='\r\n'? 'row q-my-sm' : 'row'" class="sentence">
               <!-- each token display -->
-              <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
-                    v-on:mousedown="selectStart(i);mousePressed=true"
-                    v-on:mouseup="selectEnd(i);mousePressed=false"
-                    v-on:mouseover="mousePressed && select(i)"
+              <div class="q-pt-xs col-8 col-md-8" :id="selected[0]===i? 'selected' : null"
                     style="position:relative">
 <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
-                <span :class="getTokenClass(i)" >{{ token[0] }}</span>
-<!--                underline -->
-<!--                <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: relative">-->
-                  <div v-for="(label,k) in detailedAnnotations[i]" :key="k" :class="`${getPosOfLabel(i,k,label).order}`"
-                    :style="getPosOfLabel(i,k,label).cls">
-                  </div>
-<!--                </span>-->
-              </span>
+                <span :class="getSentenceClass(i)" >{{ sentence[0] }}</span>
+                <!-- right sub-panel for each sentence cat labels -->
+              </div>
               <!-- dropdown menu for labels -->
+              <!-- right sub-panel for each sentence cat labels -->
+              <div class="q-pt-xs col-4 col-md-4 cat-labels">
+                <div class="q-pa-xs">
+                  <q-scroll-area
+                    horizontal
+                    style="height: 70px; "
+                    class="bg-grey-1 rounded-borders"
+                  >
+                    <div class="row no-wrap" v-if="catLabels && catLabels.length > 0">
+                      <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
+                      <q-checkbox style="width: 40px;" v-model="catLabels[i].checked" val="Test1" />
+                      <q-select v-for="(subLabels, cat) in catLabels[i].subLabels"  :key="`cat-${i}-${cat}`"
+                        :label="`${cat}`"
+                        transition-show="scale"
+                        transition-hide="scale"
+                        filled
+                        v-model="subLabels.selected"
+                        :options="subLabels.names"
+                      />
+                    </div>
+                  </q-scroll-area>
+                </div>
+              </div>
               <q-card v-if="selected[0]===i" class="label-window fixed q-px-md q-py-sm" id="label-window" :style="`top: ${offsetTop}px;`">
                 <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
                   <div v-if="detailedAnnotations[i] && detailedAnnotations[i].map(a=>a[1].id).includes(label.id)"
@@ -153,41 +164,9 @@
                   </div>
                 </div>
               </q-card>
-              <!-- display label under token -->
-<!--              <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: absolute;" :style="`margin-top: ${2.0}em`">-->
-<!--                <div v-for="(label,k) in detailedAnnotations[i]" :key="k">-->
-<!--                  <div v-if="label[0]==='B'" :style="`width:${getWidth(i,k)}px;height: ${1*(k+1)}px; border-bottom: solid ${getColor(label[1])} 1px; margin-left: ${k*2}px`"></div>-->
-<!--                </div>-->
-<!--              </span>-->
-              <span v-if="detailedAnnotations[i]" @mouseover="activeLabel=`l-${i}`" @mouseleave="activeLabel=null"
-                    :class="{'active-label shadow-4': activeLabel===`l-${i}`}" class="label"
-                    style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.25+prevTight(i)}em`" :id="`l-${i}`">
-                <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
-                  <span v-if="label[0]==='B'" :style="`margin-left:${j*2-4}px`">
-                    <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
-                      m
-                    </q-avatar>
-                    <q-icon v-else name="check_circle" @click="removeAnnotation(i, label[1])"/> {{ label[1].name }} <br>
-                  </span>
-                </span>
-                <q-menu anchor="top right" self="top left" v-if="review">
-                  <q-list bordered separator >
-                  <q-item clickable v-for="(label, j) in detailedAnnotations[i]" :key="`label${j}`" dense>
-                    <q-item-section v-if="label[1].authors">
-                      <span class="text-bold">{{ label[1].name }} ({{ label[1].authors.length }}) - {{ label[1].text }}</span>
-                      <div class="q-px-sm">
-                        <div v-for="(author, ii) in label[1].authors" :key="`author${ii}`">
-                          {{author}}
-                        </div>
-                      </div>
-                    </q-item-section>
-                  </q-item>
-                  </q-list>
-                </q-menu>
-              </span>
-              <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].filter(a=>a[0]=='B').length*18 + detailedAnnotations[i].length*4 }px` "> </span>
             </div>
           </div>
+
         </q-scroll-area>
         <q-separator />
           <q-card-actions class="justify-center">
@@ -208,7 +187,6 @@
                    @click="nextURL? fetchDocs({url: nextURL}): $router.push('/')" style="width: 100px"/>
           </q-card-actions>
       </div>
-
       <div class="col-2 summary q-mb-none">
         <q-card>
           <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
@@ -325,8 +303,9 @@ export default {
   mixins: [commAnnoMixin],
   data () {
     return {
-      sentences: null,
-      model: 'sentence'
+      model: 'sentence',
+      catLabels: [],
+      category: null
     }
   },
   mounted () {},
@@ -340,56 +319,55 @@ export default {
     //     this.doneFetchLabels = true
     //   })
     // },
-    selectStart (i) {
-      // if the token is already annotated
-      // for (let k = 0; k < this.annotations.length; k++) {
-      //   const start = this.annotations[k][0]
-      //   const end = this.annotations[k][1]
-      //   if (i <= end && i >= start) {
-      //     this.start = start
-      //     this.end = end
-      //     this.selected = [...Array(end - start + 1).keys()].map(i => i + start)
-      //     return 0
-      //   }
-      // }
-      // if not annotated, then it will be the start
-      this.start = this.tokens[i][3][1]
-      const min = this.tokens[i][3][1]
-      const max = this.tokens[i][3][3]
-      this.selected = this.selected = [...Array(max - min + 1).keys()].map(k => k + min)
-      // find the sentence contains current token
-      // console.log()
-      // console.log('..start', new Date())
-    },
-    selectEnd (i) {
-      this.end = this.tokens[i][3][3]
-      if (this.end < this.start) {
-        this.end = this.tokens[this.start][3][3]
-        this.start = this.tokens[i][3][1]
+    selectStart (i) {},
+    selectEnd (i) {},
+    select (i) {},
+    getSentenceClass (i) {
+      if (this.catLabels[i].checked) {
+        return 'highlight'
       }
-      // console.log('..end', new Date())
+      return ''
     },
-    select (i) {
-      const min = Math.min(i, this.tokens[i][3][1], this.start)
-      const max = Math.max(i, this.tokens[i][3][3], this.start, this.tokens[this.start][3][3])
-      this.selected = [...Array(max - min + 1).keys()].map(k => k + min)
-      // this.selected.includes(i) ? this.selected.pop() : this.selected.push(i)
-      // console.log('..select', new Date())
-    },
-    initialLabels (allLabels) {
-      allLabels.filter(a => a.is_sentence === true).forEach(a => {
-        this.labels[a.id] = a
-        this.labelNames.add(a.name)
+    postConstruct () {
+      const senLen = this.sentences.length
+      this.category = {}
+      Object.values(this.labels).forEach(label => {
+        if (label.category) {
+          if (!this.category[label.category]) {
+            this.category[label.category] = {
+              labels: [label],
+              names: [label.name]
+            }
+          } else {
+            this.category[label.category].labels.push(label)
+            this.category[label.category].names.push(label.name)
+          }
+        }
+      })
+      this.catLabels = Array(senLen).fill({}).map(a => {
+        return {
+          checked: false,
+          cat: '',
+          subLabels: JSON.parse(JSON.stringify(this.category))
+        }
       })
     }
   }
 }
 </script>
 <style>
-.token {
+.sentence {
   font-size: 1.3em;
   /*font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;*/
   font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
+}
+.sentence.row{
+  margin-bottom: 20px;
+}
+
+.cat-labels label{
+  margin-left: 5px;
+  min-width: 90px;
 }
 
 .B, .I {
