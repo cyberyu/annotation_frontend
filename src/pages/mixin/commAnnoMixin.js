@@ -19,7 +19,6 @@ export const commAnnoMixin = {
       //   5: { name: 'label C', color: 'blue', id: 5 }
       // },
       annotations: [],
-      annotationsExcludeCur: [],
       // annotations: [
       //   [11, 15, [2]],
       //   [27, 27, [5, 3]]
@@ -57,20 +56,20 @@ export const commAnnoMixin = {
   },
   mounted () {
     // this.fetchLabels()
-    this.project.labels.filter(a => a.kind === this.model).forEach(a => {
+    this.project.labels.filter(a => a.kind === this.mode).forEach(a => {
       this.labels[a.id] = a
       this.labelNames.add(a.name)
     })
-    this.project.rules.filter(a => a.kind === this.model).forEach(a => {
+    this.project.rules.filter(a => a.kind === this.mode).forEach(a => {
       this.rules.push(a)
     })
-    this.project.dicts.filter(a => a.kind === this.model).forEach(a => {
+    this.project.dicts.filter(a => a.kind === this.mode).forEach(a => {
       this.dicts.push(a)
     })
-    this.project.vmodels.filter(a => a.kind === this.model).forEach(a => {
+    this.project.vmodels.filter(a => a.kind === this.mode).forEach(a => {
       this.vmodels.push(a)
     })
-    this.project.cmodels.filter(a => a.kind === this.model).forEach(m => {
+    this.project.cmodels.filter(a => a.kind === this.mode).forEach(m => {
       this.cmodels[m.id] = m
       this.cmodels[m.id].consensusScore = { f1: null, total: null }
     })
@@ -405,7 +404,7 @@ export const commAnnoMixin = {
       this.saving = true
       const data = {
         document: this.document.id,
-        annotations: this.annotations.concat(this.annotationsExcludeCur),
+        annotations: this.annotations,
         kind: this.model
       }
       let url
@@ -445,7 +444,7 @@ export const commAnnoMixin = {
 
       let url
       if (!params.url) {
-        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}&mode=${this.model}`
+        url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}&mode=${this.mode}`
         if (params.page) {
           url += `&page=${params.page}`
         }
@@ -463,7 +462,6 @@ export const commAnnoMixin = {
         this.document = this.documents[0]
         const allAnnotations = this.document.annotations.id ? this.document.annotations.annotations : []
         this.annotations = allAnnotations.filter(a => this.labelNames.has(a.name))
-        this.annotationsExcludeCur = allAnnotations.filter(a => !this.labelNames.has(a.name))
         if (this.review) {
           this.annotations4Review = this.document.reviews
           this.annotations = this.mergeAnnotations()

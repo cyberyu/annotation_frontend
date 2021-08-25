@@ -327,7 +327,7 @@ export default {
   mixins: [commAnnoMixin],
   data () {
     return {
-      model: 'relation'
+      mode: 'relation'
     }
   },
   mounted () {},

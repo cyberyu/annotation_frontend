@@ -327,7 +327,7 @@ export default {
   mixins: [commAnnoMixin],
   data () {
     return {
-      model: 'ner'
+      mode: 'ner'
     }
   },
   mounted () {},

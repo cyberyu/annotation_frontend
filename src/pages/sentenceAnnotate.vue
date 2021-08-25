@@ -111,22 +111,34 @@
       </div>
 
       <div class="col-6 bg-white">
-        <q-card-actions class="bg-white">
-          <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
-                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">ner</q-btn>
-          <q-btn size="13px" color="primary" class="q-mr-xs" style="width: 100px"
-                 @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }})">sentence</q-btn>
-          <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
-                 @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }}).catch(err => {})">relation</q-btn>
-        </q-card-actions>
+        <div class="row">
+          <q-card-actions class="bg-white col-9">
+            <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
+                   @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">ner</q-btn>
+            <q-btn size="13px" color="primary" class="q-mr-xs" style="width: 100px"
+                   @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }})">sentence</q-btn>
+            <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
+                   @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }}).catch(err => {})">relation</q-btn>
+          </q-card-actions>
+          <div class="col-3 self-center">
+            <q-checkbox style="width: 40px;" v-model="relevantAll" dense />
+            <q-btn v-if="!showUnRelBtn" size="13px" color="primary" label="hide" class="q-mr-xs" style="width: 100px"
+                   @click="hideUnRelSen();showUnRelBtn=true">
+              <q-tooltip content-class="bg-accent">Hide unRelevant sentences</q-tooltip>
+            </q-btn>
+            <q-btn v-if="showUnRelBtn" size="13px" color="primary" label="show" class="q-mr-xs" style="width: 100px"
+                   @click="showUnRelSen();showUnRelBtn=false">
+              <q-tooltip content-class="bg-accent">Show unRelevant sentences</q-tooltip>
+            </q-btn>
+          </div>
+        </div>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
           <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" tabindex="0" >
-            <div v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" class="sentence row">
-              <div class="q-py-sm col-9" >
+            <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="getSentenceClass(i)" class="sentence row">
+              <div @click="showDetailSenAnnos(i)" class="q-py-sm col-9" >
 <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
-                {{ sentence.text }}
-                <!-- right sub-panel for each sentence cat labels -->
+                {{ sentence[0] }}
               </div>
               <!-- dropdown menu for labels -->
               <!-- right sub-panel for each sentence cat labels -->
@@ -146,19 +158,6 @@
                   </div>
                 </div>
               </div>
-              <q-card v-if="selected[0]===i" class="label-window fixed q-px-md q-py-sm" id="label-window" :style="`top: ${offsetTop}px;`">
-                <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
-                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i].map(a=>a[1].id).includes(label.id)"
-                       @click="removeAnnotation(i, findAnnotation(i, label.id))">
-                    <q-icon name="check_circle"></q-icon>
-                    {{ label.name }}
-                  </div>
-                  <div v-else @click="annotate(label)">
-                    <q-icon name="radio_button_unchecked"></q-icon>
-                    {{ label.name }}
-                  </div>
-                </div>
-              </q-card>
             </div>
           </div>
 
@@ -200,15 +199,17 @@
           </q-card-actions>
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
 <!--            categorized annotations-->
-            <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'">
+            <q-list bordered class="bg-white" v-if="sentences && showTab==='annotations'">
               <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
-                                expand-separator :header-style="`color: ${(lLabels[label[0]]|lLabels[null]).color}`" header-class="header-label"
+                                expand-separator header-class="header-label"
                                 :label="`${label[0]} (${label[1].length})`">
                 <div class="summary-word q-pb-sm">
-                  <li v-for="(w, j) in label[1].sort((a,b)=>a.pos[0]-b.pos[0])" :key="j" style="list-style: circle">
+                  <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
                     <span>
                       <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
-                      <span @click="scrollTo(w)">{{w.pos}} - {{w.text}}</span>
+<!--                      <span @click="scrollTo(w)">-->
+                      <span>
+                        [ {{sentences[curDetailSentence][1]}}, {{sentences[curDetailSentence][1]+sentences[curDetailSentence][0].length-1}} ] - {{w.name}}</span>
                     </span>
                   </li>
                 </div>
@@ -298,10 +299,14 @@ export default {
   mixins: [commAnnoMixin],
   data () {
     return {
-      model: 'sentence',
+      mode: 'sentence',
       catAnnotations: [],
       relevantSentences: [],
-      category: null
+      relevantAll: false,
+      category: null,
+      relevantSenShow: [],
+      showUnRelBtn: false,
+      curDetailSentence: null
     }
   },
   mounted () {},
@@ -319,6 +324,9 @@ export default {
     selectEnd (i) {},
     select (i) {},
     getSentenceClass (i) {
+      if (this.curDetailSentence === i) {
+        return 'cur'
+      }
       if (this.relevantSentences.includes(i)) {
         return 'highlight'
       }
@@ -326,6 +334,7 @@ export default {
     },
     postConstruct () {
       const senLen = this.sentences.length
+      this.relevantSenShow = Array(senLen).fill(true)
       this.category = { }
       Object.values(this.labels).forEach(label => {
         if (label.category) {
@@ -383,6 +392,99 @@ export default {
         }
       })
       this.saveAnnotations()
+    },
+    executeModel (id) {
+      if (this.relevantSentences.length === 0) {
+        const msg = 'You must select some sentences before execute model.'
+        this.$q.notify({
+          message: msg,
+          color: 'secondary',
+          position: 'center',
+          actions: [
+            { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } }
+          ]
+        })
+        return -1
+      }
+      this.add2Q(id)
+      const data = []
+      this.relevantSentences.forEach(v => {
+        const startChar = this.sentences[v][2]
+        const endChar = startChar + this.sentences[v][0].length - 1
+        data.push({
+          idx: v,
+          text: this.sentences[v][0],
+          pos: [startChar, endChar]
+        })
+      })
+      const url = this.consensus ? '/api/calculate_consensus/' : '/api/calculate/'
+      this.$axios.post(this.$hostname + url, data).then(response => {
+        const results = response.data.result
+        console.log(results)
+        // todo to finish reponse handler
+        // this.alignTokens(results)
+        // results.forEach(ann => {
+        //   ann.m = 'm' // machine generated
+        //   ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
+        //   const annotation = ann
+        //   if (!this.existInAnnotations(annotation)) {
+        //     this.annotations.push(annotation)
+        //   }
+        // })
+        // this.getDetailedAnnotations()
+        // this.removeFromQ(id)
+        //
+        // if (this.modelResultCache) {
+        //   this.modelResultCache = this.modelResultCache.concat(results)
+        // } else {
+        //   this.modelResultCache = results
+        // }
+        // this.modelResultCache.sort((a, b) => b.confidence - a.confidence)
+        //
+        // const msg = `Finished running model, and got ${results.length} results`
+        // this.$q.notify({
+        //   message: msg,
+        //   color: 'secondary',
+        //   position: 'center',
+        //   timeout: 0,
+        //   actions: [
+        //     { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } },
+        //     { label: 'Review', color: 'white', handler: () => { this.showTab = 'sort' } }
+        //   ]
+        // })
+        //
+        // if (this.consensus) {
+        //   this.cmodels[id].consensusScore = {
+        //     f1: response.data.f1 * 100,
+        //     total: response.data.total * 100
+        //   }
+        // }
+        // this.$forceUpdate()
+        // process return annotations
+      })
+    },
+    showDetailSenAnnos (i) {
+      // todo
+      // this.relevantSentences = [i]
+      if (this.curDetailSentence === i) {
+        this.curDetailSentence = null
+      } else {
+        this.curDetailSentence = i
+      }
+    },
+    hideUnRelSen () {
+      this.relevantSenShow = Array(this.sentences.length).fill(false)
+      // hide unRelevant sentence
+      this.relevantSentences.forEach(v => {
+        this.relevantSenShow[v] = true
+      })
+    },
+    showUnRelSen () {
+      this.relevantSenShow = Array(this.sentences.length).fill(true)
+    },
+    scrollTo (sentenceId) {
+      const id = `s-${sentenceId}`
+      document.getElementById(id).scrollIntoView({ block: 'center' })
     }
   },
   computed: {
@@ -390,7 +492,21 @@ export default {
       return Object.keys(this.category)
     },
     categorizedAnnotations () {
-      return {}
+      const results = {}
+      if (this.curDetailSentence === null) {
+        return results
+      }
+      const labels = this.catAnnotations[this.curDetailSentence].labels
+      if (Object.keys(labels).length !== 0) {
+        Object.keys(labels).filter(k => labels[k] !== null).forEach(k => {
+          if (results[k]) {
+            results[k].push(labels[k])
+          } else {
+            results[k] = [labels[k]]
+          }
+        })
+      }
+      return results
     },
     conflicts () {
       // todo: rewrite the logic of check conflicts
@@ -411,6 +527,20 @@ export default {
         }
       })
       return r
+    }
+  },
+  watch: {
+    relevantSentences (v) {
+      this.relevantAll = v.length === this.sentences.length
+    },
+    relevantAll (v) {
+      if (v === true) {
+        this.relevantSentences = [...Array(this.sentences.length).keys()].map(k => k)
+      } else {
+        if (this.relevantSentences.length === this.sentences.length) {
+          this.relevantSentences = []
+        }
+      }
     }
   }
 }
@@ -447,8 +577,11 @@ export default {
   background-color: lightgray;
 }
 
-.highlight {
-  background-color: red;
+.sentence.highlight {
+  background-color: lightgray;
+}
+.sentence.cur {
+  background-color: lightskyblue;
 }
 
 ::selection {
