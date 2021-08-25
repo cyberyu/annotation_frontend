@@ -121,12 +121,11 @@
         </q-card-actions>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
-          <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" @keyup="key" tabindex="0" >
+          <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" tabindex="0" >
             <div v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" class="sentence row">
-              <!-- each token display -->
-              <div class="q-py-sm col-9" :id="selected[0]===i? 'selected' : null" style="position:relative">
+              <div class="q-py-sm col-9" >
 <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
-                <span :class="getSentenceClass(i)" >{{ sentence.text }}</span>
+                {{ sentence.text }}
                 <!-- right sub-panel for each sentence cat labels -->
               </div>
               <!-- dropdown menu for labels -->
@@ -394,6 +393,7 @@ export default {
       return {}
     },
     conflicts () {
+      // todo: rewrite the logic of check conflicts
       const d = {}
       this.annotations.forEach(a => {
         const k = `${JSON.stringify(a.pos)}-${a.id}`
