@@ -4,8 +4,9 @@
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
-        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Sentence Annotate'" icon="navigation" />
+        <q-breadcrumbs-el label="" icon="navigation" />
       </q-breadcrumbs>
+      <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" />
     </div>
     <div class="row self-start q-pt-lg">
       <div class="col-3">
@@ -111,17 +112,9 @@
       </div>
 
       <div class="col-6 bg-white">
-        <div class="row">
-          <q-card-actions class="bg-white col-9">
-            <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
-                   @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">ner</q-btn>
-            <q-btn size="13px" color="primary" class="q-mr-xs" style="width: 100px"
-                   @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }})">sentence</q-btn>
-            <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
-                   @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }}).catch(err => {})">relation</q-btn>
-          </q-card-actions>
+        <div class="row justify-end">
           <div class="col-3 self-center">
-            <q-checkbox style="width: 40px;" v-model="relevantAll" dense />
+            <q-checkbox style="width: 40px; margin-left: 1px;" v-model="relevantAll" dense />
             <q-btn v-if="!showUnRelBtn" size="13px" color="primary" label="hide" class="q-mr-xs" style="width: 100px"
                    @click="hideUnRelSen();showUnRelBtn=true">
               <q-tooltip content-class="bg-accent">Hide unRelevant sentences</q-tooltip>
@@ -206,10 +199,10 @@
                 <div class="summary-word q-pb-sm">
                   <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
                     <span>
-                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
+                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.pos, w)"> m </q-avatar>
 <!--                      <span @click="scrollTo(w)">-->
                       <span>
-                        [ {{sentences[curDetailSentence][1]}}, {{sentences[curDetailSentence][1]+sentences[curDetailSentence][0].length-1}} ] - {{w.name}}</span>
+                        [ {{sentences[curDetailSentence][2]}}, {{sentences[curDetailSentence][2]+sentences[curDetailSentence][0].length-1}} ] - {{w.name}}</span>
                     </span>
                   </li>
                 </div>
@@ -218,9 +211,10 @@
 <!--            model results review -->
             <q-list class="q-pa-sm" v-if="tokens && modelResultCache && showTab==='sort'">
               <div v-for="(label, i) in modelResultCache" :key="i">
-                <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.tpos[0], label); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
-                <span @click="scrollTo(label)">
-                  <span v-if="label.confidence">({{ label.confidence.toFixed(2) }})</span> {{label.pos}} - {{label.text}}
+                <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.pos, label); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
+                <span @click="scrollTo(getSentence(label.pos))">
+                  <span v-if="label.confidence">({{ label.confidence.toFixed(2) }})</span>
+                    [ {{label.pos}}, {{label.pos+sentences[getSentence(label.pos)][0].length-1}} ] - {{label.text}}
                 </span>
               </div>
               <div class="flex justify-center">
@@ -235,9 +229,9 @@
                  <div class="">
                   <div v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
                     <span>
-                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
+                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.pos, w)"> m </q-avatar>
                       <q-avatar v-else size="12px"></q-avatar>
-                      <span @click="scrollTo(w)">{{w.pos}} - {{w.text}} 【{{w.name}}】</span>
+                      <span @click="scrollTo(getSentence(w.pos))">{{w.pos}} - {{w.text}} 【{{w.name}}】</span>
                     </span>
                   </div>
                 </div>
@@ -293,10 +287,12 @@
 // import { ref } from 'vue'
 
 import { commAnnoMixin } from 'pages/mixin/commAnnoMixin'
+import AnnotateTab from 'components/AnnotateTab'
 
 export default {
   name: 'SentenceAnnotate',
   mixins: [commAnnoMixin],
+  components: { AnnotateTab },
   data () {
     return {
       mode: 'sentence',
@@ -311,15 +307,6 @@ export default {
   },
   mounted () {},
   methods: {
-    // fetchLabels () {
-    //   const url = this.$hostname + '/api/labels/'
-    //   this.$axios.get(url).then(response => {
-    //     response.data.forEach(a => {
-    //       this.labels[a.id] = a
-    //     })
-    //     this.doneFetchLabels = true
-    //   })
-    // },
     selectStart (i) {},
     selectEnd (i) {},
     select (i) {},
@@ -366,7 +353,7 @@ export default {
     },
     getSentence (pos) {
       for (let i = 0; i < this.sentences.length; i++) {
-        if (this.sentences[i].start_char === pos[0]) {
+        if (this.sentences[i][2] === pos) {
           return i
         }
       }
@@ -381,9 +368,9 @@ export default {
         if (Object.keys(item.labels).length > 0) {
           Object.keys(item.labels).forEach(label => {
             const ann = {}
-            ann.text = this.sentences[i].text
-            ann.pos = this.sentences[i].pos
-            ann.tpos = this.sentences[i].tpos
+            ann.text = this.sentences[i][0]
+            ann.tpos = this.sentences[i][1]
+            ann.pos = this.sentences[i][2]
             ann.name = item.labels[label].name
             ann.category = item.labels[label].category
             ann.id = item.labels[label].id
@@ -407,11 +394,14 @@ export default {
         return -1
       }
       this.add2Q(id)
-      const data = []
+      const data = {
+        mtype: this.tab,
+        data: []
+      }
       this.relevantSentences.forEach(v => {
         const startChar = this.sentences[v][2]
         const endChar = startChar + this.sentences[v][0].length - 1
-        data.push({
+        data.data.push({
           idx: v,
           text: this.sentences[v][0],
           pos: [startChar, endChar]
@@ -420,52 +410,53 @@ export default {
       const url = this.consensus ? '/api/calculate_consensus/' : '/api/calculate/'
       this.$axios.post(this.$hostname + url, data).then(response => {
         const results = response.data.result
-        console.log(results)
-        // todo to finish reponse handler
-        // this.alignTokens(results)
-        // results.forEach(ann => {
-        //   ann.m = 'm' // machine generated
-        //   ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
-        //   const annotation = ann
-        //   if (!this.existInAnnotations(annotation)) {
-        //     this.annotations.push(annotation)
-        //   }
-        // })
-        // this.getDetailedAnnotations()
-        // this.removeFromQ(id)
-        //
-        // if (this.modelResultCache) {
-        //   this.modelResultCache = this.modelResultCache.concat(results)
-        // } else {
-        //   this.modelResultCache = results
-        // }
-        // this.modelResultCache.sort((a, b) => b.confidence - a.confidence)
-        //
-        // const msg = `Finished running model, and got ${results.length} results`
-        // this.$q.notify({
-        //   message: msg,
-        //   color: 'secondary',
-        //   position: 'center',
-        //   timeout: 0,
-        //   actions: [
-        //     { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } },
-        //     { label: 'Review', color: 'white', handler: () => { this.showTab = 'sort' } }
-        //   ]
-        // })
-        //
+        // todo to finish response handler
+        results.forEach(ann => {
+          ann.m = 'm' // machine generated
+          ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
+          // add pos and sentence id display
+          ann.sentIdx = this.getSentence(ann.pos)
+          const annotation = ann
+          if (!this.existInAnnotations(annotation)) {
+            this.annotations.push(annotation)
+          }
+        })
+        this.removeFromQ(id)
+
+        if (this.modelResultCache) {
+          this.modelResultCache = this.modelResultCache.concat(results)
+        } else {
+          this.modelResultCache = results
+        }
+        this.modelResultCache.sort((a, b) => b.confidence - a.confidence)
+
+        const msg = `Finished running model, and got ${results.length} results`
+        this.$q.notify({
+          message: msg,
+          color: 'secondary',
+          position: 'center',
+          timeout: 0,
+          actions: [
+            { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } },
+            { label: 'Review', color: 'white', handler: () => { this.showTab = 'sort' } }
+          ]
+        })
+        // todo to finish consensus
         // if (this.consensus) {
         //   this.cmodels[id].consensusScore = {
         //     f1: response.data.f1 * 100,
         //     total: response.data.total * 100
         //   }
         // }
-        // this.$forceUpdate()
-        // process return annotations
+        this.$forceUpdate()
       })
     },
+    removeAnnotation (i, label) {
+      const idx = this.annotations.indexOf(label)
+      // console.log('find label', idx, label)
+      this.annotations.splice(idx, 1)
+    },
     showDetailSenAnnos (i) {
-      // todo
-      // this.relevantSentences = [i]
       if (this.curDetailSentence === i) {
         this.curDetailSentence = null
       } else {

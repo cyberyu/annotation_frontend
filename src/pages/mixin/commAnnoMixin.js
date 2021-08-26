@@ -3,7 +3,7 @@ export const commAnnoMixin = {
   props: ['project', 'review', 'consensus'],
   data () {
     return {
-      model: null,
+      mode: null,
       documents: [],
       document: null,
       tokens: null,
@@ -405,7 +405,7 @@ export const commAnnoMixin = {
       const data = {
         document: this.document.id,
         annotations: this.annotations,
-        kind: this.model
+        kind: this.mode
       }
       let url
       let method
