@@ -4,8 +4,10 @@
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
-        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Ner Annotate'" icon="navigation" />
+        <q-breadcrumbs-el label="" icon="navigation" />
+<!--        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Ner Annotate'" icon="navigation" />-->
       </q-breadcrumbs>
+      <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" />
     </div>
     <div class="row self-start q-pt-lg">
       <div class="col-3">
@@ -111,14 +113,6 @@
       </div>
 
       <div class="col-6 bg-white">
-        <q-card-actions class="bg-white">
-          <q-btn size="13px" color="primary" class="q-mr-xs" style="width: 100px"
-                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">ner</q-btn>
-          <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
-                 @click="$router.push({ name: 'sentenceAnnotate', params: { project: project, review: false }})">sentence</q-btn>
-          <q-btn outline size="13px" color="primary" class="q-mr-xs" style="width: 100px"
-                 @click="$router.push({ name: 'relationAnnotate', params: { project: project, review: false }}).catch(err => {})">relation</q-btn>
-        </q-card-actions>
         <q-card-actions class="bg-white annotation-header">
           <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
         </q-card-actions>
@@ -321,13 +315,15 @@
 <script>
 // import { ref } from 'vue'
 import { commAnnoMixin } from 'pages/mixin/commAnnoMixin'
+import AnnotateTab from 'components/AnnotateTab'
 
 export default {
   name: 'Annotate',
   mixins: [commAnnoMixin],
+  components: { AnnotateTab },
   data () {
     return {
-      model: 'ner'
+      mode: 'ner'
     }
   },
   mounted () {},
