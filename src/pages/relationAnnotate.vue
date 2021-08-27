@@ -1,5 +1,5 @@
 <template>
-  <q-page class="" style="background-color: #f6f6f6">
+  <q-page class="relation" style="background-color: #f6f6f6">
     <div class="row self-start">
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
@@ -113,7 +113,52 @@
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white annotation-header">
-          <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
+          <div class="row full-width">
+            <div class="col-3 flex">
+              <div class="self-center">
+                <q-btn outline size="sm" :style="`color: ${!firstLabel ? '' : firstLabel.color ? firstLabel.color : ''}`" class="q-mr-xs" style="min-width: 80px;"></q-btn>
+              </div>
+              <div class="justify-center">
+                <q-option-group dense
+                  :options="headRadioOptions"
+                  type="radio"
+                  v-model="isHead"
+                />
+              </div>
+            </div>
+            <div class="col-3 flex self-center">
+              <div class="self-center">
+                <q-btn outline size="sm" :style="`color: ${!secondLabel ? '' : secondLabel.color ? secondLabel.color : ''}`" class="q-mr-xs" style="min-width: 80px;"></q-btn>
+              </div>
+              <div class="justify-center">
+                <q-option-group dense
+                  :options="headRadioOptions"
+                  type="radio"
+                  v-model="isTail"
+                />
+              </div>
+            </div>
+            <div class="col-4 flex self-center">
+                <q-select dense class="q-mr-sm"
+                  filled
+                  v-model="relationText"
+                  use-input
+                  use-chips
+                  multiple
+                  input-debounce="0"
+                  @new-value="newRelationText"
+                  :options="relations"
+                  @filter="relationTextFilter"
+                  style="width: 120px;"
+                />
+                <q-select dense outlined size="sm" style="width: 100px;" v-model="relationSelected" :options="relations" label="Outlined" />
+            </div>
+            <div class="col-2 self-center">
+              <q-btn color="accent" size="sm" class="q-mb-xs block float-right" style="width: 100px;">Confirm</q-btn>
+              <q-btn color="primary" size="sm" class="block float-right" style="width: 100px;">Cancel</q-btn>
+            </div>
+          </div>
+<!--          <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>-->
         </q-card-actions>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
@@ -312,7 +357,6 @@
 </template>
 
 <script>
-// import { ref } from 'vue'
 import { commAnnoMixin } from 'pages/mixin/commAnnoMixin'
 import AnnotateTab from 'components/AnnotateTab'
 
@@ -322,15 +366,40 @@ export default {
   components: { AnnotateTab },
   data () {
     return {
-      mode: 'relation'
+      mode: 'relation',
+      firstLabel: null, // first label, could be tail
+      secondLabel: null, // second label, could be head
+      isHead: true,
+      isTail: false,
+      headRadioOptions: [{ label: 'head', value: true }, { label: 'tail', value: false }],
+      relations: [],
+      relationSelected: null,
+      relationText: null
     }
   },
   mounted () {},
-  methods: {},
-  computed: {}
+  methods: {
+    selectStart (i) {},
+    selectEnd (i) {},
+    select (i) {},
+    relationTextFilter () {},
+    newRelationText () {}
+  },
+  computed: {},
+  watch: {
+    isHead (v) {
+      this.isTail = !v
+    },
+    isTail (v) {
+      this.isHead = !v
+    }
+  }
 }
 </script>
 <style>
+.relation .annotation-header .q-radio{
+  margin: 5px 0;
+}
 .token {
   font-size: 1.3em;
   /*font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;*/

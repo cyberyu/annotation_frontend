@@ -30,7 +30,7 @@
             <q-tab-panels v-model="tab" animated>
               <q-tab-panel name="models" v-if="!consensus">
                 <div v-for="(m,i) in vmodels" :key="i" class="q-pa-sm">
-                  <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
+                  <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="getProcessedIn(tab+m.id)"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
@@ -47,21 +47,13 @@
 <!--              consensus model results-->
               <q-tab-panel name="models" v-else>
                 <div v-for="(m,i) in cmodels" :key="i" class="q-pa-sm">
-                  <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
+                  <q-btn :loading="modelQueue.indexOf(tab+m.id)>=0" :disable="getProcessedIn(tab+m.id)"
                          :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
                       Loading...
                     </template>
                   </q-btn>
-<!--                  <q-circular-progress v-if="cmodels[m.id] && cmodels[m.id].consensusScore.total" show-value font-size="12px" :value="cmodels[m.id].consensusScore.total"-->
-<!--                                       size="35px" :thickness="0.22" color="red" track-color="grey-3" class="q-ma-xs">-->
-<!--                    {{ cmodels[m.id].consensusScore.total.toFixed(1) }}-->
-<!--                  </q-circular-progress>-->
-<!--                  <q-circular-progress v-if="cmodels[m.id] && cmodels[m.id].consensusScore.f1" show-value font-size="12px" :value="cmodels[m.id].consensusScore.f1"-->
-<!--                                       size="35px" :thickness="0.22" color="teal" track-color="grey-3" class="q-ma-xs">-->
-<!--                    {{ cmodels[m.id].consensusScore.f1.toFixed(1) }}-->
-<!--                  </q-circular-progress>-->
                   <div v-if="cmodels[m.id] && cmodels[m.id].consensusScore">
                     <span v-if="cmodels[m.id].consensusScore.total">
                       <span class="text-bold text-primary">Accum F1</span>: {{ cmodels[m.id].consensusScore.total.toFixed(1) }}
@@ -76,7 +68,7 @@
 
               <q-tab-panel name="rules">
                 <div v-for="(m,i) in rules" :key="i" class="q-pa-sm">
-                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
+                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="getProcessedIn(tab+m.id)"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
@@ -92,7 +84,7 @@
 
               <q-tab-panel name="dicts">
                 <div v-for="(m,i) in dicts" :key="i" class="q-pa-sm">
-                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="processedQ.indexOf(tab+m.id)>=0"
+                  <q-btn :loading="modelQueue.indexOf(tab + m.id)>=0" :disable="getProcessedIn(tab+m.id)"
                     :label="m.name" class="bg-primary" text-color="white" @click="executeModel(m.id)">
                     <template v-slot:loading>
                       <q-spinner-hourglass class="on-left" />
@@ -214,7 +206,7 @@
                 <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.pos, label); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
                 <span @click="scrollTo(getSentence(label.pos))">
                   <span v-if="label.confidence">({{ label.confidence.toFixed(2) }})</span>
-                    [ {{label.pos}}, {{label.pos+sentences[getSentence(label.pos)][0].length-1}} ] - {{label.text}}
+                    {{label.pos}} - {{label.name}}
                 </span>
               </div>
               <div class="flex justify-center">
@@ -376,9 +368,10 @@ export default {
         if (Object.keys(item.labels).length > 0) {
           Object.keys(item.labels).forEach(label => {
             const ann = {}
-            ann.text = this.sentences[i][0]
-            ann.tpos = this.sentences[i][1]
-            ann.pos = this.sentences[i][2]
+            // keep with ner annotation format
+            ann.text = this.sentences[i].text
+            ann.pos = [this.sentences[i].start_char, this.sentences[i].end_char]
+            ann.tpos = [this.sentences[i].start, this.sentences[i].end]
             ann.name = item.labels[label].name
             ann.category = item.labels[label].category
             ann.id = item.labels[label].id
@@ -413,14 +406,25 @@ export default {
       })
       const url = this.consensus ? '/api/calculate_consensus/' : '/api/model-sentence/'
       this.$axios.post(this.$hostname + url, data).then(response => {
+        // every model for each sentence generate one label
         const results = response.data
-        // todo to finish response handler
-        results.forEach(ann => {
-          ann.m = 'm' // machine generated
-          ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
-          // add pos and sentence id display
-          ann.sentIdx = this.getSentence(ann.pos)
-          const annotation = ann
+        // rebuild result for annotation
+        const resultsAnnotations = []
+        results.forEach((ann, i) => {
+          // find sentence id
+          const sentIdx = this.relevantSentences[i]
+          const sentence = this.sentences[sentIdx]
+          // rebuild annotation structure
+          const annotation = {
+            id: this.lLabels[ann.label] ? this.lLabels[ann.label].id : null, // returned label may not included in project labels
+            pos: [sentence.start_char, sentence.end_char],
+            tpos: [sentence.start, sentence.end],
+            name: ann.label,
+            text: sentence.text,
+            category: ann.category,
+            m: 'm' // machine generated
+          }
+          resultsAnnotations.push(annotation)
           if (!this.existInAnnotations(annotation)) {
             this.annotations.push(annotation)
           }
@@ -428,9 +432,9 @@ export default {
         this.removeFromQ(id)
 
         if (this.modelResultCache) {
-          this.modelResultCache = this.modelResultCache.concat(results)
+          this.modelResultCache = this.modelResultCache.concat(resultsAnnotations)
         } else {
-          this.modelResultCache = results
+          this.modelResultCache = resultsAnnotations
         }
         this.modelResultCache.sort((a, b) => b.confidence - a.confidence)
 
@@ -453,6 +457,14 @@ export default {
         //   }
         // }
         this.$forceUpdate()
+      })
+    },
+    removeFromQ (id) { // modify for sentence
+      const minfo = this.tab + id
+      const indx = this.modelQueue.indexOf(minfo)
+      this.modelQueue.splice(indx, 1)
+      Object.values(this.relevantSentences).forEach(sentIdx => {
+        this.processedQ.push(minfo + sentIdx)
       })
     },
     removeAnnotation (i, label) {
@@ -483,6 +495,17 @@ export default {
     }
   },
   computed: {
+    getProcessedIn () {
+      return function (tabAndId) {
+        for (let i = 0; i < this.relevantSentences.length; i++) {
+          const minfo = tabAndId + this.relevantSentences[i]
+          if (this.processedQ.indexOf(minfo) >= 0) {
+            return true
+          }
+        }
+        return false
+      }
+    },
     categoryNames () {
       return Object.keys(this.category)
     },
