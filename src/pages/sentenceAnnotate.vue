@@ -113,16 +113,16 @@
 
       <div class="col-6 bg-white">
         <div class="row justify-end">
-          <div class="col-3 self-center">
-            <q-checkbox style="width: 40px; margin-left: 1px;" v-model="relevantAll" dense />
-            <q-btn v-if="!showUnRelBtn" size="13px" color="primary" label="hide" class="q-mr-xs" style="width: 100px"
-                   @click="hideUnRelSen();showUnRelBtn=true">
-              <q-tooltip content-class="bg-accent">Hide unRelevant sentences</q-tooltip>
+          <div class="col-9 row justify-center">
+            <q-btn v-if="!showUnRelBtn" size="13px" label="Hide unrelevant" class="q-mr-xs" style="width: 150px" no-caps
+                   @click="hideUnRelSen();showUnRelBtn=true" color="primary" outline :disable="relevantSentences.length<1">
             </q-btn>
-            <q-btn v-if="showUnRelBtn" size="13px" color="primary" label="show" class="q-mr-xs" style="width: 100px"
+            <q-btn v-if="showUnRelBtn" size="13px" label="Show all" class="q-mr-xs" style="width: 100px" flat no-caps
                    @click="showUnRelSen();showUnRelBtn=false">
-              <q-tooltip content-class="bg-accent">Show unRelevant sentences</q-tooltip>
             </q-btn>
+          </div>
+          <div class="col-3 self-center">
+            <q-checkbox style="width: 140px; margin-left: 1px;" v-model="relevantAll" dense label="Select all" />
           </div>
         </div>
         <q-separator />
@@ -131,7 +131,7 @@
             <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="getSentenceClass(i)" class="sentence row">
               <div @click="showDetailSenAnnos(i)" class="q-py-sm col-9" >
 <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
-                {{ sentence[0] }}
+                {{ sentence.text }}
               </div>
               <!-- dropdown menu for labels -->
               <!-- right sub-panel for each sentence cat labels -->
@@ -164,14 +164,14 @@
             </div>
             <q-space />
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
-                   @click="fetchDocs({url:prevURL})" style="width: 100px"/>
+                   @click="goto(prevURL)" style="width: 100px"/>
             <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="formatAndSaveAnnotations()" :loading="saving" style="width: 100px">
                    <template v-slot:loading>
                      Saving...
                    </template>
             </q-btn>
             <q-btn color="primary" label="Next" class="justify-center q-ml-md"
-                   @click="nextURL? fetchDocs({url: nextURL}): $router.push('/')" style="width: 100px"/>
+                   @click="goto(nextURL)" style="width: 100px"/>
           </q-card-actions>
       </div>
       <div class="col-2 summary q-mb-none">
@@ -194,7 +194,7 @@
 <!--            categorized annotations-->
             <q-list bordered class="bg-white" v-if="sentences && showTab==='annotations'">
               <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
-                                expand-separator header-class="header-label"
+                                expand-separator header-class="header-label" default-opened
                                 :label="`${label[0]} (${label[1].length})`">
                 <div class="summary-word q-pb-sm">
                   <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
@@ -202,7 +202,7 @@
                       <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.pos, w)"> m </q-avatar>
 <!--                      <span @click="scrollTo(w)">-->
                       <span>
-                        [ {{sentences[curDetailSentence][2]}}, {{sentences[curDetailSentence][2]+sentences[curDetailSentence][0].length-1}} ] - {{w.name}}</span>
+                        [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] - {{w.name}}</span>
                     </span>
                   </li>
                 </div>
@@ -307,6 +307,14 @@ export default {
   },
   mounted () {},
   methods: {
+    goto (url) {
+      if (url) {
+        this.fetchDocs({ url })
+        this.relevantSentences = []
+      } else {
+        this.$router.push('/')
+      }
+    },
     selectStart (i) {},
     selectEnd (i) {},
     select (i) {},
@@ -353,7 +361,7 @@ export default {
     },
     getSentence (pos) {
       for (let i = 0; i < this.sentences.length; i++) {
-        if (this.sentences[i][2] === pos) {
+        if (this.sentences[i].start_char === pos[0]) {
           return i
         }
       }
