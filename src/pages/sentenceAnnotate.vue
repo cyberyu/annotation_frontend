@@ -404,20 +404,16 @@ export default {
       this.add2Q(id)
       const data = {
         mtype: this.tab,
-        data: []
+        sentences: []
       }
       this.relevantSentences.forEach(v => {
-        const startChar = this.sentences[v][2]
-        const endChar = startChar + this.sentences[v][0].length - 1
-        data.data.push({
-          idx: v,
-          text: this.sentences[v][0],
-          pos: [startChar, endChar]
+        data.sentences.push({
+          text: this.sentences.text
         })
       })
-      const url = this.consensus ? '/api/calculate_consensus/' : '/api/calculate/'
+      const url = this.consensus ? '/api/calculate_consensus/' : '/api/model-sentence/'
       this.$axios.post(this.$hostname + url, data).then(response => {
-        const results = response.data.result
+        const results = response.data
         // todo to finish response handler
         results.forEach(ann => {
           ann.m = 'm' // machine generated
