@@ -1,5 +1,6 @@
 <template>
-  <q-btn-dropdown :label="`${mode} ${ review ? 'Review' : consensus ? 'Consensus': ''}`" flat style="width: 150px" align="between">
+  <q-btn-dropdown :label="`${mode} ${ review ? 'Review' : consensus ? 'Consensus': ''}`"
+                  flat style="width: 150px; margin-top: -5px" align="between">
     <q-list separator >
       <q-item clickable ripple
         @click.native="$router.push(
