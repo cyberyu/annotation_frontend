@@ -1,12 +1,14 @@
 <template>
   <q-page class="relation" style="background-color: #f6f6f6">
-    <div class="row self-start">
+    <div class="row self-start items-center">
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
-        <q-breadcrumbs-el label="" icon="navigation" />
+        <q-breadcrumbs-el>
+          <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" />
+        </q-breadcrumbs-el>
+        <!--        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Ner Annotate'" icon="navigation" />-->
       </q-breadcrumbs>
-      <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" />
     </div>
     <div class="row self-start q-pt-lg">
       <div class="col-3">
