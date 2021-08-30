@@ -7,12 +7,18 @@
         <q-toolbar-title> <router-link to="/" class="main-link">VGLM.Curation</router-link> </q-toolbar-title>
         <q-btn-dropdown v-if="isLoggedIn" color="primary" :label="`Welcome ${user.username}`">
           <q-list separator >
-            <q-item clickable ripple>
+            <q-item clickable ripple :href="$hostname+'/admin/'" target="_blank" tag="a">
+              <q-item-section avatar>
+                <q-icon name="admin_panel_settings" />
+              </q-item-section>
               <q-item-section>
-                <a :href="$hostname+'/admin/'" target="_blank">Admin</a>
+                Admin
               </q-item-section>
             </q-item>
-            <q-item clickable ripple @click="logout()" style="color:blue">
+            <q-item clickable ripple @click="logout()" >
+              <q-item-section avatar>
+                <q-icon name="logout" />
+              </q-item-section>
               <q-item-section>Logout</q-item-section>
             </q-item>
           </q-list>
