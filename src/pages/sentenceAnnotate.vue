@@ -124,7 +124,19 @@
           <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" tabindex="0" >
             <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="getSentenceClass(i)" class="sentence row">
               <div @click="showDetailSenAnnos(i)" class="q-py-sm col" >
-                {{ sentence.text }}
+                <div class="row col-12">
+                  {{ sentence.text }}
+                </div>
+                <div class="row col-12">
+                  <span v-for="(label, cat) in catAnnotations[i].labels" :key="cat" class="label">
+                    <q-chip :style="`background-color: ${label.color}`" dense removable @remove="removeAnnotation(i, cat)">
+                      <q-avatar color="white" text-color="black" v-if="label.m" size="16px">
+                        m
+                      </q-avatar>
+                      {{cat }}: {{ label.name }}
+                    </q-chip>
+                  </span>
+                </div>
               </div>
               <!-- dropdown menu for labels -->
               <!-- right sub-panel for each sentence cat labels -->
@@ -482,10 +494,9 @@ export default {
         this.processedQ.push(minfo + sentIdx)
       })
     },
-    removeAnnotation (i, label) {
-      const idx = this.annotations.indexOf(label)
-      // console.log('find label', idx, label)
-      this.annotations.splice(idx, 1)
+    removeAnnotation (i, cat) {
+      delete this.catAnnotations[i].labels[cat]
+      this.$forceUpdate()
     },
     showDetailSenAnnos (i) {
       if (this.curDetailSentence === i) {
