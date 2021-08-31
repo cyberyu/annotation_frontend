@@ -123,27 +123,44 @@
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
           <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" tabindex="0" >
             <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="getSentenceClass(i)" class="sentence row">
-              <div @click="showDetailSenAnnos(i)" class="q-py-sm col-9" >
-<!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
+              <div @click="showDetailSenAnnos(i)" class="q-py-sm col" >
                 {{ sentence.text }}
               </div>
               <!-- dropdown menu for labels -->
               <!-- right sub-panel for each sentence cat labels -->
-              <div class="col-3 q-py-sm cat-labels" style="border-left: solid 1px #bbb;">
-                <div class="q-px-xs">
-                  <div class="row no-wrap" style="overflow-x: auto;">
-                    <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
-                    <q-checkbox style="width: 40px;" v-model="relevantSentences" :val="i" dense />
-                    <q-select v-for="(cat, ci) in categoryNames"  :key="`cat-${i}-${ci}`"
-                      :label="`${cat}`"
-                      transition-show="scale"
-                      transition-hide="scale"
-                      filled dense options-dense
-                      v-model="catAnnotations[i].labels[cat]" @input="annotate(i)"
-                      :options="category[cat].labels" option-value="name" option-label="name"
-                    />
-                  </div>
-                </div>
+              <div class="row justify-between items-center q-pa-xs cat-labels" style="border-left: solid 1px #bbb; width:125px;">
+                    <q-checkbox v-model="relevantSentences" :val="i" dense />
+                    <div>
+                    <q-btn-dropdown label="label" size="sm" color="primary" class="row" menu-anchor="bottom end" :menu-offset="[48, 0]">
+                        <q-list dense style="min-width:100px">
+                          <q-item v-for="(cat, ci) in categoryNames" :key="`cat-${i}-${ci}`" clickable>
+                            <q-item-section>{{cat}}</q-item-section>
+                            <q-item-section side>
+                              <q-icon name="keyboard_arrow_right" />
+                            </q-item-section>
+                            <q-menu auto-close anchor="top end" self="top start">
+                              <q-list style="min-width:100px" dense>
+                                <q-item v-for="(label, li) in category[cat].labels" :key="`label-${li}`" clickable
+                                        @click.native="catAnnotations[i].labels[cat]=label;$forceUpdate()"
+                                        class="row items-center">
+                                  <q-icon v-if="catAnnotations[i].labels[cat]==label" name="check" />
+                                  <span v-else style="width:1em"></span>
+                                  <span class="q-pl-xs"> {{label.name}} </span>
+                                </q-item>
+                              </q-list>
+                            </q-menu>
+                          </q-item>
+                        </q-list>
+                    </q-btn-dropdown>
+                    </div>
+<!--                    <q-select v-for="(cat, ci) in categoryNames"  :key="`cat-${i}-${ci}`"-->
+<!--                      :label="`${cat}`"-->
+<!--                      transition-show="scale"-->
+<!--                      transition-hide="scale"-->
+<!--                      filled dense options-dense-->
+<!--                      v-model="catAnnotations[i].labels[cat]" @input="annotate(i)"-->
+<!--                      :options="category[cat].labels" option-value="name" option-label="name"-->
+<!--                    />-->
               </div>
             </div>
           </div>
@@ -329,7 +346,7 @@ export default {
         if (label.category) {
           if (!this.category[label.category]) {
             this.category[label.category] = {
-              labels: [null, label],
+              labels: [label],
               names: [label.name]
             }
           } else {
