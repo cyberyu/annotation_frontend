@@ -141,7 +141,7 @@
                             <q-menu auto-close anchor="top end" self="top start">
                               <q-list style="min-width:100px" dense>
                                 <q-item v-for="(label, li) in category[cat].labels" :key="`label-${li}`" clickable
-                                        @click.native="catAnnotations[i].labels[cat]=label;$forceUpdate()"
+                                        @click.native="catAnnotations[i].labels[cat]=label;annotate(i)"
                                         class="row items-center">
                                   <q-icon v-if="catAnnotations[i].labels[cat]==label" name="check" />
                                   <span v-else style="width:1em"></span>
@@ -203,19 +203,15 @@
           </q-card-actions>
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
 <!--            categorized annotations-->
-            <q-list bordered class="bg-white" v-if="sentences && showTab==='annotations'">
-              <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
-                                expand-separator header-class="header-label" default-opened
-                                :label="`${label[0]} (${label[1].length})`">
+            <q-list bordered class="bg-white" v-if="curDetailSentence && showTab==='annotations'">
+              <q-expansion-item v-for="(label, cat) in catAnnotations[curDetailSentence].labels" :key="cat"
+                                expand-separator header-class="header-label" default-opened :label="cat">
                 <div class="summary-word q-pb-sm">
-                  <li v-for="(w, j) in label[1]" :key="j" style="list-style: circle">
                     <span>
-                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.pos, w)"> m </q-avatar>
-<!--                      <span @click="scrollTo(w)">-->
+                      <q-avatar v-if="label.m" color="red" size="12px" text-color="white" @click="removeAnnotation(curDetailSentence)"> m </q-avatar>
                       <span>
-                        [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] - {{w.name}}</span>
+                        [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] - {{label.name}}</span>
                     </span>
-                  </li>
                 </div>
               </q-expansion-item>
             </q-list>
