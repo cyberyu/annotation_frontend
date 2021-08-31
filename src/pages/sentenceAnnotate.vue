@@ -107,7 +107,7 @@
 
       <div class="col-6 bg-white">
         <div class="row justify-end">
-          <div class="col-9 row justify-center">
+          <div class="col row justify-center">
             <q-btn v-if="!showUnRelBtn" size="13px" label="Hide unrelevant" class="q-mr-xs" style="width: 150px" no-caps
                    @click="hideUnRelSen();showUnRelBtn=true" color="primary" outline :disable="relevantSentences.length<1">
             </q-btn>
@@ -115,14 +115,14 @@
                    @click="showUnRelSen();showUnRelBtn=false">
             </q-btn>
           </div>
-          <div class="col-3 self-center">
+          <div class="self-center" style="width:130px">
             <q-checkbox style="width: 140px; margin-left: 1px;" v-model="relevantAll" dense label="Select all" />
           </div>
         </div>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
           <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" tabindex="0" >
-            <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="getSentenceClass(i)" class="sentence row">
+            <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="getSentenceClass(i)" class="sentence row col-12">
               <div @click="showDetailSenAnnos(i)" class="q-py-sm col" >
                 <div class="row col-12">
                   {{ sentence.text }}
@@ -138,7 +138,6 @@
                   </span>
                 </div>
               </div>
-              <!-- dropdown menu for labels -->
               <!-- right sub-panel for each sentence cat labels -->
               <div class="row justify-between items-center q-pa-xs cat-labels" style="border-left: solid 1px #bbb; width:125px;">
                     <q-checkbox v-model="relevantSentences" :val="i" dense />
@@ -376,6 +375,9 @@ export default {
           this.catAnnotations[idx].labels = { }
         }
         this.catAnnotations[idx].labels[item.category] = this.labels[item.id]
+        if (item.m) {
+          this.catAnnotations[idx].labels[item.category].m = item.m
+        }
       })
     },
     getSentence (pos) {
