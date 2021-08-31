@@ -230,7 +230,7 @@
 <!--            model results review -->
             <q-list class="q-pa-sm" v-if="tokens && modelResultCache && showTab==='sort'">
               <div v-for="(label, i) in modelResultCache" :key="i">
-                <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.pos, label); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
+                <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.si, label.category); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
                 <span @click="scrollTo(getSentence(label.pos))">
                   <span v-if="label.confidence">({{ label.confidence.toFixed(2) }})</span>
                     {{label.pos}} - {{label.name}}
@@ -402,6 +402,7 @@ export default {
             ann.name = item.labels[label].name
             ann.category = item.labels[label].category
             ann.id = item.labels[label].id
+            ann.m = item.labels[label].m
             this.annotations.push(ann)
           })
         }
@@ -428,7 +429,8 @@ export default {
       }
       this.relevantSentences.forEach(v => {
         data.sentences.push({
-          text: this.sentences.text
+          text: this.sentences[v].text,
+          idx: v
         })
       })
       const url = this.consensus ? '/api/calculate_consensus/' : '/api/model-sentence/'
@@ -439,22 +441,22 @@ export default {
         const resultsAnnotations = []
         results.forEach((ann, i) => {
           // find sentence id
-          const sentIdx = this.relevantSentences[i]
-          const sentence = this.sentences[sentIdx]
+          const sentence = this.sentences[ann.idx]
           // rebuild annotation structure
+          const label = { ...this.lLabels[ann.category][ann.label] }
+          label.m = 'm'
           const annotation = {
-            id: this.lLabels[ann.label] ? this.lLabels[ann.label].id : null, // returned label may not included in project labels
+            id: label.id, // returned label may not included in project labels
             pos: [sentence.start_char, sentence.end_char],
             tpos: [sentence.start, sentence.end],
             name: ann.label,
             text: sentence.text,
+            si: ann.idx, // sentence index
             category: ann.category,
             m: 'm' // machine generated
           }
           resultsAnnotations.push(annotation)
-          if (!this.existInAnnotations(annotation)) {
-            this.annotations.push(annotation)
-          }
+          this.catAnnotations[ann.idx].labels[ann.category] = label
         })
         this.removeFromQ(id)
 
@@ -550,6 +552,16 @@ export default {
           }
         })
       }
+      return results
+    },
+    lLabels () {
+      // convert to format like
+      // { 'label name' : { ...properties}}
+      const results = {}
+      Object.entries(this.labels).forEach(([key, value]) => {
+        results[value.category] = results[value.category] || {}
+        results[value.category][value.name] = value
+      })
       return results
     },
     conflicts () {
