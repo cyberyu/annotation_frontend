@@ -232,7 +232,7 @@
                 <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.si, label.category); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
                 <span @click="scrollTo(getSentence(label.pos))">
                   <span v-if="label.confidence">({{ label.confidence.toFixed(2) }})</span>
-                    {{label.pos}} - {{label.name}}
+                    {{label.pos}} - {{label.category}}: {{label.name}}
                 </span>
               </div>
               <div class="flex justify-center">
@@ -457,8 +457,10 @@ export default {
             category: ann.category,
             m: 'm' // machine generated
           }
-          resultsAnnotations.push(annotation)
-          this.catAnnotations[ann.idx].labels[ann.category] = label
+          if (!this.catAnnotations[ann.idx].labels[ann.category]) {
+            this.catAnnotations[ann.idx].labels[ann.category] = label
+            resultsAnnotations.push(annotation)
+          }
         })
         this.removeFromQ(id)
 
