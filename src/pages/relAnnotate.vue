@@ -243,7 +243,7 @@
         <q-card>
           <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
             <q-btn label="ANNOTATIONS" flat @click="showTab='annotations'" :class="{'bg-purple-5': showTab=='annotations'}">
-              <q-badge color="info" floating> {{annotations.length}}</q-badge>
+              <q-badge color="info" floating> {{relations.length}}</q-badge>
             </q-btn>
             <q-btn icon="sort" class="float-right" flat @click="showTab='sort'" :class="{'bg-purple-5': showTab=='sort'}">
               <q-badge color="info" floating v-if="modelResultCache"> {{modelResultCache.length}}</q-badge>
@@ -258,18 +258,18 @@
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
 <!--            categorized annotations-->
             <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'">
-              <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"
-                                expand-separator :header-style="`color: ${(lLabels[label[0]]|lLabels[null]).color}`" header-class="header-label"
-                                :label="`${label[0]} (${label[1].length})`">
-                <div class="summary-word q-pb-sm">
-                  <li v-for="(w, j) in label[1].sort((a,b)=>a.pos[0]-b.pos[0])" :key="j" style="list-style: circle">
-                    <span>
-                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>
-                      <span @click="scrollTo(w)">{{w.pos}} - {{w.text}}</span>
-                    </span>
-                  </li>
-                </div>
-              </q-expansion-item>
+<!--              <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"-->
+<!--                                expand-separator :header-style="`color: ${(lLabels[label[0]]|lLabels[null]).color}`" header-class="header-label"-->
+<!--                                :label="`${label[0]} (${label[1].length})`">-->
+<!--                <div class="summary-word q-pb-sm">-->
+<!--                  <li v-for="(w, j) in label[1].sort((a,b)=>a.pos[0]-b.pos[0])" :key="j" style="list-style: circle">-->
+<!--                    <span>-->
+<!--                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>-->
+<!--                      <span @click="scrollTo(w)">{{w.pos}} - {{w.text}}</span>-->
+<!--                    </span>-->
+<!--                  </li>-->
+<!--                </div>-->
+<!--              </q-expansion-item>-->
             </q-list>
 <!--            model results review -->
             <q-list class="q-pa-sm" v-if="tokens && modelResultCache && showTab==='sort'">
