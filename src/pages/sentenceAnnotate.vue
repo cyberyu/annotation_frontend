@@ -122,20 +122,39 @@
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
           <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" tabindex="0" >
-            <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`" :class="getSentenceClass(i)" class="sentence row col-12">
+            <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`"
+                 :class="getSentenceClass(i)" class="sentence row col-12 q-px-sm" style="border-radius: 10px">
               <div @click="showDetailSenAnnos(i)" class="q-py-sm col" >
                 <div class="row col-12">
                   {{ sentence.text }}
                 </div>
                 <div class="row col-12">
-                  <span v-for="(label, cat) in catAnnotations[i].labels" :key="cat" class="label">
-                    <q-chip :style="`background-color: ${label.color}`" dense removable @remove="removeAnnotation(i, cat)">
-                      <q-avatar color="white" text-color="black" v-if="label.m" size="16px">
-                        m
-                      </q-avatar>
-                      {{cat }}: {{ label.name }}
-                    </q-chip>
-                  </span>
+                  <div v-for="(label, cat) in catAnnotations[i].labels" :key="cat"
+                       style="border:1px solid lightgrey; border-radius: 5px; font-size:0.8em"
+                       class="column justify-start q-mx-xs q-py-xs">
+                    <div class=" q-pl-xs text-bold">{{ cat }} </div>
+                    <div class="">
+                      <q-chip :style="`background-color: ${label.color}`" dense
+                              :removable="!review"
+                              @remove="removeAnnotation(i, cat)">
+                        <q-avatar color="white" text-color="black" v-if="label.m && !review" size="16px">
+                          m
+                        </q-avatar>
+                        <q-avatar color="white" text-color="black" v-if="review" size="16px">
+                          <span class="text-bold" style="font-size:1.5em">{{ label.authors.length }}</span>
+                        </q-avatar>
+                        {{ label.name }}
+                      </q-chip>
+                    </div>
+                    <div v-for="(lbl, li) in label.extra" :key="`e${li}`" class="">
+                      <q-chip dense :style="`background-color: ${lbl.color}`">
+                        <q-avatar color="white" text-color="black" v-if="review" size="16px">
+                          <span class="text-bold" style="font-size:1.5em">{{ lbl.authors.length }}</span>
+                        </q-avatar>
+                        {{ lbl.name }}
+                      </q-chip>
+                    </div>
+                  </div>
                 </div>
               </div>
               <!-- right sub-panel for each sentence cat labels -->
@@ -217,12 +236,30 @@
             <q-list bordered class="bg-white" v-if="curDetailSentence && showTab==='annotations'">
               <q-expansion-item v-for="(label, cat) in catAnnotations[curDetailSentence].labels" :key="cat"
                                 expand-separator header-class="header-label" default-opened :label="cat">
-                <div class="summary-word q-pb-sm">
+                <div>
+                  <div class="summary-word">
+                    <q-avatar v-if="label.m" color="red" size="12px" text-color="white" @click="removeAnnotation(curDetailSentence)"> m </q-avatar>
                     <span>
-                      <q-avatar v-if="label.m" color="red" size="12px" text-color="white" @click="removeAnnotation(curDetailSentence)"> m </q-avatar>
-                      <span>
-                        [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] - {{label.name}}</span>
+                      [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] - {{label.name}}
                     </span>
+                  </div>
+                  <div class="column" style="padding-left:3em">
+                    <span v-for="(author,i) in label.authors" :key="`author-${i}`">
+                      {{author}}
+                    </span>
+                  </div>
+                </div>
+                <div v-for="(lbl,i) in label.extra" :key="i">
+                  <div class="summary-word">
+                    <span>
+                      [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] - {{lbl.name}}
+                    </span>
+                  </div>
+                  <div class="column" style="padding-left:3em">
+                    <span v-for="(author,i) in lbl.authors" :key="`author-${i}`">
+                      {{author}}
+                    </span>
+                  </div>
                 </div>
               </q-expansion-item>
             </q-list>
@@ -374,7 +411,18 @@ export default {
         if (!this.catAnnotations[idx].labels) {
           this.catAnnotations[idx].labels = { }
         }
-        this.catAnnotations[idx].labels[item.category] = this.labels[item.id]
+
+        if (this.catAnnotations[idx].labels[item.category]) {
+          if (!this.catAnnotations[idx].labels[item.category].extra) {
+            this.catAnnotations[idx].labels[item.category].extra = []
+          }
+          const lbl = { ...this.labels[item.id] }
+          lbl.authors = item.authors
+          this.catAnnotations[idx].labels[item.category].extra.push(lbl)
+        } else {
+          this.catAnnotations[idx].labels[item.category] = { ...this.labels[item.id] }
+          this.catAnnotations[idx].labels[item.category].authors = item.authors
+        }
         if (item.m) {
           this.catAnnotations[idx].labels[item.category].m = item.m
         }

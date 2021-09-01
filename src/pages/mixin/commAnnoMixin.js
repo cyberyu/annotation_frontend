@@ -137,7 +137,9 @@ export const commAnnoMixin = {
       result = result.filter((ann, index, self) =>
         index === self.findIndex((t) => {
           if (String(t.pos) === String(ann.pos) && t.name === ann.name) {
-            t.authors.push(result[index].author)
+            if (this.mode === 'ner' || (this.mode === 'sentence' && t.category === ann.category)) {
+              t.authors.push(result[index].author)
+            }
             return true
           }
           return false
@@ -475,7 +477,9 @@ export const commAnnoMixin = {
         this.isAnnotated = this.document.annotations.id
         this.tokens = this.document.tokens
         this.sentences = this.document.sentences
-        this.getDetailedAnnotations()
+        if (this.mode === 'ner') {
+          this.getDetailedAnnotations()
+        }
         this.highlighted = []
         this.processedQ = []
         this.modelQueue = []
