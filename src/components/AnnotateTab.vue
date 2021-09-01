@@ -1,6 +1,7 @@
 <template>
-  <q-btn-dropdown :label="`${mode} ${ review ? 'Review' : consensus ? 'Consensus': ''}`"
-                  flat style="width: 150px;" align="between">
+  <q-btn-dropdown :label="`${mode.toUpperCase()} ${ review ? 'Review' : consensus ? 'Consensus': ''}`" no-caps
+                  :icon="mode==='ner'? 'category' : mode==='sentence' ? 'view_list': 'share'"
+                  flat style="width: 150px;" align="between" size="0.9em" text-color="primary">
     <q-list separator >
       <q-item clickable ripple
         @click.native="$router.push(
