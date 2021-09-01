@@ -193,9 +193,9 @@
                     style="position: absolute;" :style="`margin-top: ${2.2+detailedAnnotations[i].length*0.25+prevTight(i)}em`" :id="`l-${i}`">
                 <span v-for="(label,j) in detailedAnnotations[i]" :key="`label${j}`" class="label" :style="`color:${getColor(label[1])}`">
                   <span v-if="label[0]==='B'" :style="`margin-left:${j*2-4}px`">
-                    <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
-                      m
-                    </q-avatar>
+<!--                    <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">-->
+<!--                      m-->
+<!--                    </q-avatar>-->
 <!--                    <q-icon v-else name="check_circle" @click="removeAnnotation(i, label[1])"/>-->
                     <span @click="setHeadTail(label[1])">{{ label[1].name }}</span>
                   </span>
@@ -257,7 +257,29 @@
           </q-card-actions>
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
 <!--            categorized annotations-->
-            <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'">
+            <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'" dense separator>
+              <q-item v-for="(rel,i) in relations" :key="i" class="column" @click.native="relation=rel">
+                <div class="row col-12">
+                  <span class="text-bold rel-part">Head: </span>
+                  <span class="rel-pos">[{{rel.head.pos[0]}} - {{rel.head.pos[1]}}]</span>
+                  - {{rel.head.text}}
+                </div>
+                <div class="row col-12">
+                  <span class="text-bold rel-part">Tail: </span>
+                  <span class="rel-pos">[{{rel.tail.pos[0]}} - {{rel.tail.pos[1]}}] </span>
+                  - {{rel.tail.text}}
+                </div>
+                <div class="row col-12">
+                  <span class="text-bold rel-part">Hint: </span>
+                  <span class="rel-pos">[{{rel.hint.pos[0]}} - {{rel.hint.pos[1]}}] </span>
+                  - {{rel.hint.text}}
+                </div>
+                <div class="row col-12 items-center">
+                  <span class="text-bold rel-part">Relation: </span>
+                  <span class="rel-pos">{{ rel.relation.name }}</span>
+                  <q-icon name="cancel" @click="removeRelation(rel)"/>
+                </div>
+              </q-item>
 <!--              <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"-->
 <!--                                expand-separator :header-style="`color: ${(lLabels[label[0]]|lLabels[null]).color}`" header-class="header-label"-->
 <!--                                :label="`${label[0]} (${label[1].length})`">-->
@@ -415,6 +437,11 @@ export default {
     confirmRelation () {
       this.relations.push(this.relation)
       this.resetRelation()
+    },
+    removeRelation (rel) {
+      const idx = this.relations.indexOf(rel)
+      this.relations.splice(idx, 1)
+      this.$forceUpdate()
     }
   },
   computed: {
@@ -497,5 +524,14 @@ export default {
   z-index: 99;
   background-color: white;
   padding: 2px;
+}
+
+.rel-part {
+  width: 60px;
+  text-align: right;
+}
+.rel-pos {
+  width: 75px;
+  padding-left: 5px;
 }
 </style>
