@@ -56,10 +56,6 @@ export const commAnnoMixin = {
   },
   mounted () {
     // this.fetchLabels()
-    this.project.labels.filter(a => a.kind === this.mode).forEach(a => {
-      this.labels[a.id] = a
-      this.labelNames.add(a.name)
-    })
     this.project.rules.filter(a => a.kind === this.mode).forEach(a => {
       this.rules.push(a)
     })
@@ -410,14 +406,17 @@ export const commAnnoMixin = {
       this.saving = true
       const data = {
         document: this.document.id,
-        annotations: this.annotations,
+        annotations: this.mode === 'ner' ? this.annotations : this.relations,
         kind: this.mode
       }
       let url
       let method
-      if (this.document.annotations.id) {
+      if ((this.mode === 'ner' || this.mode === 'sentence') && this.document.annotations.id) {
         method = 'patch'
         url = this.$hostname + '/api/annotations/' + this.document.annotations.id + '/'
+      } else if (this.mode === 'relation' && this.document.relations.id) {
+        method = 'patch'
+        url = this.$hostname + '/api/annotations/' + this.document.relations.id + '/'
       } else {
         method = 'post'
         url = this.$hostname + '/api/annotations/'
@@ -471,6 +470,9 @@ export const commAnnoMixin = {
         if (this.review) {
           this.annotations4Review = this.document.reviews
           this.annotations = this.mergeAnnotations()
+        }
+        if (this.mode === 'relation') {
+          this.relations = this.document.relations.id ? this.document.relations.annotations : []
         }
         if (this.consensus) {
           this.document.gold.annotations.forEach(ann => {

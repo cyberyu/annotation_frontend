@@ -362,7 +362,12 @@ export default {
       curDetailSentence: null
     }
   },
-  mounted () {},
+  mounted () {
+    this.project.labels.filter(a => a.kind === this.mode).forEach(a => {
+      this.labels[a.id] = a
+      this.labelNames.add(a.name)
+    })
+  },
   methods: {
     goto (url) {
       if (url) {

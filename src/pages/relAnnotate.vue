@@ -131,7 +131,7 @@
             </div>
             <div class="col row self-center q-pl-lg">
               <q-input dense class="q-mr-sm" v-model="relation.hint.text" label="suggesting text" filled style="width: 320px;" />
-              <q-btn-dropdown color="primary" :label="relation.label? relation.label.name : 'relation'">
+              <q-btn-dropdown color="primary" :label="relation.relation? relation.relation.name : 'relation'">
                 <q-list>
                   <q-item v-for="(label, i) in relationLabels" :key="i" clickable v-close-popup dense @click="setLabel(label)">
                     <q-item-label>
@@ -362,7 +362,7 @@ export default {
   components: { AnnotateTab },
   data () {
     return {
-      mode: 'ner',
+      mode: 'relation',
       // mode: 'relation',
       relationLabels: {},
       relationLabelNames: new Set(),
@@ -373,7 +373,11 @@ export default {
     }
   },
   mounted () {
-    this.project.labels.filter(a => a.kind === 'relation').forEach(a => {
+    this.project.labels.filter(a => a.kind === 'ner').forEach(a => {
+      this.labels[a.id] = a
+      this.labelNames.add(a.name)
+    })
+    this.project.labels.filter(a => a.kind === this.mode).forEach(a => {
       this.relationLabels[a.id] = a
       this.relationLabelNames.add(a.name)
     })
@@ -409,10 +413,8 @@ export default {
       this.relation = { ...rawRelation }
     },
     confirmRelation () {
-      if (this.relation.head.text && this.relation.tail.text && this.relation.label.name) {
-        this.relations.push(this.relation)
-        this.resetRelation()
-      }
+      this.relations.push(this.relation)
+      this.resetRelation()
     }
   },
   computed: {
