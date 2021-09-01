@@ -240,7 +240,8 @@
                   <div class="summary-word">
                     <q-avatar v-if="label.m" color="red" size="12px" text-color="white" @click="removeAnnotation(curDetailSentence)"> m </q-avatar>
                     <span>
-                      [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] - {{label.name}}
+                      [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] -
+                      <span class="text-bold">{{label.name}}</span>
                     </span>
                   </div>
                   <div class="column" style="padding-left:3em">
@@ -252,7 +253,8 @@
                 <div v-for="(lbl,i) in label.extra" :key="i">
                   <div class="summary-word">
                     <span>
-                      [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] - {{lbl.name}}
+                      [ {{sentences[curDetailSentence].start_char}}, {{sentences[curDetailSentence].end_char}} ] -
+                      <span class="text-bold">{{lbl.name}}</span>
                     </span>
                   </div>
                   <div class="column" style="padding-left:3em">
