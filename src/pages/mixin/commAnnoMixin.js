@@ -119,7 +119,11 @@ export const commAnnoMixin = {
         this.activeAuthors.push(author)
       }
       this.annotations = this.mergeAnnotations(this.activeAuthors)
-      this.getDetailedAnnotations()
+      if (this.mode === 'ner') {
+        this.getDetailedAnnotations()
+      } else if (this.mode === 'sentence') {
+        this.prepareCatAnnotations()
+      }
     },
     mergeAnnotations (ary) {
       if (!ary || ary.length === 0) {

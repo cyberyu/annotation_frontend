@@ -270,7 +270,7 @@
 <!--            list of annotators-->
             <q-list bordered separator class="bg-white" v-if="tokens && showTab==='annotators'">
               <q-item v-for="(anns, author, i) in annotations4Review" :key="i" clickable v-ripple class="q-pr-xs"
-                      :active="activeAuthors.includes(author)" active-class="bg-teal-1 text-grey-8">
+                      :active="activeAuthors.includes(author)" active-class="bg-blue-3 text-grey-8">
                 <q-item-section>
                   <div @click="getAnnotations(author)" class="col-9">{{anns.author}} ({{anns.annotations.length}})</div>
                 </q-item-section>
