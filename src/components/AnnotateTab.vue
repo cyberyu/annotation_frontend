@@ -24,7 +24,7 @@
       </q-item>
       <q-item clickable ripple
         @click.native="$router.push({
-        name: 'relationAnnotate', params: { project: project, review: review, consensus: consensus}}).catch(err => {})" >
+        name: 'relation', params: { project: project, review: review, consensus: consensus}}).catch(err => {})" >
         <q-item-section avatar>
           <q-icon name="share" />
         </q-item-section>

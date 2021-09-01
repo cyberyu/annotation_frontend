@@ -481,7 +481,7 @@ export const commAnnoMixin = {
         this.isAnnotated = this.document.annotations.id
         this.tokens = this.document.tokens
         this.sentences = this.document.sentences
-        if (this.mode === 'ner') {
+        if (this.mode === 'ner' || this.mode === 'relation') {
           this.getDetailedAnnotations()
         }
         this.highlighted = []
@@ -688,20 +688,5 @@ export const commAnnoMixin = {
     }
   },
   watch: {
-    selected (v) {
-      this.highlighted = []
-      this.$nextTick(() => {
-        if (v.length > 0) {
-          const token = document.getElementById('selected').getBoundingClientRect()
-          const tokenY = token.top
-          const wH = document.getElementById('label-window').getBoundingClientRect().height
-          if (tokenY > wH + token.height) {
-            this.offsetTop = tokenY - wH - token.height
-          } else {
-            this.offsetTop = tokenY
-          }
-        }
-      })
-    }
   }
 }

@@ -115,7 +115,38 @@
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white annotation-header">
-          <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
+          <div class="row full-width">
+            <div class="row items-center justify-between" style="width: 290px">
+              <div class="row justify-between col-12">
+                <q-btn outline size="sm" :label="relation.head.text" no-caps
+                       class="q-mr-xs" style="width: 120px;"></q-btn> <br>
+                <q-btn icon="swap_horiz" size="sm" flat @click="switchHeadTail()"/>
+                <q-btn outline size="sm" :label="relation.tail.text" no-caps
+                       class="q-mr-xs" style="width: 120px;"></q-btn>
+              </div>
+              <div class="row justify-around col-12">
+                <span @click="relation.head={}">Head</span>
+                <span @click="relation.tail={}">Tail</span>
+              </div>
+            </div>
+            <div class="col row self-center q-pl-lg">
+              <q-input dense class="q-mr-sm" v-model="relation.hint.text" label="suggesting text" filled style="width: 320px;" />
+              <q-btn-dropdown color="primary" :label="relation.label? relation.label.name : 'relation'">
+                <q-list>
+                  <q-item v-for="(label, i) in relationLabels" :key="i" clickable v-close-popup dense @click="setLabel(label)">
+                    <q-item-label>
+                      {{ label.name}}
+                    </q-item-label>
+                  </q-item>
+                </q-list>
+              </q-btn-dropdown>
+            </div>
+            <div class="column self-center">
+              <q-btn color="accent" size="sm" class="q-mb-xs block float-right" :disable="!goodRelation"
+                     @click="confirmRelation()" >Confirm</q-btn>
+              <q-btn color="primary" size="sm" class="block float-right" @click="resetRelation()">Reset</q-btn>
+            </div>
+          </div>
         </q-card-actions>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
@@ -125,7 +156,7 @@
               <!-- each token display -->
               <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"
-                    v-on:mouseup="selectEnd(i);mousePressed=false"
+                    v-on:mouseup="selectEnd(i);mousePressed=false;addRelationText()"
                     v-on:mouseover="mousePressed && select(i)"
                     style="position:relative">
 <!--                <span style="white-space: pre" :class="getTokenClass(i)" v-if="!puncts[i]">&nbsp;</span>-->
@@ -138,19 +169,19 @@
 <!--                </span>-->
               </span>
               <!-- dropdown menu for labels -->
-              <q-card v-if="selected[0]===i" class="label-window fixed q-px-md q-py-sm" id="label-window" :style="`top: ${offsetTop}px;`">
-                <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">
-                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i].map(a=>a[1].id).includes(label.id)"
-                       @click="removeAnnotation(i, findAnnotation(i, label.id))">
-                    <q-icon name="check_circle"></q-icon>
-                    {{ label.name }}
-                  </div>
-                  <div v-else @click="annotate(label)">
-                    <q-icon name="radio_button_unchecked"></q-icon>
-                    {{ label.name }}
-                  </div>
-                </div>
-              </q-card>
+<!--              <q-card v-if="selected[0]===i" class="label-window fixed q-px-md q-py-sm" id="label-window" :style="`top: ${offsetTop}px;`">-->
+<!--                <div v-for="(label,k) in labels" :key="k" class="col-12" :style="`color:${label.color}`">-->
+<!--                  <div v-if="detailedAnnotations[i] && detailedAnnotations[i].map(a=>a[1].id).includes(label.id)"-->
+<!--                       @click="removeAnnotation(i, findAnnotation(i, label.id))">-->
+<!--                    <q-icon name="check_circle"></q-icon>-->
+<!--                    {{ label.name }}-->
+<!--                  </div>-->
+<!--                  <div v-else @click="annotate(label)">-->
+<!--                    <q-icon name="radio_button_unchecked"></q-icon>-->
+<!--                    {{ label.name }}-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--              </q-card>-->
               <!-- display label under token -->
 <!--              <span v-if="detailedAnnotations[i] && detailedAnnotations[i].length>0" style="position: absolute;" :style="`margin-top: ${2.0}em`">-->
 <!--                <div v-for="(label,k) in detailedAnnotations[i]" :key="k">-->
@@ -165,7 +196,8 @@
                     <q-avatar :style="`background-color:${getColor(label[1])}`" text-color="white" size="12px" v-if="label[1].m" @click="removeAnnotation(i, label[1])">
                       m
                     </q-avatar>
-                    <q-icon v-else name="check_circle" @click="removeAnnotation(i, label[1])"/> {{ label[1].name }} <br>
+<!--                    <q-icon v-else name="check_circle" @click="removeAnnotation(i, label[1])"/>-->
+                    <span @click="setHeadTail(label[1])">{{ label[1].name }}</span>
                   </span>
                 </span>
                 <q-menu anchor="top right" self="top left" v-if="review">
@@ -318,34 +350,77 @@
 import { commAnnoMixin } from 'pages/mixin/commAnnoMixin'
 import AnnotateTab from 'components/AnnotateTab'
 
+const rawRelation = {
+  relation: null,
+  head: {},
+  tail: {},
+  hint: {}
+}
 export default {
-  name: 'Annotate',
+  name: 'RelationAnnotate',
   mixins: [commAnnoMixin],
   components: { AnnotateTab },
   data () {
     return {
-      mode: 'ner'
+      mode: 'ner',
+      // mode: 'relation',
+      relationLabels: {},
+      relationLabelNames: new Set(),
+      relations: [],
+      relationSelected: null,
+      relationText: null,
+      relation: { ...rawRelation }
     }
   },
-  mounted () {},
-  methods: {},
-  computed: {},
-  watch: {
-    selected (v) {
-      this.highlighted = []
-      this.$nextTick(() => {
-        if (v.length > 0) {
-          const token = document.getElementById('selected').getBoundingClientRect()
-          const tokenY = token.top
-          const wH = document.getElementById('label-window').getBoundingClientRect().height
-          if (tokenY > wH + token.height) {
-            this.offsetTop = tokenY - wH - token.height
-          } else {
-            this.offsetTop = tokenY
-          }
-        }
-      })
+  mounted () {
+    this.project.labels.filter(a => a.kind === 'relation').forEach(a => {
+      this.relationLabels[a.id] = a
+      this.relationLabelNames.add(a.name)
+    })
+  },
+  methods: {
+    setHeadTail (label) {
+      if (!this.relation.head.text) {
+        this.relation.head = label
+      } else if (!this.relation.tail.text) {
+        this.relation.tail = label
+      }
+    },
+    switchHeadTail () {
+      const a = this.relation.head
+      this.relation.head = this.relation.tail
+      this.relation.tail = a
+    },
+    addRelationText () {
+      const startChar = this.tokens[this.start][2]
+      const endChar = this.tokens[this.end][2] + (this.tokens[this.end][0].length - 1)
+      const obj = {
+        pos: [startChar, endChar],
+        tpos: [this.start, this.end],
+        text: this.document.text.substring(startChar, endChar + 1)
+      }
+      this.relation.hint = obj
+    },
+    setLabel (label) {
+      this.relation.relation = label
+      this.$forceUpdate()
+    },
+    resetRelation () {
+      this.relation = { ...rawRelation }
+    },
+    confirmRelation () {
+      if (this.relation.head.text && this.relation.tail.text && this.relation.label.name) {
+        this.relations.push(this.relation)
+        this.resetRelation()
+      }
     }
+  },
+  computed: {
+    goodRelation () {
+      return this.relation.head.text && this.relation.tail.text && this.relation.relation && this.relation.relation.name
+    }
+  },
+  watch: {
   }
 }
 </script>
