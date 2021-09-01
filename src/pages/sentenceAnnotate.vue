@@ -173,7 +173,7 @@
                                 <q-item v-for="(label, li) in category[cat].labels" :key="`label-${li}`" clickable
                                         @click.native="catAnnotations[i].labels[cat]=label;annotate(i)"
                                         class="row items-center">
-                                  <q-icon v-if="catAnnotations[i].labels[cat]==label" name="check" />
+                                  <q-icon v-if="catAnnotations[i].labels[cat] && catAnnotations[i].labels[cat].name===label.name" name="check" />
                                   <span v-else style="width:1em"></span>
                                   <span class="q-pl-xs"> {{label.name}} </span>
                                 </q-item>
