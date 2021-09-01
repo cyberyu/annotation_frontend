@@ -5,12 +5,18 @@
       <q-item clickable ripple
         @click.native="$router.push(
         { name: 'annotate', params: { project: project, review: review, consensus: consensus}}).catch(err => {})" >
+        <q-item-section avatar>
+          <q-icon name="category" />
+        </q-item-section>
         <q-item-section>
-         Ner
+         NER
         </q-item-section>
       </q-item>
       <q-item clickable ripple @click.native="$router.push({ name: 'sentenceAnnotate',
       params: { project: project, review: review, consensus: consensus}}).catch(err => {})">
+        <q-item-section avatar>
+          <q-icon name="view_list" />
+        </q-item-section>
         <q-item-section>
           Sentence
         </q-item-section>
@@ -18,6 +24,9 @@
       <q-item clickable ripple
         @click.native="$router.push({
         name: 'relationAnnotate', params: { project: project, review: review, consensus: consensus}}).catch(err => {})" >
+        <q-item-section avatar>
+          <q-icon name="share" />
+        </q-item-section>
         <q-item-section>
           Relation
         </q-item-section>

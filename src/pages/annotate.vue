@@ -1,6 +1,6 @@
 <template>
   <q-page class="" style="background-color: #f6f6f6">
-    <div class="row self-start items-center">
+    <div class="row self-start items-center" style="margin-top:-8px">
       <q-breadcrumbs class="justify-start">
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
