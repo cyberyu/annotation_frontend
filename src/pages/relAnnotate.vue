@@ -460,21 +460,56 @@ export default {
       t1 = this._getOffset(t1)
       console.log(t1)
       t2 = this._getOffset(t2)
-      const p1x = t1.offsetLeft + t1.width / 2
-      const p1y = t1.offsetTop + t1.height / 2
-      const p2x = t2.offsetLeft + t2.width / 2
-      const p2y = t2.offsetTop + t2.height / 2
+      let p1x = t1.offsetLeft + t1.width / 2
+      let p1y = t1.offsetTop + t1.height / 2
+      let p2x = t2.offsetLeft + t2.width / 2
+      let p2y = t2.offsetTop + t2.height / 2
+
+      if (p1y < p2y && p1x < p2x) {
+        p1y += 18
+        p2y -= 28
+        p1x += t1.width / 2
+        p2x = t2.offsetLeft
+      }
+      if (p1y > p2y && p1x > p2x) {
+        p2y += 20
+        p1y -= 28
+        p2x += t2.width / 2
+        p1x = t1.offsetLeft
+      }
+      if (p1y > p2y && p1x < p2x) {
+        p2y += 0
+        p1y -= 28
+        p2x -= (t2.width / 2 + 14)
+        // p1x = t1.offsetLeft
+      }
+      if (p1y < p2y && p1x > p2x) {
+        p1y += 0
+        p2y -= 28
+        p1x = t1.offsetLeft - 10
+        // p2x += t2.width / 2
+      }
+      if (p1y === p2y) {
+        p1y -= 28
+        p2y -= 28
+      }
+
       const mpx = (p2x + p1x) * 0.5
       const mpy = (p2y + p1y) * 0.5
       console.log(p1x, p1y, mpx, mpy, p2x, p2y)
-      // angle of perpendicular to line:
-      const theta = Math.atan2(p2y - p1y, p2x - p1x) - Math.PI / 2
-      // distance of control point from mid-point of line:
-      const offset = 30
-      // location of control point:
-      const c1x = mpx + offset * Math.cos(theta)
-      const c1y = mpy + offset * Math.sin(theta)
-      const curve = 'M' + p1x + ' ' + p1y + ' Q ' + c1x + ' ' + c1y + ' ' + p2x + ' ' + p2y
+      let curve
+      if (p1y === p2y) {
+        // angle of perpendicular to line:
+        const theta = Math.atan2(p2y - p1y, p2x - p1x) - Math.PI / 2
+        // distance of control point from mid-point of line:
+        const offset = 30
+        // location of control point:
+        const c1x = mpx + offset * Math.cos(theta)
+        const c1y = mpy + offset * Math.sin(theta)
+        curve = 'M' + p1x + ' ' + p1y + ' Q ' + c1x + ' ' + c1y + ' ' + p2x + ' ' + p2y
+      } else {
+        curve = 'M' + p1x + ' ' + p1y + ' Q ' + mpx + ' ' + mpy + ' ' + p2x + ' ' + p2y
+      }
       const curveElement = document.getElementById('rel-1')
       curveElement.setAttribute('d', curve)
     }
@@ -568,5 +603,8 @@ export default {
 .rel-pos {
   width: 75px;
   padding-left: 5px;
+}
+.token {
+  /*height: 50px;*/
 }
 </style>
