@@ -420,6 +420,7 @@ export default {
       const a = this.relation.head
       this.relation.head = this.relation.tail
       this.relation.tail = a
+      this.drawRelation(this.relation)
     },
     addRelationText () {
       const startChar = this.tokens[this.start][2]
