@@ -1,5 +1,5 @@
 <template>
-  <q-list bordered class="bg-white" dense separator>
+  <q-list class="bg-white" dense separator>
     <q-item v-for="(rel,i) in relations" :key="i" class="column" @click.native="$emit('select', rel)">
       <div class="row col-12 items-center">
         <span class="text-bold rel-part">Relation: </span>
