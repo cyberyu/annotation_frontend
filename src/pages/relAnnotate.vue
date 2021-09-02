@@ -142,9 +142,9 @@
               </q-btn-dropdown>
             </div>
             <div class="column self-center">
-              <q-btn color="accent" size="sm" class="q-mb-xs block float-right" :disable="!goodRelation"
-                     @click="confirmRelation()" >Confirm</q-btn>
               <q-btn color="primary" size="sm" class="block float-right" @click="resetRelation()">Reset</q-btn>
+              <q-btn color="accent" size="sm" class="q-mt-xs block float-right" :disable="!goodRelation"
+                     @click="confirmRelation()" >Confirm</q-btn>
             </div>
           </div>
         </q-card-actions>
