@@ -262,8 +262,11 @@
                             @remove="removeRelation($event)"
                             @select="relation=$event; drawRelation($event)"/>
 <!--            model results review -->
-            <relation-list  v-if="tokens && modelResultCache && showTab==='sort'" :relations="modelResultCache"
+            <relation-list  v-if="tokens && modelResultCache && showTab==='sort'"
+                            :relations="modelResultCache"
+                            :showAccept="true"
                             @remove="removeRelationFromModelCache($event)"
+                            @accept="relations.push($event);removeRelationFromModelCache($event)"
                             @select="relation=$event; drawRelation($event)"/>
 <!--            conflict-->
             <q-list bordered separator class="bg-white" v-if="tokens && showTab==='conflicts'">
