@@ -326,11 +326,13 @@ export const commAnnoMixin = {
       cls += this.highlighted.includes(i) ? ' highlight' : ''
 
       // for relation
-      if (this.relation.head.tpos && this.relation.head.tpos[0] === i) {
-        cls += ' bg-yellow'
-      }
-      if (this.relation.tail.tpos && (this.relation.tail.tpos[0] <= i && this.relation.tail.tpos[1] >= i)) {
-        cls += ' bg-yellow'
+      if (this.mode === 'relation') {
+        if (this.relation.head.tpos && this.relation.head.tpos[0] === i) {
+          cls += ' bg-yellow'
+        }
+        if (this.relation.tail.tpos && (this.relation.tail.tpos[0] <= i && this.relation.tail.tpos[1] >= i)) {
+          cls += ' bg-yellow'
+        }
       }
 
       return cls

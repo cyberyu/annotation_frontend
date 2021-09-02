@@ -255,55 +255,13 @@
           </q-card-actions>
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
 <!--            categorized annotations-->
-            <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'" dense separator>
-              <q-item v-for="(rel,i) in relations" :key="i" class="column" @click.native="relation=rel; drawRelation(rel)">
-                <div class="row col-12 items-center">
-                  <span class="text-bold rel-part">Relation: </span>
-                  <span class="rel-pos">{{ rel.relation.name }}</span>
-                  <q-icon name="cancel" @click.stop="removeRelation(rel)"/>
-                </div>
-                <div class="row col-12">
-                  <span class="text-bold rel-part">Head: </span>
-                  <span class="rel-pos">[{{rel.head.pos[0]}} - {{rel.head.pos[1]}}]</span>
-                  - {{rel.head.text}}
-                </div>
-                <div class="row col-12">
-                  <span class="text-bold rel-part">Tail: </span>
-                  <span class="rel-pos">[{{rel.tail.pos[0]}} - {{rel.tail.pos[1]}}] </span>
-                  - {{rel.tail.text}}
-                </div>
-                <div class="row col-12">
-                  <span class="text-bold rel-part">Hint: </span>
-                  <span class="rel-pos" v-if="rel.hint.pos">[{{rel.hint.pos[0]}} - {{rel.hint.pos[1]}}] </span>
-                  <span class="rel-pos" v-else>  </span>
-                  - {{rel.hint.text}}
-                </div>
-              </q-item>
-<!--              <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"-->
-<!--                                expand-separator :header-style="`color: ${(lLabels[label[0]]|lLabels[null]).color}`" header-class="header-label"-->
-<!--                                :label="`${label[0]} (${label[1].length})`">-->
-<!--                <div class="summary-word q-pb-sm">-->
-<!--                  <li v-for="(w, j) in label[1].sort((a,b)=>a.pos[0]-b.pos[0])" :key="j" style="list-style: circle">-->
-<!--                    <span>-->
-<!--                      <q-avatar v-if="w.m" color="red" size="12px" text-color="white" @click="removeAnnotation(w.tpos[0], w)"> m </q-avatar>-->
-<!--                      <span @click="scrollTo(w)">{{w.pos}} - {{w.text}}</span>-->
-<!--                    </span>-->
-<!--                  </li>-->
-<!--                </div>-->
-<!--              </q-expansion-item>-->
-            </q-list>
+            <relation-list  v-if="tokens && showTab==='annotations'" :relations="relations"
+                            @remove="removeRelation($event)"
+                            @select="relation=$event; drawRelation($event)"/>
 <!--            model results review -->
-            <q-list class="q-pa-sm" v-if="tokens && modelResultCache && showTab==='sort'">
-              <div v-for="(label, i) in modelResultCache" :key="i">
-                <q-avatar color="red" size="12px" text-color="white" @click="removeAnnotation(label.tpos[0], label); removeFromModelCache(label.tpos[0], label)"> m </q-avatar>
-                <span @click="scrollTo(label)">
-                  <span v-if="label.confidence">({{ label.confidence.toFixed(2) }})</span> {{label.pos}} - {{label.text}}
-                </span>
-              </div>
-              <div class="flex justify-center">
-                <q-btn label="Clear model results" color="primary" @click="modelResultCache=null" class="q-mt-sm"/>
-              </div>
-            </q-list>
+            <relation-list  v-if="tokens && modelResultCache && showTab==='sort'" :relations="modelResultCache"
+                            @remove="removeRelationFromModelCache($event)"
+                            @select="relation=$event; drawRelation($event)"/>
 <!--            conflict-->
             <q-list bordered separator class="bg-white" v-if="tokens && showTab==='conflicts'">
               <span v-if="Object.keys(conflicts).length===0" class="text-subtitle2 q-pa-sm"> Cool, there is no conflict</span>
@@ -370,6 +328,7 @@
 // import { ref } from 'vue'
 import { commAnnoMixin } from 'pages/mixin/commAnnoMixin'
 import AnnotateTab from 'components/AnnotateTab'
+import RelationList from 'components/RelationList'
 
 const rawRelation = {
   relation: null,
@@ -380,7 +339,7 @@ const rawRelation = {
 export default {
   name: 'RelationAnnotate',
   mixins: [commAnnoMixin],
-  components: { AnnotateTab },
+  components: { RelationList, AnnotateTab },
   data () {
     return {
       mode: 'relation',
@@ -449,6 +408,11 @@ export default {
       this.relations.splice(idx, 1)
       this.$forceUpdate()
     },
+    removeRelationFromModelCache (rel) {
+      const idx = this.modelResultCache.indexOf(rel)
+      this.modelResultCache.splice(idx, 1)
+      this.$forceUpdate()
+    },
     _getOffset (el) {
       const rect = el.getBoundingClientRect()
       return {
@@ -513,6 +477,47 @@ export default {
       }
       const curveElement = document.getElementById('rel-1')
       curveElement.setAttribute('d', curve)
+    },
+    executeModel (id) {
+      this.add2Q(id)
+      const data = {
+        mtype: this.tab, // which type of model (rule, dict, model)
+        id: id,
+        document: this.document.id
+      }
+      const url = this.consensus ? '/api/calculate_consensus/' : '/api/model-relation/'
+      this.$axios.post(this.$hostname + url, data).then(response => {
+        const results = response.data
+        this.removeFromQ(id)
+
+        if (this.modelResultCache) {
+          this.modelResultCache = this.modelResultCache.concat(results)
+        } else {
+          this.modelResultCache = results
+        }
+        this.modelResultCache.sort((a, b) => b.confidence - a.confidence)
+
+        const msg = `Finished running model, and got ${results.length} results`
+        this.$q.notify({
+          message: msg,
+          color: 'secondary',
+          position: 'center',
+          timeout: 0,
+          actions: [
+            { label: 'Dismiss', color: 'white', handler: () => { /* ... */ } },
+            { label: 'Review', color: 'white', handler: () => { this.showTab = 'sort' } }
+          ]
+        })
+
+        if (this.consensus) {
+          this.cmodels[id].consensusScore = {
+            f1: response.data.f1 * 100,
+            total: response.data.total * 100
+          }
+        }
+        // this.$forceUpdate()
+        // process return annotations
+      })
     }
   },
   computed: {
