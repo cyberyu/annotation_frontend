@@ -152,7 +152,7 @@
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
           <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
-            <svg style="position:absolute; width: 100%; height: 100%;">
+            <svg style="position:absolute; width: 100%; height: 100%; z-index:99">
               <defs>
                 <marker id='head' orient="auto"
                         markerWidth='6' markerHeight='4'
@@ -164,7 +164,7 @@
               <path :id="`rel-${1}`" marker-end='url(#head)' d="M0 0" stroke="green"
                     stroke-width="3" stroke-linecap="round" fill="transparent"></path>
             </svg>
-            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
+            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="getTokenBlockClass(token, i)">
               <!-- each token display -->
               <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"
@@ -404,6 +404,11 @@ export default {
     })
   },
   methods: {
+    getTokenBlockClass (token, i) {
+      let cls = ''
+      cls += token[0] === '\r\n' ? 'row q-my-sm' : 'column inline'
+      return cls
+    },
     setHeadTail (label) {
       if (!this.relation.head.text) {
         this.relation.head = label
