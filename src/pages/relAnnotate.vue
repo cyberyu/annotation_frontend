@@ -259,6 +259,11 @@
 <!--            categorized annotations-->
             <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'" dense separator>
               <q-item v-for="(rel,i) in relations" :key="i" class="column" @click.native="relation=rel">
+                <div class="row col-12 items-center">
+                  <span class="text-bold rel-part">Relation: </span>
+                  <span class="rel-pos">{{ rel.relation.name }}</span>
+                  <q-icon name="cancel" @click="removeRelation(rel)"/>
+                </div>
                 <div class="row col-12">
                   <span class="text-bold rel-part">Head: </span>
                   <span class="rel-pos">[{{rel.head.pos[0]}} - {{rel.head.pos[1]}}]</span>
@@ -271,13 +276,9 @@
                 </div>
                 <div class="row col-12">
                   <span class="text-bold rel-part">Hint: </span>
-                  <span class="rel-pos">[{{rel.hint.pos[0]}} - {{rel.hint.pos[1]}}] </span>
+                  <span class="rel-pos" v-if="rel.hint.pos">[{{rel.hint.pos[0]}} - {{rel.hint.pos[1]}}] </span>
+                  <span class="rel-pos" v-else>  </span>
                   - {{rel.hint.text}}
-                </div>
-                <div class="row col-12 items-center">
-                  <span class="text-bold rel-part">Relation: </span>
-                  <span class="rel-pos">{{ rel.relation.name }}</span>
-                  <q-icon name="cancel" @click="removeRelation(rel)"/>
                 </div>
               </q-item>
 <!--              <q-expansion-item v-for="(label, i) in Object.entries(categorizedAnnotations)" :key="i"-->
@@ -433,6 +434,7 @@ export default {
     },
     resetRelation () {
       this.relation = { ...rawRelation }
+      this.$forceUpdate()
     },
     confirmRelation () {
       this.relations.push(this.relation)
@@ -442,6 +444,11 @@ export default {
       const idx = this.relations.indexOf(rel)
       this.relations.splice(idx, 1)
       this.$forceUpdate()
+    },
+    drawRelation (rel) {
+      const t1 = document.getElementById(`t-${rel.head.tpos[0]}`)
+      const t2 = document.getElementById(`t-${rel.tail.tpos[0]}`)
+      console.log(t1, t2)
     }
   },
   computed: {
