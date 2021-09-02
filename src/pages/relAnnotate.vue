@@ -130,8 +130,10 @@
               </div>
             </div>
             <div class="col row self-center q-pl-lg">
-              <q-input dense class="q-mr-sm" v-model="relation.hint.text" label="suggesting text" filled style="width: 320px;" />
-              <q-btn-dropdown color="primary" :label="relation.relation? relation.relation.name : 'relation'">
+              <q-input dense class="q-mr-sm" v-model="relation.hint.text" label="suggesting text"
+                       hint="select text or manually type" filled style="width: 460px;" >
+                <template v-slot:append>
+              <q-btn-dropdown color="primary" unelevated :label="relation.relation? relation.relation.name : 'relation'" style="margin-right:-5px">
                 <q-list>
                   <q-item v-for="(label, i) in relationLabels" :key="i" clickable v-close-popup dense @click="setLabel(label)">
                     <q-item-label>
@@ -140,6 +142,8 @@
                   </q-item>
                 </q-list>
               </q-btn-dropdown>
+                  </template>
+              </q-input>
             </div>
             <div class="column self-center">
               <q-btn color="primary" size="sm" class="block float-right" @click="resetRelation()">Reset</q-btn>
