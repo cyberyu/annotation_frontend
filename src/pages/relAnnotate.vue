@@ -129,21 +129,20 @@
                 <span @click="relation.tail={}">Tail</span>
               </div>
             </div>
-            <div class="col row self-center q-pl-lg">
-              <q-input dense class="q-mr-sm" v-model="relation.hint.text" label="suggesting text"
-                       hint="select text or manually type" filled style="width: 460px;" >
-                <template v-slot:append>
-              <q-btn-dropdown color="primary" unelevated :label="relation.relation? relation.relation.name : 'relation'" style="margin-right:-5px">
-                <q-list>
-                  <q-item v-for="(label, i) in relationLabels" :key="i" clickable v-close-popup dense @click="setLabel(label)">
-                    <q-item-label>
-                      {{ label.name}}
-                    </q-item-label>
-                  </q-item>
-                </q-list>
-              </q-btn-dropdown>
-                  </template>
-              </q-input>
+            <div class="col row self-center q-px-sm">
+              <div class="row items-start">
+                <q-btn-dropdown color="primary" unelevated :label="relation.relation? relation.relation.name : 'relation'">
+                  <q-list>
+                    <q-item v-for="(label, i) in relationLabels" :key="i" clickable v-close-popup dense @click="setLabel(label)">
+                      <q-item-label>
+                        {{ label.name}}
+                      </q-item-label>
+                    </q-item>
+                  </q-list>
+                </q-btn-dropdown>
+              </div>
+              <q-input dense class="col q-ml-sm" v-model="relation.hint.text" label="suggesting text"
+                       hint="select or manually type text which suggests such relation" filled />
             </div>
             <div class="column self-center">
               <q-btn color="primary" size="sm" class="block float-right" @click="resetRelation()">Reset</q-btn>
