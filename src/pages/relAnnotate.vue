@@ -116,12 +116,12 @@
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white annotation-header">
           <div class="row full-width">
-            <div class="row items-center justify-between" style="width: 290px">
+            <div class="row items-center justify-between" style="width: 282px">
               <div class="row justify-between col-12">
-                <q-btn outline size="sm" :label="relation.head.text" no-caps
+                <q-btn outline :label="relation.head.text" no-caps
                        class="q-mr-xs" style="width: 120px;"></q-btn> <br>
                 <q-btn icon="swap_horiz" size="sm" flat @click="switchHeadTail()"/>
-                <q-btn outline size="sm" :label="relation.tail.text" no-caps
+                <q-btn outline :label="relation.tail.text" no-caps
                        class="q-mr-xs" style="width: 120px;"></q-btn>
               </div>
               <div class="row justify-around col-12">
@@ -152,6 +152,18 @@
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
           <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
+            <svg style="position:absolute; width: 100%; height: 100%;">
+              <defs>
+                <marker id='head' orient="auto"
+                        markerWidth='6' markerHeight='4'
+                        refX='0.1' refY='2'>
+                  <!-- triangle pointing right (+x) -->
+                  <path d='M0,0 V4 L2,2 Z' fill="green"/>
+                </marker>
+              </defs>
+              <path :id="`rel-${1}`" marker-end='url(#head)' d="M0 0" stroke="green"
+                    stroke-width="3" stroke-linecap="round" fill="transparent"></path>
+            </svg>
             <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
               <!-- each token display -->
               <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
@@ -200,20 +212,6 @@
                     <span @click="setHeadTail(label[1])">{{ label[1].name }}</span>
                   </span>
                 </span>
-                <q-menu anchor="top right" self="top left" v-if="review">
-                  <q-list bordered separator >
-                  <q-item clickable v-for="(label, j) in detailedAnnotations[i]" :key="`label${j}`" dense>
-                    <q-item-section v-if="label[1].authors">
-                      <span class="text-bold">{{ label[1].name }} ({{ label[1].authors.length }}) - {{ label[1].text }}</span>
-                      <div class="q-px-sm">
-                        <div v-for="(author, ii) in label[1].authors" :key="`author${ii}`">
-                          {{author}}
-                        </div>
-                      </div>
-                    </q-item-section>
-                  </q-item>
-                  </q-list>
-                </q-menu>
               </span>
               <span v-if="detailedAnnotations[i]" :style="`height: ${detailedAnnotations[i].filter(a=>a[0]=='B').length*18 + detailedAnnotations[i].length*4 }px` "> </span>
             </div>
@@ -258,11 +256,11 @@
           <q-scroll-area style="height: calc(100vh - 180px); display: flex" class="col">
 <!--            categorized annotations-->
             <q-list bordered class="bg-white" v-if="tokens && showTab==='annotations'" dense separator>
-              <q-item v-for="(rel,i) in relations" :key="i" class="column" @click.native="relation=rel">
+              <q-item v-for="(rel,i) in relations" :key="i" class="column" @click.native="relation=rel; drawRelation(rel)">
                 <div class="row col-12 items-center">
                   <span class="text-bold rel-part">Relation: </span>
                   <span class="rel-pos">{{ rel.relation.name }}</span>
-                  <q-icon name="cancel" @click="removeRelation(rel)"/>
+                  <q-icon name="cancel" @click.stop="removeRelation(rel)"/>
                 </div>
                 <div class="row col-12">
                   <span class="text-bold rel-part">Head: </span>
@@ -445,10 +443,40 @@ export default {
       this.relations.splice(idx, 1)
       this.$forceUpdate()
     },
+    _getOffset (el) {
+      const rect = el.getBoundingClientRect()
+      return {
+        left: rect.left + window.pageXOffset,
+        top: rect.top + window.pageYOffset,
+        offsetLeft: el.offsetLeft,
+        offsetTop: el.offsetTop,
+        width: rect.width,
+        height: rect.height
+      }
+    },
     drawRelation (rel) {
-      const t1 = document.getElementById(`t-${rel.head.tpos[0]}`)
-      const t2 = document.getElementById(`t-${rel.tail.tpos[0]}`)
-      console.log(t1, t2)
+      let t1 = document.getElementById(`t-${rel.head.tpos[0]}`)
+      let t2 = document.getElementById(`t-${rel.tail.tpos[0]}`)
+      t1 = this._getOffset(t1)
+      console.log(t1)
+      t2 = this._getOffset(t2)
+      const p1x = t1.offsetLeft + t1.width / 2
+      const p1y = t1.offsetTop + t1.height / 2
+      const p2x = t2.offsetLeft + t2.width / 2
+      const p2y = t2.offsetTop + t2.height / 2
+      const mpx = (p2x + p1x) * 0.5
+      const mpy = (p2y + p1y) * 0.5
+      console.log(p1x, p1y, mpx, mpy, p2x, p2y)
+      // angle of perpendicular to line:
+      const theta = Math.atan2(p2y - p1y, p2x - p1x) - Math.PI / 2
+      // distance of control point from mid-point of line:
+      const offset = 30
+      // location of control point:
+      const c1x = mpx + offset * Math.cos(theta)
+      const c1y = mpy + offset * Math.sin(theta)
+      const curve = 'M' + p1x + ' ' + p1y + ' Q ' + c1x + ' ' + c1y + ' ' + p2x + ' ' + p2y
+      const curveElement = document.getElementById('rel-1')
+      curveElement.setAttribute('d', curve)
     }
   },
   computed: {
