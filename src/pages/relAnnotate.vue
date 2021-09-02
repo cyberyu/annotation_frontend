@@ -473,21 +473,18 @@ export default {
       }
       if (p1y > p2y && p1x > p2x) {
         p2y += 20
-        p1y -= 28
-        p2x += t2.width / 2
-        p1x = t1.offsetLeft
+        p1y = t1.offsetTop
+        p1x = t1.offsetLeft + t1.width / 2
       }
       if (p1y > p2y && p1x < p2x) {
         p2y += 0
         p1y -= 28
         p2x -= (t2.width / 2 + 14)
-        // p1x = t1.offsetLeft
       }
       if (p1y < p2y && p1x > p2x) {
         p1y += 0
         p2y -= 28
         p1x = t1.offsetLeft - 10
-        // p2x += t2.width / 2
       }
       if (p1y === p2y) {
         p1y -= 28
