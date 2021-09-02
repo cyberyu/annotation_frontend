@@ -464,7 +464,6 @@ export default {
       let t1 = document.getElementById(`t-${rel.head.tpos[0]}`)
       let t2 = document.getElementById(`t-${rel.tail.tpos[0]}`)
       t1 = this._getOffset(t1)
-      console.log(t1)
       t2 = this._getOffset(t2)
       let p1x = t1.offsetLeft + t1.width / 2
       let p1y = t1.offsetTop + t1.height / 2
@@ -499,7 +498,6 @@ export default {
 
       const mpx = (p2x + p1x) * 0.5
       const mpy = (p2y + p1y) * 0.5
-      console.log(p1x, p1y, mpx, mpy, p2x, p2y)
       let curve
       if (p1y === p2y) {
         // angle of perpendicular to line:
