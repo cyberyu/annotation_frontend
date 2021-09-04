@@ -155,7 +155,7 @@
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
           <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
-            <svg style="position:absolute; width: 100%; height: 100%; z-index:99">
+            <svg style="position:absolute; width: 100%; height: 100%;">
               <defs>
                 <marker id='head' orient="auto"
                         markerWidth='6' markerHeight='4'
