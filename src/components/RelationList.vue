@@ -1,6 +1,7 @@
 <template>
   <q-list class="bg-white" dense separator>
-    <q-item v-for="(rel,i) in relations" :key="i" class="column" @click.native="$emit('select', rel)">
+    <q-item v-for="(rel,i) in relations" :key="i" class="column" :class="curRel===i ? 'bg-indigo-2' : ''"
+            @click.native="$emit('select', rel); curRel=i">
       <div class="row col-12 items-center">
         <span class="text-bold rel-part">Relation: </span>
         <span class="rel-pos">{{ rel.relation.name }}</span>
@@ -29,11 +30,16 @@
 
 <script>
 export default {
+  name: 'RelationList',
   props: {
     relations: Array,
     showAccept: Boolean
   },
-  name: 'RelationList'
+  data () {
+    return {
+      curRel: null
+    }
+  }
 }
 </script>
 

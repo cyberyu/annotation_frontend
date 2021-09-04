@@ -380,6 +380,9 @@ export default {
       } else if (!this.relation.tail.text) {
         this.relation.tail = label
       }
+      if (this.relation.head.pos && this.relation.tail.pos) {
+        this.drawRelation(this.relation)
+      }
     },
     switchHeadTail () {
       const a = this.relation.head
@@ -403,6 +406,8 @@ export default {
     },
     resetRelation () {
       this.relation = { ...rawRelation }
+      const curveElement = document.getElementById('rel-1')
+      curveElement.setAttribute('d', '')
       this.$forceUpdate()
     },
     confirmRelation () {
