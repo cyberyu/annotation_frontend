@@ -115,7 +115,7 @@
                    @click="showUnRelSen();showUnRelBtn=false">
             </q-btn>
           </div>
-          <div class="self-center" style="width:130px">
+          <div class="self-center" style="width:137px">
             <q-checkbox style="width: 140px; margin-left: 1px;" v-model="relevantAll" dense label="Select all" />
           </div>
         </div>
