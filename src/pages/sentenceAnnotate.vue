@@ -485,6 +485,7 @@ export default {
       this.add2Q(id)
       const data = {
         mtype: this.tab,
+        id: id,
         sentences: []
       }
       this.relevantSentences.forEach(v => {
