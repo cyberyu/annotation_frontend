@@ -240,7 +240,7 @@
           </q-card-actions>
       </div>
 
-      <div class="col-2 summary q-mb-none">
+      <div class="col-3 summary q-mb-none">
         <q-card>
           <q-card-actions class="bg-accent annotation-header justify-between" :style="'color: white; font-weight: bold; font-size: 1.2em'">
             <q-btn label="ANNOTATIONS" flat @click="showTab='annotations'" :class="{'bg-purple-5': showTab=='annotations'}">

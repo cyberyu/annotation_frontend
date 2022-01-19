@@ -14,15 +14,15 @@
         - {{rel.head.text}}
       </div>
       <div class="row col-12">
-        <span class="text-bold rel-part">Tail: </span>
-        <span class="rel-pos">[{{rel.tail.pos[0]}} - {{rel.tail.pos[1]}}] </span>
-        - {{rel.tail.text}}
-      </div>
-      <div class="row col-12">
         <span class="text-bold rel-part">Hint: </span>
         <span class="rel-pos" v-if="rel.hint.pos">[{{rel.hint.pos[0]}} - {{rel.hint.pos[1]}}] </span>
         <span class="rel-pos" v-else>  </span>
         - {{rel.hint.text}}
+      </div>
+      <div class="row col-12">
+        <span class="text-bold rel-part">Tail: </span>
+        <span class="rel-pos">[{{rel.tail.pos[0]}} - {{rel.tail.pos[1]}}] </span>
+        - {{rel.tail.text}}
       </div>
     </q-item>
   </q-list>
