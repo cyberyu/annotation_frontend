@@ -416,7 +416,7 @@ export const commAnnoMixin = {
       this.saving = true
       const data = {
         document: this.document.id,
-        annotations: this.mode === 'ner' ? this.annotations : this.relations,
+        annotations: this.mode === 'ner' ? this.annotations : this.relations, // sentence has its own functions
         kind: this.mode
       }
       let url
@@ -452,7 +452,6 @@ export const commAnnoMixin = {
     incrProgress (n) {
       this.numAnnotated += n
     },
-
     fetchDocs (params) {
       this.tokens = []
       this.$q.loading.show({ message: 'Fetching documet from server and set it up for curation. This may take a few seconds.' })
@@ -493,7 +492,7 @@ export const commAnnoMixin = {
         this.isAnnotated = this.document.annotations.id
         this.tokens = this.document.tokens
         this.sentences = this.document.sentences
-        if (this.mode === 'ner' || this.mode === 'relation') {
+        if (this.mode === 'ner' || (this.mode === 'relation' && !this.review)) {
           this.getDetailedAnnotations()
         }
         this.highlighted = []

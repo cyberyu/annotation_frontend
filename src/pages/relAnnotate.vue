@@ -286,42 +286,52 @@
             </q-list>
 <!--            list of annotators-->
             <q-list bordered separator class="bg-white" v-if="tokens && showTab==='annotators'">
-              <q-item v-for="(anns, author, i) in annotations4Review" :key="i" clickable v-ripple class="q-pr-xs"
-                      :active="activeAuthors.includes(author)" active-class="bg-blue-3 text-grey-8">
-                <q-item-section>
-                  <div @click="getAnnotations(author)" class="col-9">{{anns.author}} ({{anns.annotations.length}})</div>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn-dropdown color="primary" flat size="sm" dense label="" :dropdown-icon="{1: 'check_circle', '-1': 'highlight_off', 2: 'redo'}[anns.status]">
-                    <q-list bordered>
-                      <q-item :class="{'text-positive': anns.status===1}" dense clickable v-ripple  @click="rejectOrAccept(anns, 1)">
-                        <q-item-section avatar>
-                          <q-icon :name="anns.status===1? 'check_circle': 'check'" flat size="sm"/>
-                        </q-item-section>
-                        <q-item-section>
-                          Accept
-                        </q-item-section>
-                      </q-item>
-                      <q-item :class="{'text-negative': anns.status===-1}" clickable v-ripple @click="rejectOrAccept(anns, -1)">
-                        <q-item-section avatar>
-                          <q-icon :name="anns.status===-1? 'highlight_off':'clear'" flat size="sm" />
-                        </q-item-section>
-                        <q-item-section>
-                          Reject
-                        </q-item-section>
-                      </q-item>
-                      <q-item :class="{'text-negative': anns.status===2}" clickable v-ripple @click="rejectOrAccept(anns, 2)">
-                        <q-item-section avatar>
-                          <q-icon name="redo" flat size="sm" />
-                        </q-item-section>
-                        <q-item-section>
-                          Ask for redo
-                        </q-item-section>
-                      </q-item>
-                    </q-list>
-                  </q-btn-dropdown>
-                </q-item-section>
-              </q-item>
+              <q-expansion-item v-for="(anns, author, i) in annotations4Review" :key="i" clickable v-ripple class="q-pr-xs"
+                                :label="`${anns.author} (${anns.annotations.length})`"
+                                :active="activeAuthors.includes(author)"
+                                @click="getAnnotations(author)"
+                                group="review" active-class="bg-blue-3 text-grey-8">
+<!--                <q-item-section side>-->
+<!--                  <q-btn-dropdown color="primary" flat size="sm" dense label="" :dropdown-icon="{1: 'check_circle', '-1': 'highlight_off', 2: 'redo'}[anns.status]">-->
+<!--                    <q-list bordered>-->
+<!--                      <q-item :class="{'text-positive': anns.status===1}" dense clickable v-ripple  @click="rejectOrAccept(anns, 1)">-->
+<!--                        <q-item-section avatar>-->
+<!--                          <q-icon :name="anns.status===1? 'check_circle': 'check'" flat size="sm"/>-->
+<!--                        </q-item-section>-->
+<!--                        <q-item-section>-->
+<!--                          Accept-->
+<!--                        </q-item-section>-->
+<!--                      </q-item>-->
+<!--                      <q-item :class="{'text-negative': anns.status===-1}" clickable v-ripple @click="rejectOrAccept(anns, -1)">-->
+<!--                        <q-item-section avatar>-->
+<!--                          <q-icon :name="anns.status===-1? 'highlight_off':'clear'" flat size="sm" />-->
+<!--                        </q-item-section>-->
+<!--                        <q-item-section>-->
+<!--                          Reject-->
+<!--                        </q-item-section>-->
+<!--                      </q-item>-->
+<!--                      <q-item :class="{'text-negative': anns.status===2}" clickable v-ripple @click="rejectOrAccept(anns, 2)">-->
+<!--                        <q-item-section avatar>-->
+<!--                          <q-icon name="redo" flat size="sm" />-->
+<!--                        </q-item-section>-->
+<!--                        <q-item-section>-->
+<!--                          Ask for redo-->
+<!--                        </q-item-section>-->
+<!--                      </q-item>-->
+<!--                    </q-list>-->
+<!--                  </q-btn-dropdown>-->
+<!--                </q-item-section>-->
+                <div class="col-12 text-center">
+                  <q-btn-group outline>
+                    <q-btn outline label="Accept" @click="rejectOrAccept(anns, 1)" :class="{'bg-positive': anns.status===1}" />
+                    <q-btn outline label="Reject" @click="rejectOrAccept(anns, -1)" :class="{'bg-negative': anns.status===-1}" />
+                    <q-btn outline label="Redo" @click="rejectOrAccept(anns, 2)"  :class="{'bg-negative': anns.status===2}" />
+                  </q-btn-group>
+                </div>
+                <relation-list  :relations="relations"
+                                @remove="removeRelation($event)"
+                                @select="relation=$event; drawRelation($event)"/>
+              </q-expansion-item>
             </q-list>
           </q-scroll-area>
         </q-card>
@@ -369,6 +379,10 @@ export default {
     })
   },
   methods: {
+    getAnnotations (authorID) {
+      this.document.relations = this.annotations4Review[authorID]
+      this.relations = this.annotations4Review[authorID].annotations
+    },
     getTokenBlockClass (token, i) {
       let cls = ''
       cls += token[0] === '\r\n' ? 'row q-my-sm' : 'column inline'
@@ -411,6 +425,11 @@ export default {
       this.$forceUpdate()
     },
     confirmRelation () {
+      for (let i = 0; i <= this.relations.length; i++) {
+        if (this.relations[i] === this.relation) {
+          return
+        }
+      }
       this.relations.push(this.relation)
       this.resetRelation()
     },
