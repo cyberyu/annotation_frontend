@@ -116,6 +116,11 @@
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white annotation-header">
           <div class="row full-width">
+            <div class="col-12 text-center">
+              <q-btn v-if="relevantSentences.length>0" :label="showUnRelated? 'Hide unrelated': 'Show all'" class="q-mr-xs" style="width: 100px" flat no-caps size="sm"
+                     @click="showUnRelated=!showUnRelated">
+              </q-btn>
+            </div>
             <div class="row items-center justify-between" style="width: 282px">
               <div class="row justify-between col-12">
                 <q-btn outline :label="relation.head.text" no-caps
@@ -167,7 +172,7 @@
               <path :id="`rel-${1}`" marker-end='url(#head)' d="M0 0" stroke="green"
                     stroke-width="3" stroke-linecap="round" fill="transparent"></path>
             </svg>
-            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="getTokenBlockClass(token, i)">
+            <div v-for="(token,i) in (showUnRelated? tokens: tokensInRS)" :key="i" :id="`t-${i}`" :class="getTokenBlockClass(token, i)">
               <!-- each token display -->
               <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"

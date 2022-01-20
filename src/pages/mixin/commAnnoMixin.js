@@ -52,7 +52,8 @@ export const commAnnoMixin = {
       dicts: [],
       vmodels: [],
       consensusScore: null,
-      go2page: ''
+      go2page: '',
+      showUnRelated: true
     }
   },
   mounted () {
@@ -478,6 +479,8 @@ export const commAnnoMixin = {
         const allAnnotations = this.document.annotations.id ? this.document.annotations.annotations : []
         if (this.document.related) {
           this.relevantSentences = this.document.related.annotations
+        } else {
+          this.relevantSentences = []
         }
         this.annotations = allAnnotations.filter(a => this.labelNames.has(a.name))
         if (this.review) {

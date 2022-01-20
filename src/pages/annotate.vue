@@ -116,12 +116,15 @@
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white annotation-header">
           <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
+          <q-btn v-if="relevantSentences.length>0" :label="showUnRelated? 'Hide unrelated': 'Show all'" class="q-mr-xs" style="width: 100px" flat no-caps size="sm"
+                 @click="showUnRelated=!showUnRelated">
+          </q-btn>
         </q-card-actions>
         <q-separator />
         <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
           <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
-            <div v-for="(token,i) in tokensInRS" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
+            <div v-for="(token,i) in (showUnRelated? tokens: tokensInRS)" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
               <!-- each token display -->
               <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"
