@@ -468,6 +468,26 @@ export default {
         }
       })
       this.saveAnnotations()
+      this.saveRelated()
+    },
+    saveRelated () {
+      const data = {
+        document: this.document.id,
+        annotations: this.relevantSentences,
+        kind: 'related'
+      }
+      let method, url
+      if (this.document.relations.id) {
+        method = 'patch'
+        url = this.$hostname + '/api/annotations/' + this.document.relations.id + '/'
+      } else {
+        method = 'post'
+        url = this.$hostname + '/api/annotations/'
+      }
+
+      this.$axios({ method: method, url: url, data: data }).then(response => {
+        console.log(response.data)
+      })
     },
     executeModel (id) {
       if (this.relevantSentences.length === 0) {

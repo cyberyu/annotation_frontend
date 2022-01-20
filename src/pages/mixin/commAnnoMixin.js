@@ -475,6 +475,9 @@ export const commAnnoMixin = {
         this.prevURL = response.data.previous
         this.document = this.documents[0]
         const allAnnotations = this.document.annotations.id ? this.document.annotations.annotations : []
+        if (this.document.related) {
+          this.relevantSentences = this.document.related.annotations
+        }
         this.annotations = allAnnotations.filter(a => this.labelNames.has(a.name))
         if (this.review) {
           this.annotations4Review = this.document.reviews
