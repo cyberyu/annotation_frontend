@@ -418,7 +418,7 @@ export const commAnnoMixin = {
       this.saving = true
       const data = {
         document: this.document.id,
-        annotations: this.mode === 'ner' ? this.annotations : this.relations, // sentence has its own functions
+        annotations: this.mode === 'ner' || this.mode === 'sentence' ? this.annotations : this.relations, // sentence has its own functions
         kind: this.mode
       }
       let url
