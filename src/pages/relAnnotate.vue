@@ -390,7 +390,7 @@ export default {
     },
     getTokenBlockClass (token, i) {
       let cls = ''
-      cls += token[0].includes('\r') ? 'row' : 'column inline'
+      cls += token[0].includes('\r') || token[0].includes('\n') ? 'row' : 'column inline'
       return cls
     },
     setHeadTail (label) {
