@@ -2,7 +2,7 @@ import axios from 'axios'
 import Vue from 'vue'
 
 if (process.env.PROD === true) {
-  if (window.location.origin.includes('ec2')) {
+  if (window.location.origin.includes('com')) {
     // ec2
     Vue.prototype.$hostname = window.location.origin
   } else {
