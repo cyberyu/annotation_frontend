@@ -11,9 +11,9 @@
       </q-breadcrumbs>
     </div>
     <div class="row self-start q-pt-lg">
-      <div class="col-3">
+      <div class="col-3" v-if="!this.review">
         <div class="justify-end  q-pr-md row">
-          <q-card class="col-8 ">
+          <q-card class="col-8">
             <q-linear-progress size="25px" :value="progressStats.pct" color="accent">
               <div class="absolute-full flex flex-center">
                 <q-badge color="white" text-color="accent"
@@ -110,8 +110,8 @@
             </q-tab-panels>
           </q-card>
         </div>
-
       </div>
+      <div v-else class="col-2"></div>
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white annotation-header">
