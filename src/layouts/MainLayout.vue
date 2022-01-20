@@ -4,7 +4,7 @@
       <q-toolbar>
         <q-btn flat dense round icon="home" aria-label="Menu" @click="$router.push('/')" />
 
-        <q-toolbar-title> <router-link to="/" class="main-link">VGLM.Curation</router-link> </q-toolbar-title>
+        <q-toolbar-title> <router-link to="/" class="main-link">MIC</router-link> </q-toolbar-title>
         <q-btn-dropdown v-if="isLoggedIn" color="primary" :label="`Welcome ${user.username}`">
           <q-list separator >
             <q-item clickable ripple :href="$hostname+'/admin/'" target="_blank" tag="a">
