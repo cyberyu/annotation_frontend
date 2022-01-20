@@ -706,15 +706,18 @@ export const commAnnoMixin = {
     },
     tokensInRS () {
       const tokens = []
+      const extra = ['......', null, null]
       if (this.relevantSentences && this.relevantSentences.length > 0) {
         for (let i = 0; i < this.relevantSentences.length; i++) {
           const si = this.relevantSentences[i]
+          if (i === 0 && si !== 0) {
+            tokens.push(extra)
+          }
           const start = this.sentences[si].start
           const end = this.sentences[si].end
           for (let ti = start; ti < end; ti++) {
             tokens.push(this.tokens[ti])
           }
-          const extra = ['......', null, null]
           tokens.push(extra)
         }
         return tokens
