@@ -8,6 +8,7 @@ export const commAnnoMixin = {
       document: null,
       tokens: null,
       sentences: null,
+      relevantSentences: [],
       start: null,
       end: null,
       labels: {},
@@ -699,6 +700,23 @@ export const commAnnoMixin = {
         results[a[1].name] = a[1]
       })
       return results
+    },
+    tokensInRS () {
+      const tokens = []
+      if (this.relevantSentences && this.relevantSentences.length > 0) {
+        for (let i = 0; i < this.relevantSentences.length; i++) {
+          const si = this.relevantSentences[i]
+          const start = this.sentences[si].start
+          const end = this.sentences[si].end
+          for (let ti = start; ti < end; ti++) {
+            tokens.push(this.tokens[ti])
+          }
+          const extra = ['......', null, null]
+          tokens.push(extra)
+        }
+        return tokens
+      }
+      return this.tokens
     }
   },
   watch: {
