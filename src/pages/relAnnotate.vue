@@ -329,7 +329,7 @@
                   </q-btn-group>
                 </div>
                 <relation-list  :relations="relations"
-                                @remove="removeRelation($event)"
+                                @remove="removeRelation($event);resetRelation()"
                                 @select="relation=$event; drawRelation($event)"/>
               </q-expansion-item>
             </q-list>

@@ -5,7 +5,7 @@
       <div class="row col-12 items-center">
         <span class="text-bold rel-part">Relation: </span>
         <span class="rel-pos">{{ rel.relation.name }}</span>
-        <q-icon name="cancel" @click.stop="$emit('remove', rel)"/>
+        <q-icon name="cancel" @click.stop="$emit('remove', rel); curRel=null"/>
         <q-icon v-if="showAccept" name="check_circle"  @click.stop="$emit('accept', rel)"/>
       </div>
       <div class="row col-12">
