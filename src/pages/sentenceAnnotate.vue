@@ -569,6 +569,10 @@ export default {
         //   }
         // }
         this.$forceUpdate()
+      }).catch(error => {
+        console.log(error.response.data.error)
+        this.alertServerErr()
+        this.removeFromQ(id)
       })
     },
     removeFromQ (id) { // modify for sentence

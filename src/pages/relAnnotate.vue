@@ -552,6 +552,10 @@ export default {
         }
         // this.$forceUpdate()
         // process return annotations
+      }).catch(error => {
+        console.log(error.response.data.error)
+        this.alertServerErr()
+        this.removeFromQ(id)
       })
     }
   },

@@ -97,6 +97,18 @@ export const commAnnoMixin = {
     })
   },
   methods: {
+    alertServerErr () {
+      this.$q.notify({
+        message: 'Oops, something went wrong on the server',
+        color: 'negative',
+        position: 'center',
+        actions: [
+          {
+            label: 'Dismiss', color: 'white', handler: () => { }
+          }
+        ]
+      })
+    },
     initialLabels (allLabels) {},
     rejectOrAccept (ann, status) {
       ann.status = ann.status === status ? 0 : status
@@ -262,6 +274,10 @@ export const commAnnoMixin = {
         }
         // this.$forceUpdate()
         // process return annotations
+      }).catch(error => {
+        console.log(error.response.data.error)
+        this.alertServerErr()
+        this.removeFromQ(id)
       })
     },
     scrollTo (label) {
