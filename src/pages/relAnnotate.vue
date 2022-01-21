@@ -273,6 +273,9 @@
                             @remove="removeRelationFromModelCache($event)"
                             @accept="relations.push($event);removeRelationFromModelCache($event)"
                             @select="relation=$event; drawRelation($event)"/>
+            <div v-if="tokens && modelResultCache && showTab==='sort'" class="flex justify-center">
+              <q-btn label="Clear model results" color="primary" @click="modelResultCache=null" class="q-mt-sm"/>
+            </div>
 <!--            conflict-->
             <q-list bordered separator class="bg-white" v-if="tokens && showTab==='conflicts'">
               <span v-if="Object.keys(conflicts).length===0" class="text-subtitle2 q-pa-sm"> Cool, there is no conflict</span>

@@ -355,6 +355,9 @@ export const commAnnoMixin = {
         if (this.relation.tail.tpos && (this.relation.tail.tpos[0] <= i && this.relation.tail.tpos[1] >= i)) {
           cls += ' bg-yellow'
         }
+        if (this.relation.hint.tpos && (this.relation.hint.tpos[0] <= i && this.relation.hint.tpos[1] >= i)) {
+          cls += ' bg-yellow'
+        }
       }
 
       return cls
@@ -438,7 +441,7 @@ export const commAnnoMixin = {
       this.saving = true
       const data = {
         document: this.document.id,
-        annotations: this.mode === 'ner' || this.mode === 'sentence' ? this.annotations : this.relations, // sentence has its own functions
+        annotations: (this.mode === 'ner' || this.mode === 'sentence') ? this.annotations : this.relations, // sentence has its own functions
         kind: this.mode
       }
       let url
