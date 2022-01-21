@@ -172,7 +172,7 @@
               <path :id="`rel-${1}`" marker-end='url(#head)' d="M0 0" stroke="green"
                     stroke-width="3" stroke-linecap="round" fill="transparent"></path>
             </svg>
-            <div v-for="(token,i) in (showUnRelated? tokens: tokensInRS)" :key="i" :id="`t-${i}`" :class="getTokenBlockClass(token, i)">
+            <div v-for="(token,i) in (showUnRelated? tokens: tokens)" :key="i" :id="`t-${i}`" :class="getTokenBlockClass(token, i)">
               <!-- each token display -->
               <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"
@@ -648,5 +648,9 @@ export default {
 }
 .token {
   /*height: 50px;*/
+}
+
+.unrel {
+  color: #bbbbbb;
 }
 </style>

@@ -327,6 +327,10 @@ export const commAnnoMixin = {
       cls += ' q-pl-sm'
       cls += this.highlighted.includes(i) ? ' highlight' : ''
 
+      if (!this.showUnRelated && !this.tokensInRS.includes(i)) {
+        cls += ' unrel'
+      }
+
       // for relation
       if (this.mode === 'relation') {
         if (this.relation.head.tpos && this.relation.head.tpos[0] === i) {
@@ -706,23 +710,24 @@ export const commAnnoMixin = {
     },
     tokensInRS () {
       const tokens = []
-      const extra = ['......', null, null]
+      // const extra = ['......', null, null]
       if (this.relevantSentences && this.relevantSentences.length > 0) {
         for (let i = 0; i < this.relevantSentences.length; i++) {
           const si = this.relevantSentences[i]
-          if (i === 0 && si !== 0) {
-            tokens.push(extra)
-          }
+          // if (i === 0 && si !== 0) {
+          //   tokens.push(extra)
+          // }
           const start = this.sentences[si].start
           const end = this.sentences[si].end
           for (let ti = start; ti < end; ti++) {
-            tokens.push(this.tokens[ti])
+            // tokens.push(this.tokens[ti])
+            tokens.push(ti)
           }
-          tokens.push(extra)
+          // tokens.push(extra)
         }
         return tokens
       }
-      return this.tokens
+      // return this.tokens
     }
   },
   watch: {
