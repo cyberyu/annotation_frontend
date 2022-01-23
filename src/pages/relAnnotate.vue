@@ -235,7 +235,9 @@
             <q-space />
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
                    @click="fetchDocs({url:prevURL})" style="width: 100px"/>
-            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()" :loading="saving" style="width: 100px">
+            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()"
+                   :disable="!ableSave"
+                   :loading="saving" style="width: 100px">
                    <template v-slot:loading>
                      Saving...
                    </template>

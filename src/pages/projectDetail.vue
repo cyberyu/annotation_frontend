@@ -63,15 +63,18 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-if="project.id && canReview && project.cmodels.length>0" flat  :disable="project.number_of_docs===0"
-                 @click="$router.push({ name: 'annotate', params: { project: project, consensus: true}})">
+                 @click="$router.push({ name: 'annotate', params: { project: project, consensus: true}});
+                 $emit('mode', 'Concensus')">
             Check Consensus
           </q-btn>
           <q-btn v-if="project.id && canReview" flat  :disable="project.number_of_docs===0"
-                 @click="$router.push({ name: 'annotate', params: { project: project, review: true }})">
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: true }});
+                 $emit('mode', 'Review')">
             Review
           </q-btn>
           <q-btn flat  :disable="project.number_of_docs===0"
-                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }});
+                 $emit('mode', 'Annotate')">
             Annotate It
           </q-btn>
         </q-card-actions>
@@ -98,6 +101,7 @@ export default {
   },
   mounted () {
     const id = this.$route.params.id
+    this.$emit('mode', null)
     this.fetchProject(id)
   },
   methods: {

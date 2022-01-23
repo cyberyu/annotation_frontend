@@ -10,6 +10,7 @@
 <!--        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Ner Annotate'" icon="navigation" />-->
       </q-breadcrumbs>
     </div>
+
     <div class="row self-start q-pt-lg">
       <div class="col-3" v-if="!this.review">
         <div class="justify-end  q-pr-md row">
@@ -201,7 +202,10 @@
             <q-space />
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
                    @click="fetchDocs({url:prevURL})" style="width: 100px"/>
-            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()" :loading="saving" style="width: 100px">
+            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()"
+                   :loading="saving"
+                   :disable="!ableSave"
+                   style="width: 100px">
                    <template v-slot:loading>
                      Saving...
                    </template>

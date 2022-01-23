@@ -519,7 +519,7 @@ export const commAnnoMixin = {
         if (this.mode === 'relation') {
           this.relations = this.document.relations.id ? this.document.relations.annotations : []
         }
-        if (this.consensus) {
+        if (this.consensus && this.document.gold.annotations) {
           this.document.gold.annotations.forEach(ann => {
             ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
           })
@@ -753,6 +753,13 @@ export const commAnnoMixin = {
         return tokens
       }
       // return this.tokens
+    },
+    ableSave () {
+      if (this.document) {
+        return !(this.project.is_demo && this.document.id === this.project.first_doc)
+      } else {
+        return false
+      }
     }
   },
   watch: {

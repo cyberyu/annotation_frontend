@@ -30,6 +30,7 @@ export default {
     }
   },
   mounted () {
+    this.$emit('mode', null)
     this.fetchProjects()
   },
   methods: {
