@@ -479,6 +479,12 @@ export const commAnnoMixin = {
     },
     fetchDocs (params) {
       this.tokens = []
+      this.relation = {
+        relation: null,
+        head: {},
+        tail: {},
+        hint: {}
+      }
       this.$q.loading.show({ message: 'Fetching documet from server and set it up for curation. This may take a few seconds.' })
 
       let url
