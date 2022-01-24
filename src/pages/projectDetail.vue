@@ -8,7 +8,7 @@
     </div>
 
     <div class="flex row fit justify-center flex-center">
-      <q-card style="max-width: 450px">
+      <q-card  v-if="project.id" style="max-width: 450px">
         <q-card-section>
           <div class="text-h6">{{project.name}}</div>
           <div class="text-capitalize text-grey">
@@ -79,6 +79,9 @@
           </q-btn>
         </q-card-actions>
       </q-card>
+      <div v-else>
+        Loading project detail
+      </div>
     </div>
   </q-page>
 </template>

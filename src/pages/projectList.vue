@@ -13,8 +13,11 @@
         </q-card-actions>
       </q-card>
 
-      <q-card v-if="projects.length===0" class="text-h5">
+      <q-card v-if="loaded && projects.length===0" class="text-h5">
         You have no assigned projects to curate yet.
+      </q-card>
+      <q-card v-if="!loaded" class="text-h5">
+        Loading project list
       </q-card>
     </div>
   </q-page>
@@ -26,7 +29,8 @@ export default {
   name: 'projectList',
   data () {
     return {
-      projects: []
+      projects: [],
+      loaded: false
     }
   },
   mounted () {
@@ -37,6 +41,7 @@ export default {
     fetchProjects () {
       this.$axios.get('/api/projects/').then(response => {
         this.projects = response.data.results
+        this.loaded = true
       })
     }
   }
