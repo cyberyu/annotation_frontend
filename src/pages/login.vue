@@ -5,7 +5,8 @@
         <q-toolbar-title> {{mode==='login'? 'Login': 'Register'}} </q-toolbar-title>
       </q-toolbar>
       <q-form v-if="mode==='login'" @submit="login" class="q-gutter-md">
-        <q-input filled v-model="username" label="username" hint="Usually your Vanguard username"
+        <q-input filled v-model="username" label="username"
+                 hint="Please check up the username and password provided in our paper submission"
                  lazy-rules :rules="[ val => val && val.length > 0 || 'Please type something']"/>
         <q-input filled v-model="password" label="password" type="password" :error-message="errorMsg" :error="error"
                  lazy-rules :rules="[ val => val && val.length > 0 || 'Please type something']"/>
