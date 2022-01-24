@@ -1,6 +1,6 @@
 export const commAnnoMixin = {
   name: 'CommAnnoMixin',
-  props: ['project', 'review', 'consensus'],
+  props: ['project', 'review', 'consensus', 'url'],
   data () {
     return {
       mode: null,
@@ -30,6 +30,7 @@ export const commAnnoMixin = {
       highlighted: [],
       mousePressed: false,
       nextURL: null,
+      currentURL: null,
       prevURL: null,
       tab: 'models',
       loading: false,
@@ -87,9 +88,9 @@ export const commAnnoMixin = {
     }
     this.labels.misc = miscLabel
     if (!this.review && !this.consensus) {
-      this.fetchDocs({ page: this.project.first_unannotated })
+      this.fetchDocs({ page: this.project.first_unannotated, url: this.url })
     } else {
-      this.fetchDocs({})
+      this.fetchDocs({ url: this.url })
     }
 
     setTimeout(() => {
@@ -488,7 +489,11 @@ export const commAnnoMixin = {
       this.$q.loading.show({ message: 'Fetching documet from server and set it up for curation. This may take a few seconds.' })
 
       let url
-      if (!params.url) {
+      if (this.url) {
+        url = new URL(this.$hostname + this.url)
+        url.searchParams.set('mode', this.mode)
+        url = `/api/documents/${url.search}`
+      } else if (!params.url) {
         url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}&mode=${this.mode}`
         if (params.page) {
           url += `&page=${params.page}`
@@ -503,6 +508,7 @@ export const commAnnoMixin = {
         // console.log('use host', this.$hostname)
         this.documents = response.data.results
         this.nextURL = response.data.next
+        this.currentURL = url
         this.prevURL = response.data.previous
         this.document = this.documents[0]
         const allAnnotations = this.document.annotations.id ? this.document.annotations.annotations : []

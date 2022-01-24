@@ -5,7 +5,7 @@
     <q-list separator >
       <q-item clickable ripple
         @click.native="$router.push(
-        { name: 'annotate', params: { project: project, review: review, consensus: consensus}}).catch(err => {})" >
+        { name: 'annotate', params: { project: project, review: review, consensus: consensus, url:url}}).catch(err => {})" >
         <q-item-section avatar>
           <q-icon name="category" />
         </q-item-section>
@@ -14,7 +14,7 @@
         </q-item-section>
       </q-item>
       <q-item clickable ripple @click.native="$router.push({ name: 'sentenceAnnotate',
-      params: { project: project, review: review, consensus: consensus}}).catch(err => {})">
+      params: { project: project, review: review, consensus: consensus, url: url}}).catch(err => {})">
         <q-item-section avatar>
           <q-icon name="view_list" />
         </q-item-section>
@@ -24,7 +24,7 @@
       </q-item>
       <q-item clickable ripple
         @click.native="$router.push({
-        name: 'relation', params: { project: project, review: review, consensus: consensus}}).catch(err => {})" >
+        name: 'relation', params: { project: project, review: review, consensus: consensus, url: url}}).catch(err => {})" >
         <q-item-section avatar>
           <q-icon name="share" />
         </q-item-section>
@@ -39,25 +39,6 @@
 <script>
 export default {
   name: 'AnnotateTab',
-  props: {
-    mode: {
-      type: String,
-      required: true
-    },
-
-    project: {
-      type: Object
-    },
-
-    review: {
-      type: Boolean,
-      default: false
-    },
-
-    consensus: {
-      type: Boolean,
-      default: false
-    }
-  }
+  props: ['mode', 'project', 'review', 'consensus', 'url']
 }
 </script>

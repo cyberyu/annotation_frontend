@@ -5,7 +5,7 @@
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
         <q-breadcrumbs-el>
-          <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" />
+          <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" :url="currentURL"/>
         </q-breadcrumbs-el>
         <!--        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Ner Annotate'" icon="navigation" />-->
       </q-breadcrumbs>
