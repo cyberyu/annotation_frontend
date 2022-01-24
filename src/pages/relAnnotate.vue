@@ -157,7 +157,7 @@
           </div>
         </q-card-actions>
         <q-separator />
-        <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
+        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col" ref="textArea">
           <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
             <svg style="position:absolute; width: 100%; height: 100%;">

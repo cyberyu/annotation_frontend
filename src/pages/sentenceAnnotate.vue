@@ -120,7 +120,7 @@
           </div>
         </div>
         <q-separator />
-        <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
+        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col" ref="textArea">
           <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" tabindex="0" >
             <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`"
                  :class="getSentenceClass(i)" class="sentence row col-12 q-px-sm" style="border-radius: 10px">
