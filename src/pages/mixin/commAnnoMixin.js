@@ -90,7 +90,7 @@ export const commAnnoMixin = {
     if (!this.review && !this.consensus) {
       this.fetchDocs({ page: this.project.first_unannotated, url: this.url })
     } else {
-      this.fetchDocs({ url: this.url })
+      this.fetchDocs({ })
     }
 
     setTimeout(() => {
@@ -489,7 +489,7 @@ export const commAnnoMixin = {
       this.$q.loading.show({ message: 'Fetching documet from server and set it up for curation. This may take a few seconds.' })
 
       let url
-      if (this.url) {
+      if (this.url && !params.url) {
         url = new URL(this.$hostname + this.url)
         url.searchParams.set('mode', this.mode)
         url = `/api/documents/${url.search}`

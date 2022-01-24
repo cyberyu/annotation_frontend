@@ -12,7 +12,7 @@
 
         <div class="column items-center q-mt-xs">
           <q-btn label="Log In" type="submit" color="primary" class="col"/>
-          <div class="row q-my-sm">
+          <div class="row q-my-sm hidden">
           No account yet? <span @click="mode='register'" class="register q-pl-xs"> Register</span>
           </div>
         </div>
