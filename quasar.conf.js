@@ -104,7 +104,8 @@ module.exports = function (/* ctx */) {
       // Quasar plugins
       plugins: [
         'Cookies',
-        'Notify'
+        'Notify',
+        'Loading'
       ]
     },
 
@@ -122,9 +123,9 @@ module.exports = function (/* ctx */) {
       workboxPluginMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       workboxOptions: {}, // only for GenerateSW
       manifest: {
-        name: 'v_annotate',
-        short_name: 'v_annotate',
-        description: 'the frontend for annotation app',
+        name: 'textmic',
+        short_name: 'textmic',
+        description: 'NLP labeling and training made easy',
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#ffffff',

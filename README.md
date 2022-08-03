@@ -1,8 +1,23 @@
 # v_annotate (frontend)
+## Initial setup of project
+Install Quasar Command line tool
 
-the frontend for annotation app
+`npm install -g @quasar/cli`
 
-## Install the dependencies
+Create quasar project
+
+`quasar create frontend`
+
+Install icongenie
+
+`npm install -g @quasar/icongenie`
+
+
+## set up frontend development environment
+
+### clone this repo
+
+### Install the dependencies
 ```bash
 npm install
 ```

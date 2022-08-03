@@ -2,7 +2,13 @@ import axios from 'axios'
 import Vue from 'vue'
 
 if (process.env.PROD === true) {
-  Vue.prototype.$hostname = window.location.origin + window.location.pathname
+  if (window.location.origin.includes('com')) {
+    // ec2
+    Vue.prototype.$hostname = window.location.origin
+  } else {
+    // domino
+    Vue.prototype.$hostname = window.location.origin + window.location.pathname
+  }
 } else {
   Vue.prototype.$hostname = 'http://127.0.0.1:8000'
 }

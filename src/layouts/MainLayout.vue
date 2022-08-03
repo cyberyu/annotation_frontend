@@ -3,11 +3,33 @@
     <q-header elevated>
       <q-toolbar>
         <q-btn flat dense round icon="home" aria-label="Menu" @click="$router.push('/')" />
-
-        <q-toolbar-title> <router-link to="/" class="main-link">Vanguard NLP Annotation</router-link> </q-toolbar-title>
+        <q-toolbar-title class="row">
+          <div>
+            <router-link to="/" class="main-link">
+              MIC: A Multi-task Interactive Curation Tool
+            </router-link>
+          </div>
+          <div class="col text-left" style="font-size:10px; padding-top:12px; padding-left:5px"> support contact: shee.yu@gmail.com</div>
+          <div class="col text-center">{{ mode }}</div><br>
+          <div class="col"></div>
+        </q-toolbar-title>
         <q-btn-dropdown v-if="isLoggedIn" color="primary" :label="`Welcome ${user.username}`">
-          <div class="q-px-md q-py-sm"><a :href="$hostname+'/admin/'" target="_blank">admin</a> </div>
-          <div class="q-px-md q-py-sm" @click="logout()" style="color:blue">logout</div>
+          <q-list separator >
+            <q-item clickable ripple :href="$hostname+'/admin/'" target="_blank" tag="a">
+              <q-item-section avatar>
+                <q-icon name="admin_panel_settings" />
+              </q-item-section>
+              <q-item-section>
+                Admin
+              </q-item-section>
+            </q-item>
+            <q-item clickable ripple @click="logout()" >
+              <q-item-section avatar>
+                <q-icon name="logout" />
+              </q-item-section>
+              <q-item-section>Logout</q-item-section>
+            </q-item>
+          </q-list>
 <!--          <div class="q-px-md q-py-sm"> My profile</div>-->
         </q-btn-dropdown>
       </q-toolbar>
@@ -23,7 +45,7 @@
 <!--    </q-drawer>-->
 
     <q-page-container v-if="isLoggedIn">
-      <router-view />
+      <router-view @mode="mode=$event"/>
     </q-page-container>
   </q-layout>
 </template>
@@ -37,6 +59,7 @@ export default {
   components: { Login },
   data () {
     return {
+      mode: null,
       leftDrawerOpen: false
     }
   },

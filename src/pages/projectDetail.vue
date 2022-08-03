@@ -8,7 +8,7 @@
     </div>
 
     <div class="flex row fit justify-center flex-center">
-      <q-card style="max-width: 450px">
+      <q-card  v-if="project.id" style="max-width: 450px">
         <q-card-section>
           <div class="text-h6">{{project.name}}</div>
           <div class="text-capitalize text-grey">
@@ -48,12 +48,14 @@
           <q-dialog v-model="upload">
             <q-card>
               <q-card-section>
-                <q-uploader :url="`${$hostname}/api/upload/`" :form-fields="[{name: 'project', value: project.id}, {name: 'user', value: loggedInUser.id}]"
-                            @added="uploadFile"
-                            style="max-width: 300px" flat bordered method="put"/>
+                <axios-uploader :url="`${$hostname}/api/upload/`"
+                                :form-fields="[{name: 'project', value: project.id}, {name: 'user', value: loggedInUser.id}]"
+                                style="max-width: 300px" flat bordered method="put" @uploaded="uploaded">
+                </axios-uploader>
+                <span v-if="numOfUploaded" class="q-pa-sm text-positive">{{ numOfUploaded }} docs uploaded</span>
               </q-card-section>
               <q-card-actions align="right">
-                <q-btn flat label="OK" color="primary" v-close-popup />
+                <q-btn flat label="OK" color="primary" v-close-popup @click="numOfUploaded=null"/>
               </q-card-actions>
             </q-card>
           </q-dialog>
@@ -61,37 +63,48 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-if="project.id && canReview && project.cmodels.length>0" flat  :disable="project.number_of_docs===0"
-                 @click="$router.push({ name: 'annotate', params: { project: project, consensus: true}})">
+                 @click="$router.push({ name: 'annotate', params: { project: project, consensus: true}});
+                 $emit('mode', 'Concensus')">
             Check Consensus
           </q-btn>
           <q-btn v-if="project.id && canReview" flat  :disable="project.number_of_docs===0"
-                 @click="$router.push({ name: 'annotate', params: { project: project, review: true }})">
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: true }});
+                 $emit('mode', 'Review')">
             Review
           </q-btn>
           <q-btn flat  :disable="project.number_of_docs===0"
-                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }});
+                 $emit('mode', 'Annotate')">
             Annotate It
           </q-btn>
         </q-card-actions>
       </q-card>
+      <div v-else>
+        Loading project detail
+      </div>
     </div>
   </q-page>
 </template>
 
 <script>
+import AxiosUploader from 'components/AxiosUploader'
+
 export default {
   name: 'projectDetail',
+  components: { AxiosUploader },
   data () {
     return {
       project: {},
       upload: false,
       download: false,
       loading: false,
-      fileInfo: null
+      fileInfo: null,
+      numOfUploaded: null
     }
   },
   mounted () {
     const id = this.$route.params.id
+    this.$emit('mode', null)
     this.fetchProject(id)
   },
   methods: {
@@ -101,7 +114,20 @@ export default {
       })
     },
     uploadFile (files) {
-      console.log(files)
+      return new Promise((resolve) => {
+        // simulating a delay of 2 seconds
+        setTimeout(() => {
+          resolve({
+          })
+        }, 2000)
+      })
+    },
+    uploaded (info) {
+      info.xhr.then((resp) => {
+        this.numOfUploaded = resp.data.total
+        this.project.num_of_docs += this.numOfUploaded
+        this.$forceUpdate()
+      })
     },
     downloadLabel () {
       this.loading = true
