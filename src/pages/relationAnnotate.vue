@@ -107,51 +107,6 @@
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white annotation-header">
-          <div class="row full-width">
-            <div class="col-3 flex">
-              <div class="self-center">
-                <q-btn outline size="sm" :style="`color: ${!firstLabel ? '' : firstLabel.color ? firstLabel.color : ''}`" class="q-mr-xs" style="min-width: 80px;"></q-btn>
-              </div>
-              <div class="justify-center">
-                <q-option-group dense
-                  :options="headRadioOptions"
-                  type="radio"
-                  v-model="isHead"
-                />
-              </div>
-            </div>
-            <div class="col-3 flex self-center">
-              <div class="self-center">
-                <q-btn outline size="sm" :style="`color: ${!secondLabel ? '' : secondLabel.color ? secondLabel.color : ''}`" class="q-mr-xs" style="min-width: 80px;"></q-btn>
-              </div>
-              <div class="justify-center">
-                <q-option-group dense
-                  :options="headRadioOptions"
-                  type="radio"
-                  v-model="isTail"
-                />
-              </div>
-            </div>
-            <div class="col-4 flex self-center">
-                <q-select dense class="q-mr-sm"
-                  filled
-                  v-model="relationText"
-                  use-input
-                  use-chips
-                  multiple
-                  input-debounce="0"
-                  @new-value="newRelationText"
-                  :options="relations"
-                  @filter="relationTextFilter"
-                  style="width: 120px;"
-                />
-                <q-select dense outlined size="sm" style="width: 100px;" v-model="relationSelected" :options="relations" label="Outlined" />
-            </div>
-            <div class="col-2 self-center">
-              <q-btn color="accent" size="sm" class="q-mb-xs block float-right" style="width: 100px;">Confirm</q-btn>
-              <q-btn color="primary" size="sm" class="block float-right" style="width: 100px;">Cancel</q-btn>
-            </div>
-          </div>
 <!--          <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>-->
         </q-card-actions>
         <q-separator />

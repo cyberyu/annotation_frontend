@@ -5,15 +5,15 @@
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
         <q-breadcrumbs-el>
-          <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" />
+          <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" :url="currentURL"/>
         </q-breadcrumbs-el>
         <!--        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Ner Annotate'" icon="navigation" />-->
       </q-breadcrumbs>
     </div>
     <div class="row self-start q-pt-lg">
-      <div class="col-3">
+      <div class="col-3" v-if="!this.review">
         <div class="justify-end  q-pr-md row">
-          <q-card class="col-8 ">
+          <q-card class="col-8">
             <q-linear-progress size="25px" :value="progressStats.pct" color="accent">
               <div class="absolute-full flex flex-center">
                 <q-badge color="white" text-color="accent"
@@ -102,8 +102,8 @@
             </q-tab-panels>
           </q-card>
         </div>
-
       </div>
+      <div v-else class="col-2"></div>
 
       <div class="col-6 bg-white">
         <div class="row justify-end">
@@ -115,12 +115,12 @@
                    @click="showUnRelSen();showUnRelBtn=false">
             </q-btn>
           </div>
-          <div class="self-center" style="width:130px">
+          <div class="self-center" style="width:137px">
             <q-checkbox style="width: 140px; margin-left: 1px;" v-model="relevantAll" dense label="Select all" />
           </div>
         </div>
         <q-separator />
-        <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
+        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col" ref="textArea">
           <div v-if="sentences && sentences.length>0" class="select-box q-px-sm" tabindex="0" >
             <div v-show="relevantSenShow[i]" v-for="(sentence,i) in sentences" :key="i" :id="`s-${i}`"
                  :class="getSentenceClass(i)" class="sentence row col-12 q-px-sm" style="border-radius: 10px">
@@ -206,7 +206,9 @@
             <q-space />
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
                    @click="goto(prevURL)" style="width: 100px"/>
-            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="formatAndSaveAnnotations()" :loading="saving" style="width: 100px">
+            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="formatAndSaveAnnotations()"
+                   :disable="!ableSave"
+                   :loading="saving" style="width: 100px">
                    <template v-slot:loading>
                      Saving...
                    </template>
@@ -362,7 +364,12 @@ export default {
       curDetailSentence: null
     }
   },
-  mounted () {},
+  mounted () {
+    this.project.labels.filter(a => a.kind === this.mode).forEach(a => {
+      this.labels[a.id] = a
+      this.labelNames.add(a.name)
+    })
+  },
   methods: {
     goto (url) {
       if (url) {
@@ -463,6 +470,26 @@ export default {
         }
       })
       this.saveAnnotations()
+      this.saveRelated()
+    },
+    saveRelated () {
+      const data = {
+        document: this.document.id,
+        annotations: this.relevantSentences,
+        kind: 'related'
+      }
+      let method, url
+      if (this.document.relations.id) {
+        method = 'patch'
+        url = this.$hostname + '/api/annotations/' + this.document.relations.id + '/'
+      } else {
+        method = 'post'
+        url = this.$hostname + '/api/annotations/'
+      }
+
+      this.$axios({ method: method, url: url, data: data }).then(response => {
+        console.log(response.data)
+      })
     },
     executeModel (id) {
       if (this.relevantSentences.length === 0) {
@@ -480,6 +507,7 @@ export default {
       this.add2Q(id)
       const data = {
         mtype: this.tab,
+        id: id,
         sentences: []
       }
       this.relevantSentences.forEach(v => {
@@ -543,6 +571,10 @@ export default {
         //   }
         // }
         this.$forceUpdate()
+      }).catch(error => {
+        console.log(error.response.data.error)
+        this.alertServerErr()
+        this.removeFromQ(id)
       })
     },
     removeFromQ (id) { // modify for sentence

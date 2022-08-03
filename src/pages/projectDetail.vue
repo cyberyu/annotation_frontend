@@ -8,7 +8,7 @@
     </div>
 
     <div class="flex row fit justify-center flex-center">
-      <q-card style="max-width: 450px">
+      <q-card  v-if="project.id" style="max-width: 450px">
         <q-card-section>
           <div class="text-h6">{{project.name}}</div>
           <div class="text-capitalize text-grey">
@@ -63,19 +63,25 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn v-if="project.id && canReview && project.cmodels.length>0" flat  :disable="project.number_of_docs===0"
-                 @click="$router.push({ name: 'annotate', params: { project: project, consensus: true}})">
+                 @click="$router.push({ name: 'annotate', params: { project: project, consensus: true}});
+                 $emit('mode', 'Concensus')">
             Check Consensus
           </q-btn>
           <q-btn v-if="project.id && canReview" flat  :disable="project.number_of_docs===0"
-                 @click="$router.push({ name: 'annotate', params: { project: project, review: true }})">
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: true }});
+                 $emit('mode', 'Review')">
             Review
           </q-btn>
           <q-btn flat  :disable="project.number_of_docs===0"
-                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }})">
+                 @click="$router.push({ name: 'annotate', params: { project: project, review: false }});
+                 $emit('mode', 'Annotate')">
             Annotate It
           </q-btn>
         </q-card-actions>
       </q-card>
+      <div v-else>
+        Loading project detail
+      </div>
     </div>
   </q-page>
 </template>
@@ -98,6 +104,7 @@ export default {
   },
   mounted () {
     const id = this.$route.params.id
+    this.$emit('mode', null)
     this.fetchProject(id)
   },
   methods: {

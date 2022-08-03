@@ -5,15 +5,16 @@
         <q-breadcrumbs-el label="My Projects" icon="home" to="/" />
         <q-breadcrumbs-el label="Project Summary" icon="widgets" :to="`/project/${project.id}`" />
         <q-breadcrumbs-el>
-          <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" />
+          <AnnotateTab :project="project" :review="review" :consensus="consensus" :mode="mode" :url="currentURL" />
         </q-breadcrumbs-el>
 <!--        <q-breadcrumbs-el :label="review? 'Review': consensus? 'Check Consensus': 'Ner Annotate'" icon="navigation" />-->
       </q-breadcrumbs>
     </div>
+
     <div class="row self-start q-pt-lg">
-      <div class="col-3">
+      <div class="col-3" v-if="!this.review">
         <div class="justify-end  q-pr-md row">
-          <q-card class="col-8 ">
+          <q-card class="col-8">
             <q-linear-progress size="25px" :value="progressStats.pct" color="accent">
               <div class="absolute-full flex flex-center">
                 <q-badge color="white" text-color="accent"
@@ -110,18 +111,22 @@
             </q-tab-panels>
           </q-card>
         </div>
-
       </div>
+      <div v-else class="col-2"></div>
 
       <div class="col-6 bg-white">
         <q-card-actions class="bg-white annotation-header">
           <q-btn v-for="(label,k) in labels" :key="k" outline size="sm" :style="`color: ${label.color}`" class="q-mr-xs" style="margin-left: 0px"> {{ label.name }}</q-btn>
+          <q-btn v-if="relevantSentences.length>0" :label="showUnRelated? 'Hide unrelated': 'Show all'" class="q-mr-xs" style="width: 100px" flat no-caps size="sm"
+                 @click="showUnRelated=!showUnRelated">
+          </q-btn>
         </q-card-actions>
         <q-separator />
-        <q-scroll-area style="height: calc(100vh - 200px); display: flex" class="col" ref="textArea">
+        <q-scroll-area style="height: calc(100vh - 250px); display: flex" class="col" ref="textArea">
           <div v-if="tokens && tokens.length>0" class="select-box q-pa-sm" @keyup="key" tabindex="0"
                @focusout="selected=[]" >
-            <div v-for="(token,i) in tokens" :key="i" :id="`t-${i}`" :class="token[0]==='\r\n'? 'row q-my-sm' : 'column inline'">
+            <div v-for="(token,i) in (showUnRelated? tokens: tokens)" :key="i" :id="`t-${i}`"
+                 :class="token[0].includes('\r') || token[0].includes('\n')? 'row' : 'column inline'">
               <!-- each token display -->
               <span class="q-pt-xs token" :id="selected[0]===i? 'selected' : null"
                     v-on:mousedown="selectStart(i);mousePressed=true"
@@ -197,7 +202,10 @@
             <q-space />
             <q-btn color="primary" label="Previous" :disable="!prevURL" class="justify-center"
                    @click="fetchDocs({url:prevURL})" style="width: 100px"/>
-            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()" :loading="saving" style="width: 100px">
+            <q-btn color="accent" label="Save" class="justify-center q-ml-md" @click="saveAnnotations()"
+                   :loading="saving"
+                   :disable="!ableSave"
+                   style="width: 100px">
                    <template v-slot:loading>
                      Saving...
                    </template>
@@ -327,9 +335,31 @@ export default {
       mode: 'ner'
     }
   },
-  mounted () {},
+  mounted () {
+    this.project.labels.filter(a => a.kind === this.mode).forEach(a => {
+      this.labels[a.id] = a
+      this.labelNames.add(a.name)
+    })
+  },
   methods: {},
-  computed: {}
+  computed: {},
+  watch: {
+    selected (v) {
+      this.highlighted = []
+      this.$nextTick(() => {
+        if (v.length > 0) {
+          const token = document.getElementById('selected').getBoundingClientRect()
+          const tokenY = token.top
+          const wH = document.getElementById('label-window').getBoundingClientRect().height
+          if (tokenY > wH + token.height) {
+            this.offsetTop = tokenY - wH - token.height
+          } else {
+            this.offsetTop = tokenY
+          }
+        }
+      })
+    }
+  }
 }
 </script>
 <style>

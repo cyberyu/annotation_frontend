@@ -1,6 +1,6 @@
 export const commAnnoMixin = {
   name: 'CommAnnoMixin',
-  props: ['project', 'review', 'consensus'],
+  props: ['project', 'review', 'consensus', 'url'],
   data () {
     return {
       mode: null,
@@ -8,6 +8,7 @@ export const commAnnoMixin = {
       document: null,
       tokens: null,
       sentences: null,
+      relevantSentences: [],
       start: null,
       end: null,
       labels: {},
@@ -29,6 +30,7 @@ export const commAnnoMixin = {
       highlighted: [],
       mousePressed: false,
       nextURL: null,
+      currentURL: null,
       prevURL: null,
       tab: 'models',
       loading: false,
@@ -51,15 +53,12 @@ export const commAnnoMixin = {
       dicts: [],
       vmodels: [],
       consensusScore: null,
-      go2page: ''
+      go2page: '',
+      showUnRelated: true
     }
   },
   mounted () {
     // this.fetchLabels()
-    this.project.labels.filter(a => a.kind === this.mode).forEach(a => {
-      this.labels[a.id] = a
-      this.labelNames.add(a.name)
-    })
     this.project.rules.filter(a => a.kind === this.mode).forEach(a => {
       this.rules.push(a)
     })
@@ -89,9 +88,9 @@ export const commAnnoMixin = {
     }
     this.labels.misc = miscLabel
     if (!this.review && !this.consensus) {
-      this.fetchDocs({ page: this.project.first_unannotated })
+      this.fetchDocs({ page: this.project.first_unannotated, url: this.url })
     } else {
-      this.fetchDocs({})
+      this.fetchDocs({ })
     }
 
     setTimeout(() => {
@@ -99,6 +98,18 @@ export const commAnnoMixin = {
     })
   },
   methods: {
+    alertServerErr () {
+      this.$q.notify({
+        message: 'Oops, something went wrong on the server',
+        color: 'negative',
+        position: 'center',
+        actions: [
+          {
+            label: 'Dismiss', color: 'white', handler: () => { }
+          }
+        ]
+      })
+    },
     initialLabels (allLabels) {},
     rejectOrAccept (ann, status) {
       ann.status = ann.status === status ? 0 : status
@@ -264,6 +275,10 @@ export const commAnnoMixin = {
         }
         // this.$forceUpdate()
         // process return annotations
+      }).catch(error => {
+        console.log(error.response.data.error)
+        this.alertServerErr()
+        this.removeFromQ(id)
       })
     },
     scrollTo (label) {
@@ -328,6 +343,23 @@ export const commAnnoMixin = {
       // }
       cls += ' q-pl-sm'
       cls += this.highlighted.includes(i) ? ' highlight' : ''
+
+      if (!this.showUnRelated && !this.tokensInRS.includes(i)) {
+        cls += ' unrel'
+      }
+
+      // for relation
+      if (this.mode === 'relation') {
+        if (this.relation.head.tpos && (this.relation.head.tpos[0] <= i && this.relation.head.tpos[1] >= i)) {
+          cls += ' bg-yellow'
+        }
+        if (this.relation.tail.tpos && (this.relation.tail.tpos[0] <= i && this.relation.tail.tpos[1] >= i)) {
+          cls += ' bg-yellow'
+        }
+        if (this.relation.hint.tpos && (this.relation.hint.tpos[0] <= i && this.relation.hint.tpos[1] >= i)) {
+          cls += ' bg-yellow'
+        }
+      }
 
       return cls
     },
@@ -410,14 +442,17 @@ export const commAnnoMixin = {
       this.saving = true
       const data = {
         document: this.document.id,
-        annotations: this.annotations,
+        annotations: (this.mode === 'ner' || this.mode === 'sentence') ? this.annotations : this.relations, // sentence has its own functions
         kind: this.mode
       }
       let url
       let method
-      if (this.document.annotations.id) {
+      if ((this.mode === 'ner' || this.mode === 'sentence') && this.document.annotations.id) {
         method = 'patch'
         url = this.$hostname + '/api/annotations/' + this.document.annotations.id + '/'
+      } else if (this.mode === 'relation' && this.document.relations.id) {
+        method = 'patch'
+        url = this.$hostname + '/api/annotations/' + this.document.relations.id + '/'
       } else {
         method = 'post'
         url = this.$hostname + '/api/annotations/'
@@ -443,13 +478,22 @@ export const commAnnoMixin = {
     incrProgress (n) {
       this.numAnnotated += n
     },
-
     fetchDocs (params) {
       this.tokens = []
+      this.relation = {
+        relation: null,
+        head: {},
+        tail: {},
+        hint: {}
+      }
       this.$q.loading.show({ message: 'Fetching documet from server and set it up for curation. This may take a few seconds.' })
 
       let url
-      if (!params.url) {
+      if (this.url && !params.url) {
+        url = new URL(this.$hostname + this.url)
+        url.searchParams.set('mode', this.mode)
+        url = `/api/documents/${url.search}`
+      } else if (!params.url) {
         url = `/api/documents/?project=${this.project.id}&review=${this.review}&consensus=${this.consensus}&mode=${this.mode}`
         if (params.page) {
           url += `&page=${params.page}`
@@ -464,15 +508,24 @@ export const commAnnoMixin = {
         // console.log('use host', this.$hostname)
         this.documents = response.data.results
         this.nextURL = response.data.next
+        this.currentURL = url
         this.prevURL = response.data.previous
         this.document = this.documents[0]
         const allAnnotations = this.document.annotations.id ? this.document.annotations.annotations : []
+        if (this.document.related) {
+          this.relevantSentences = this.document.related.annotations
+        } else {
+          this.relevantSentences = []
+        }
         this.annotations = allAnnotations.filter(a => this.labelNames.has(a.name))
         if (this.review) {
           this.annotations4Review = this.document.reviews
           this.annotations = this.mergeAnnotations()
         }
-        if (this.consensus) {
+        if (this.mode === 'relation') {
+          this.relations = this.document.relations.id ? this.document.relations.annotations : []
+        }
+        if (this.consensus && this.document.gold.annotations) {
           this.document.gold.annotations.forEach(ann => {
             ann.id = this.lLabels[ann.name] ? this.lLabels[ann.name].id : null // returned label may not included in project labels
           })
@@ -481,7 +534,7 @@ export const commAnnoMixin = {
         this.isAnnotated = this.document.annotations.id
         this.tokens = this.document.tokens
         this.sentences = this.document.sentences
-        if (this.mode === 'ner') {
+        if (this.mode === 'ner' || (this.mode === 'relation' && !this.review)) {
           this.getDetailedAnnotations()
         }
         this.highlighted = []
@@ -685,23 +738,36 @@ export const commAnnoMixin = {
         results[a[1].name] = a[1]
       })
       return results
+    },
+    tokensInRS () {
+      const tokens = []
+      // const extra = ['......', null, null]
+      if (this.relevantSentences && this.relevantSentences.length > 0) {
+        for (let i = 0; i < this.relevantSentences.length; i++) {
+          const si = this.relevantSentences[i]
+          // if (i === 0 && si !== 0) {
+          //   tokens.push(extra)
+          // }
+          const start = this.sentences[si].start
+          const end = this.sentences[si].end
+          for (let ti = start; ti < end; ti++) {
+            // tokens.push(this.tokens[ti])
+            tokens.push(ti)
+          }
+          // tokens.push(extra)
+        }
+        return tokens
+      }
+      // return this.tokens
+    },
+    ableSave () {
+      if (this.document) {
+        return !(this.project.is_demo && this.document.id === this.project.first_doc)
+      } else {
+        return false
+      }
     }
   },
   watch: {
-    selected (v) {
-      this.highlighted = []
-      this.$nextTick(() => {
-        if (v.length > 0) {
-          const token = document.getElementById('selected').getBoundingClientRect()
-          const tokenY = token.top
-          const wH = document.getElementById('label-window').getBoundingClientRect().height
-          if (tokenY > wH + token.height) {
-            this.offsetTop = tokenY - wH - token.height
-          } else {
-            this.offsetTop = tokenY
-          }
-        }
-      })
-    }
   }
 }

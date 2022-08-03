@@ -3,8 +3,16 @@
     <q-header elevated>
       <q-toolbar>
         <q-btn flat dense round icon="home" aria-label="Menu" @click="$router.push('/')" />
-
-        <q-toolbar-title> <router-link to="/" class="main-link">VGLM.Curation</router-link> </q-toolbar-title>
+        <q-toolbar-title class="row">
+          <div>
+            <router-link to="/" class="main-link">
+              MIC: A Multi-task Interactive Curation Tool
+            </router-link>
+          </div>
+          <div class="col text-left" style="font-size:10px; padding-top:12px; padding-left:5px"> support contact: shee.yu@gmail.com</div>
+          <div class="col text-center">{{ mode }}</div><br>
+          <div class="col"></div>
+        </q-toolbar-title>
         <q-btn-dropdown v-if="isLoggedIn" color="primary" :label="`Welcome ${user.username}`">
           <q-list separator >
             <q-item clickable ripple :href="$hostname+'/admin/'" target="_blank" tag="a">
@@ -37,7 +45,7 @@
 <!--    </q-drawer>-->
 
     <q-page-container v-if="isLoggedIn">
-      <router-view />
+      <router-view @mode="mode=$event"/>
     </q-page-container>
   </q-layout>
 </template>
@@ -51,6 +59,7 @@ export default {
   components: { Login },
   data () {
     return {
+      mode: null,
       leftDrawerOpen: false
     }
   },
